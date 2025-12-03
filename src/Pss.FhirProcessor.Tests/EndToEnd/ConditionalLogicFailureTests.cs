@@ -43,6 +43,13 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.EndToEnd
                         {
                             ""RuleType"": ""CodesMaster"",
                             ""Path"": ""Entry[].Resource.Component""
+                        },
+                        {
+                            ""RuleType"": ""Conditional"",
+                            ""Path"": ""Entry[].Resource.Component"",
+                            ""If"": ""SQ-L2H9-00000001"",
+                            ""WhenValue"": ""Yes"",
+                            ""Then"": ""SQ-L2H9-00000003""
                         }
                     ]
                 }" }
@@ -56,6 +63,8 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.EndToEnd
         [TestMethod]
         public void Bundle_ConditionalFieldMissing_WhenRequired_FailsValidation()
         {
+            _processor.SetLoggingOptions(new LoggingOptions { LogLevel = "Verbose" });
+            
             // If wearing hearing aid = Yes, then type of hearing aid is required
             var json = @"{
                 ""resourceType"": ""Bundle"",
@@ -126,6 +135,18 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.EndToEnd
             }";
 
             var result = _processor.Process(json);
+
+            // Debug output
+            foreach (var log in result.Logs)
+            {
+                System.Console.WriteLine(log);
+            }
+            System.Console.WriteLine($"\nValidation.IsValid: {result.Validation.IsValid}");
+            System.Console.WriteLine($"Validation.Errors.Count: {result.Validation.Errors.Count}");
+            foreach (var error in result.Validation.Errors)
+            {
+                System.Console.WriteLine($"  Error: [{error.Code}] {error.Message}");
+            }
 
             Assert.IsFalse(result.Validation.IsValid, "Bundle should be invalid");
             Assert.IsTrue(result.Validation.Errors.Exists(e => 

@@ -377,7 +377,32 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
 
         private void EvaluateConditionalRule(Bundle bundle, ValidationRule rule, string scope, ValidationResult result)
         {
-            // Simple conditional: if path 'If' has certain value, then path 'Then' must exist
+            // Conditional rule supports two modes:
+            // 1. JSONPath mode: If/Then contain paths like "Entry[0].Resource.Status"
+            // 2. Component mode: If/Then contain question codes like "SQ-L2H9-00000001"
+            
+            if (string.IsNullOrEmpty(rule.If) || string.IsNullOrEmpty(rule.Then))
+            {
+                _logger?.Info($"Conditional rule missing If or Then: If={rule.If}, Then={rule.Then}");
+                return;
+            }
+
+            // Detect mode: if 'If' contains '[' or '.', use JSONPath mode, otherwise component mode
+            bool isComponentMode = !rule.If.Contains("[") && !rule.If.Contains(".");
+
+            if (isComponentMode)
+            {
+                EvaluateComponentConditionalRule(bundle, rule, scope, result);
+            }
+            else
+            {
+                EvaluatePathConditionalRule(bundle, rule, scope, result);
+            }
+        }
+
+        private void EvaluatePathConditionalRule(Bundle bundle, ValidationRule rule, string scope, ValidationResult result)
+        {
+            // JSONPath-based conditional: if path 'If' exists, then path 'Then' must exist
             var ifValue = PathResolver.ResolvePath(bundle, rule.If);
             
             if (ifValue != null)
@@ -392,6 +417,74 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
                         Message = $"Conditional rule failed: if '{rule.If}' exists, then '{rule.Then}' must also exist",
                         Scope = scope
                     });
+                }
+            }
+        }
+
+        private void EvaluateComponentConditionalRule(Bundle bundle, ValidationRule rule, string scope, ValidationResult result)
+        {
+            // Component-based conditional: if question code 'If' has value 'WhenValue', then question code 'Then' must exist
+            var observations = bundle.Entry?
+                .Where(e => e.Resource?.ResourceType == "Observation")
+                .Select(e => e.Resource)
+                .ToList();
+
+            if (observations == null || observations.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var resource in observations)
+            {
+                // Check if this observation matches the scope
+                var obsJson = Newtonsoft.Json.JsonConvert.SerializeObject(resource);
+                var observation = Newtonsoft.Json.JsonConvert.DeserializeObject<Observation>(obsJson);
+                
+                var obsCode = observation?.Code?.Coding?.FirstOrDefault()?.Code;
+                if (obsCode != scope)
+                {
+                    continue;
+                }
+
+                if (observation?.Component == null || observation.Component.Count == 0)
+                {
+                    continue;
+                }
+
+                // Find the "If" component
+                var ifComponent = observation.Component.FirstOrDefault(c => 
+                    c.Code?.Coding?.FirstOrDefault()?.Code == rule.If);
+
+                if (ifComponent != null)
+                {
+                    // Check if WhenValue matches (if specified)
+                    bool conditionMet = true;
+                    if (!string.IsNullOrEmpty(rule.WhenValue))
+                    {
+                        conditionMet = ifComponent.ValueString == rule.WhenValue;
+                    }
+
+                    if (conditionMet)
+                    {
+                        // Check if "Then" component exists
+                        var thenComponent = observation.Component.FirstOrDefault(c =>
+                            c.Code?.Coding?.FirstOrDefault()?.Code == rule.Then);
+
+                        if (thenComponent == null)
+                        {
+                            var conditionMsg = !string.IsNullOrEmpty(rule.WhenValue)
+                                ? $"if '{rule.If}' = '{rule.WhenValue}'"
+                                : $"if '{rule.If}' exists";
+
+                            result.Errors.Add(new ValidationError
+                            {
+                                Code = "CONDITIONAL_FAILED",
+                                FieldPath = $"Observation.component",
+                                Message = $"Conditional rule failed: {conditionMsg}, then '{rule.Then}' must also exist",
+                                Scope = scope
+                            });
+                        }
+                    }
                 }
             }
         }

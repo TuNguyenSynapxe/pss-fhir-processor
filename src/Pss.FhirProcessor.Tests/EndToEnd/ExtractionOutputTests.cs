@@ -151,6 +151,26 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.EndToEnd
             
             var result = _processor.Process(json);
 
+            // Debug output
+            System.Console.WriteLine($"Validation.IsValid: {result.Validation.IsValid}");
+            System.Console.WriteLine($"Flatten is null: {result.Flatten == null}");
+            if (result.Flatten != null)
+            {
+                System.Console.WriteLine($"Event is null: {result.Flatten.Event == null}");
+                System.Console.WriteLine($"Participant is null: {result.Flatten.Participant == null}");
+                if (result.Flatten.Event != null)
+                {
+                    System.Console.WriteLine($"  Event.Start: {result.Flatten.Event.Start}");
+                    System.Console.WriteLine($"  Event.End: {result.Flatten.Event.End}");
+                    System.Console.WriteLine($"  Event.VenueName: {result.Flatten.Event.VenueName}");
+                    System.Console.WriteLine($"  Event.PostalCode: {result.Flatten.Event.PostalCode}");
+                    System.Console.WriteLine($"  Event.Grc: {result.Flatten.Event.Grc}");
+                    System.Console.WriteLine($"  Event.Constituency: {result.Flatten.Event.Constituency}");
+                    System.Console.WriteLine($"  Event.ProviderName: {result.Flatten.Event.ProviderName}");
+                    System.Console.WriteLine($"  Event.ClusterName: {result.Flatten.Event.ClusterName}");
+                }
+            }
+
             Assert.IsTrue(result.Validation.IsValid);
             
             // Event
@@ -222,7 +242,15 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.EndToEnd
                     {
                         ""resource"": {
                             ""resourceType"": ""Organization"",
-                            ""name"": ""XYZ Provider""
+                            ""name"": ""XYZ Provider"",
+                            ""type"": [{ ""coding"": [{ ""code"": ""prov"" }] }]
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""Organization"",
+                            ""name"": ""ABC Cluster"",
+                            ""type"": [{ ""coding"": [{ ""code"": ""cluster"" }] }]
                         }
                     },
                     {
