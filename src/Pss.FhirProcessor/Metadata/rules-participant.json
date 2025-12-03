@@ -1,0 +1,13 @@
+{
+  "Scope": "Participant",
+  "Rules": [
+    {
+      "RuleType": "Required",
+      "Path": "Entry[].Resource.Identifier[0].Value"
+    },
+    {
+      "RuleType": "Required",
+      "Path": "Entry[].Resource.Name[0].Text"
+    }
+  ]
+}

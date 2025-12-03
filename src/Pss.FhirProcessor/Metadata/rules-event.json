@@ -1,0 +1,18 @@
+{
+  "Scope": "Event",
+  "Rules": [
+    {
+      "RuleType": "Required",
+      "Path": "Entry[0].Resource.ActualPeriod.Start"
+    },
+    {
+      "RuleType": "Required",
+      "Path": "Entry[0].Resource.ActualPeriod.End"
+    },
+    {
+      "RuleType": "FixedValue",
+      "Path": "Entry[0].Resource.Status",
+      "FixedValue": "completed"
+    }
+  ]
+}

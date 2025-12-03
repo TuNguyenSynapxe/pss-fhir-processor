@@ -1,0 +1,66 @@
+@model MOH.HealthierSG.Plugins.PSS.FhirProcessor.WebApp.Models.PlaygroundViewModel
+@{
+    ViewBag.Title = "PSS FHIR Playground";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@ViewBag.Title</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        textarea { width: 100%; min-height: 400px; font-family: monospace; }
+        .controls { margin: 20px 0; }
+        button { padding: 10px 20px; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PSS FHIR Processor Playground</h1>
+        
+        @using (Html.BeginForm("Process", "Playground", FormMethod.Post))
+        {
+            <div class="controls">
+                <label>Log Level:</label>
+                <select name="logLevel">
+                    <option value="info">Info</option>
+                    <option value="debug">Debug</option>
+                    <option value="verbose">Verbose</option>
+                </select>
+                
+                <label>
+                    <input type="checkbox" name="strictDisplay" checked="checked" />
+                    Strict Display Match
+                </label>
+            </div>
+            
+            <div>
+                <label>FHIR JSON Input:</label>
+                <textarea name="fhirJson" placeholder="Paste your FHIR Bundle JSON here...">@Model.InputJson</textarea>
+            </div>
+            
+            <div class="controls">
+                <button type="submit">Validate & Extract</button>
+                <button type="button" onclick="formatJson()">Format JSON</button>
+            </div>
+        }
+        
+        <div>
+            <a href="@Url.Action("Index", "Test")">Go to Test Suite</a>
+        </div>
+    </div>
+    
+    <script>
+        function formatJson() {
+            var textarea = document.querySelector('textarea[name="fhirJson"]');
+            try {
+                var obj = JSON.parse(textarea.value);
+                textarea.value = JSON.stringify(obj, null, 2);
+            } catch (e) {
+                alert('Invalid JSON: ' + e.message);
+            }
+        }
+    </script>
+</body>
+</html>

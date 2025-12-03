@@ -1,0 +1,52 @@
+namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.WebApp.Seed
+{
+    public static class CodesMasterSeed
+    {
+        public static string GetCodesMaster()
+        {
+            return @"{
+  ""Questions"": [
+    {
+      ""QuestionCode"": ""SQ-L2H9-00000001"",
+      ""QuestionDisplay"": ""Currently wearing hearing aid(s)?"",
+      ""ScreeningType"": ""HS"",
+      ""AllowedAnswers"": [""Yes"", ""No""]
+    },
+    {
+      ""QuestionCode"": ""SQ-L2H9-00000002"",
+      ""QuestionDisplay"": ""Proceed with hearing screening?"",
+      ""ScreeningType"": ""HS"",
+      ""AllowedAnswers"": [""Yes"", ""No""]
+    },
+    {
+      ""QuestionCode"": ""SQ-L2H9-00000010"",
+      ""QuestionDisplay"": ""Pure Tone Audiometry (Left)"",
+      ""ScreeningType"": ""HS"",
+      ""AllowedAnswers"": [
+        ""500Hz – R"",
+        ""500Hz – NR"",
+        ""1000Hz – R"",
+        ""1000Hz – NR"",
+        ""2000Hz – R"",
+        ""2000Hz – NR"",
+        ""4000Hz – R"",
+        ""4000Hz – NR""
+      ]
+    },
+    {
+      ""QuestionCode"": ""SQ-L2O9-00000001"",
+      ""QuestionDisplay"": ""Currently wearing dentures?"",
+      ""ScreeningType"": ""OS"",
+      ""AllowedAnswers"": [""Yes"", ""No""]
+    },
+    {
+      ""QuestionCode"": ""SQ-L2V9-00000001"",
+      ""QuestionDisplay"": ""Currently wearing glasses?"",
+      ""ScreeningType"": ""VS"",
+      ""AllowedAnswers"": [""Yes"", ""No""]
+    }
+  ]
+}";
+        }
+    }
+}

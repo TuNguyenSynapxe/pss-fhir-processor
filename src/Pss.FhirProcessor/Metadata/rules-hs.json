@@ -1,0 +1,13 @@
+{
+  "Scope": "HS",
+  "Rules": [
+    {
+      "RuleType": "Required",
+      "Path": "Entry[].Resource.Component"
+    },
+    {
+      "RuleType": "CodesMaster",
+      "Path": "Entry[].Resource.Component"
+    }
+  ]
+}
