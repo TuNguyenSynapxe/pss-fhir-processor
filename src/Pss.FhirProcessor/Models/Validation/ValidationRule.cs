@@ -15,5 +15,6 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation
         public List<string> AllowedValues { get; set; }
         public string If { get; set; }
         public string Then { get; set; }
+        public string WhenValue { get; set; }
     }
 }

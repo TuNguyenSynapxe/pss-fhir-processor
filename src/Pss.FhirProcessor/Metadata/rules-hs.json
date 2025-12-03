@@ -8,6 +8,12 @@
     {
       "RuleType": "CodesMaster",
       "Path": "Entry[].Resource.Component"
+    },
+    {
+      "RuleType": "Conditional",
+      "If": "Entry[].Resource[?Code.Coding[?Code=='HS']].Component[?Code.Coding[?Code=='SQ-L2H9-00000001']].ValueString",
+      "WhenValue": "Yes",
+      "Then": "Entry[].Resource[?Code.Coding[?Code=='HS']].Component[?Code.Coding[?Code=='SQ-L2H9-00000003']]"
     }
   ]
 }

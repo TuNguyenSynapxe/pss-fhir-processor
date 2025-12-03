@@ -478,8 +478,18 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
                 });
             }
 
-            // Validate display
-            if (!string.IsNullOrEmpty(questionDisplay) && !DisplayMatches(questionDisplay, metadata.QuestionDisplay))
+            // Validate display - always required
+            if (string.IsNullOrEmpty(questionDisplay))
+            {
+                result.Errors.Add(new ValidationError
+                {
+                    Code = "QUESTION_DISPLAY_MISSING",
+                    FieldPath = $"Observation.component.code.display",
+                    Message = $"Display is required for question code '{questionCode}'",
+                    Scope = screeningType
+                });
+            }
+            else if (!DisplayMatches(questionDisplay, metadata.QuestionDisplay))
             {
                 result.Errors.Add(new ValidationError
                 {
@@ -539,7 +549,8 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
                 return Normalize(actual) == Normalize(expected);
             }
 
-            return actual == expected;
+            // Non-strict mode without normalization - be lenient
+            return true;
         }
 
         private string Normalize(string text)
