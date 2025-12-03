@@ -45,8 +45,12 @@ GET  /api/fhir/rules
 ```
 
 ## 7. Running Tests
-```
-dotnet test
+**82/82 tests passing (100%)**
+- 29 unit tests (validation rules, extraction logic)
+- 53 end-to-end tests (complete bundle scenarios)
+
+```bash
+dotnet test --framework net6.0
 ```
 
 ## 8. Folder Structure

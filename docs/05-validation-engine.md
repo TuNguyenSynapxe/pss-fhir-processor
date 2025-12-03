@@ -168,7 +168,31 @@ Errors:
 - `INVALID_SCREENING_TYPE_FOR_QUESTION`
 
 ## 8.6 Conditional Rule
-Implements “if X then Y” logic.  
+Implements "if X then Y" logic with two modes:
+
+**JSONPath Mode** (for general path-based conditions):
+```json
+{
+  "RuleType": "Conditional",
+  "If": "Entry[0].Resource.Status",
+  "Then": "Entry[0].Resource.ActualPeriod"
+}
+```
+
+**Component Mode** (for question code-based conditions with value checking):
+```json
+{
+  "RuleType": "Conditional",
+  "If": "SQ-L2H9-00000001",
+  "WhenValue": "Yes",
+  "Then": "SQ-L2H9-00000003"
+}
+```
+
+The `WhenValue` property enables value-based conditional logic:
+- If `WhenValue` is specified, the condition only triggers when the field has that specific value
+- If `WhenValue` is omitted, the condition triggers whenever the field exists
+
 Error: `CONDITIONAL_FAILED`
 
 ---
