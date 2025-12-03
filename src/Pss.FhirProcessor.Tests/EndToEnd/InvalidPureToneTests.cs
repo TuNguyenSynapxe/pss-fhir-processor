@@ -109,6 +109,8 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.EndToEnd
         [TestMethod]
         public void Bundle_ValidPureTonePipeSeparated_PassesValidation()
         {
+            _processor.SetLoggingOptions(new LoggingOptions { LogLevel = "Verbose" });
+            
             var json = @"{
                 ""resourceType"": ""Bundle"",
                 ""type"": ""collection"",
@@ -154,6 +156,24 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.EndToEnd
                             ""resourceType"": ""Observation"",
                             ""code"": { ""coding"": [{ ""code"": ""VS"" }] },
                             ""component"": []
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""Location"",
+                            ""id"": ""loc1""
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""HealthcareService"",
+                            ""id"": ""hs1""
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""Organization"",
+                            ""id"": ""org1""
                         }
                     }
                 ]
@@ -330,6 +350,24 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.EndToEnd
                             ""resourceType"": ""Observation"",
                             ""code"": { ""coding"": [{ ""code"": ""VS"" }] },
                             ""component"": []
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""Location"",
+                            ""id"": ""loc1""
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""HealthcareService"",
+                            ""id"": ""hs1""
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""Organization"",
+                            ""id"": ""org1""
                         }
                     }
                 ]

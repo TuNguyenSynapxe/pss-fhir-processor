@@ -99,6 +99,24 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.EndToEnd
                             ""code"": { ""coding"": [{ ""code"": ""VS"" }] },
                             ""component"": []
                         }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""Location"",
+                            ""id"": ""loc1""
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""HealthcareService"",
+                            ""id"": ""hs1""
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""Organization"",
+                            ""id"": ""org1""
+                        }
                     }
                 ]
             }";
@@ -126,6 +144,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.EndToEnd
         public void Bundle_WrongDisplay_NonStrictMode_PassesValidation()
         {
             _processor.SetValidationOptions(new ValidationOptions { StrictDisplayMatch = false });
+            _processor.SetLoggingOptions(new LoggingOptions { LogLevel = "Verbose" });
 
             var json = @"{
                 ""resourceType"": ""Bundle"",
@@ -173,11 +192,41 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.EndToEnd
                             ""code"": { ""coding"": [{ ""code"": ""VS"" }] },
                             ""component"": []
                         }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""Location"",
+                            ""id"": ""loc1""
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""HealthcareService"",
+                            ""id"": ""hs1""
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""Organization"",
+                            ""id"": ""org1""
+                        }
                     }
                 ]
             }";
 
             var result = _processor.Process(json);
+
+            // Debug output
+            foreach (var log in result.Logs)
+            {
+                System.Console.WriteLine(log);
+            }
+            System.Console.WriteLine($"\nValidation.IsValid: {result.Validation.IsValid}");
+            System.Console.WriteLine($"Validation.Errors.Count: {result.Validation.Errors.Count}");
+            foreach (var error in result.Validation.Errors)
+            {
+                System.Console.WriteLine($"  Error: [{error.Code}] {error.Message}");
+            }
 
             Assert.IsTrue(result.Validation.IsValid, "Bundle should be valid in non-strict mode");
         }
@@ -229,6 +278,24 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.EndToEnd
                             ""resourceType"": ""Observation"",
                             ""code"": { ""coding"": [{ ""code"": ""VS"" }] },
                             ""component"": []
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""Location"",
+                            ""id"": ""loc1""
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""HealthcareService"",
+                            ""id"": ""hs1""
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""Organization"",
+                            ""id"": ""org1""
                         }
                     }
                 ]

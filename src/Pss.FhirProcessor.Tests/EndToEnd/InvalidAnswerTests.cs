@@ -290,6 +290,24 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.EndToEnd
                                 }
                             ]
                         }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""Location"",
+                            ""id"": ""loc1""
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""HealthcareService"",
+                            ""id"": ""hs1""
+                        }
+                    },
+                    {
+                        ""resource"": {
+                            ""resourceType"": ""Organization"",
+                            ""id"": ""org1""
+                        }
                     }
                 ]
             }";
