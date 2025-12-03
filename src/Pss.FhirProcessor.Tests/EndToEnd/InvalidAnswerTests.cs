@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation;
+using System.Collections.Generic;
 
 namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.EndToEnd
 {
@@ -40,7 +41,15 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.EndToEnd
                 ]
             }";
             
+            var rules = new Dictionary<string, string>
+            {
+                { "HS", @"{ ""Scope"": ""HS"", ""Rules"": [{ ""RuleType"": ""CodesMaster"", ""Path"": ""Entry[].Resource.Component"" }] }" },
+                { "OS", @"{ ""Scope"": ""OS"", ""Rules"": [{ ""RuleType"": ""CodesMaster"", ""Path"": ""Entry[].Resource.Component"" }] }" },
+                { "VS", @"{ ""Scope"": ""VS"", ""Rules"": [{ ""RuleType"": ""CodesMaster"", ""Path"": ""Entry[].Resource.Component"" }] }" }
+            };
+            
             _processor.LoadCodesMaster(codesMaster);
+            _processor.LoadRuleSets(rules);
             _processor.SetValidationOptions(new ValidationOptions { StrictDisplayMatch = true });
         }
 
