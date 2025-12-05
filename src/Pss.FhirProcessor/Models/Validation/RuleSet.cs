@@ -8,6 +8,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation
     public class RuleSet
     {
         public string Scope { get; set; }
+        public string ResourceType { get; set; }
         public List<ValidationRule> Rules { get; set; }
     }
 }

@@ -239,30 +239,111 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
             switch (rule.RuleType)
             {
                 case "Required":
-                    EvaluateRequiredRule(bundle, rule, scope, result);
+                    EvaluateRequiredRule(index, rule, scope, result);
                     break;
                 case "FixedValue":
-                    EvaluateFixedValueRule(bundle, rule, scope, result);
+                    EvaluateFixedValueRule(index, rule, scope, result);
                     break;
                 case "FixedCoding":
-                    EvaluateFixedCodingRule(bundle, rule, scope, result);
+                    EvaluateFixedCodingRule(index, rule, scope, result);
                     break;
                 case "AllowedValues":
-                    EvaluateAllowedValuesRule(bundle, rule, scope, result);
+                    EvaluateAllowedValuesRule(index, rule, scope, result);
                     break;
                 case "CodesMaster":
                     // Handled separately in ValidateCodesMaster
                     break;
                 case "Conditional":
-                    EvaluateConditionalRule(bundle, rule, scope, result);
+                    EvaluateConditionalRule(index, rule, scope, result);
                     break;
             }
         }
 
-        private void EvaluateRequiredRule(Bundle bundle, ValidationRule rule, string scope, ValidationResult result)
+        private void EvaluateRequiredRule(Dictionary<string, List<Resource>> index, ValidationRule rule, string scope, ValidationResult result)
         {
             _logger?.Info($"    Evaluating Required rule: path='{rule.Path}'");
-            var value = PathResolver.ResolvePath(bundle, rule.Path);
+            
+            // Special handling for Bundle.entry[ResourceType] syntax
+            // This checks if a resource type exists in the bundle
+            if (scope == "Bundle" && rule.Path.StartsWith("Bundle.entry[") && rule.Path.EndsWith("]"))
+            {
+                var startIdx = "Bundle.entry[".Length;
+                var endIdx = rule.Path.Length - 1;
+                var resourceTypeKey = rule.Path.Substring(startIdx, endIdx - startIdx);
+                
+                _logger?.Info($"      Checking for resource type '{resourceTypeKey}' in bundle index");
+                
+                // Map Organization:Provider and Organization:Cluster to Organization
+                var lookupKey = resourceTypeKey;
+                if (resourceTypeKey == "Organization:Provider" || resourceTypeKey == "Organization:Cluster")
+                {
+                    lookupKey = "Organization";
+                    _logger?.Info($"      Mapped '{resourceTypeKey}' -> '{lookupKey}'");
+                }
+                
+                if (!index.ContainsKey(lookupKey) || index[lookupKey].Count == 0)
+                {
+                    _logger?.Info($"      → FAILED: Resource type '{resourceTypeKey}' not found in bundle");
+                    result.Errors.Add(new ValidationError
+                    {
+                        Code = "MANDATORY_MISSING",
+                        FieldPath = rule.Path,
+                        Message = $"Required resource '{resourceTypeKey}' is missing from bundle",
+                        Scope = scope
+                    });
+                }
+                else
+                {
+                    _logger?.Info($"      → PASSED: Found {index[lookupKey].Count} resource(s) of type '{resourceTypeKey}'");
+                }
+                return;
+            }
+            
+            // Get the target resource based on scope
+            var resource = GetResourceByScope(index, scope);
+            if (resource == null)
+            {
+                _logger?.Info($"      No resource found for scope '{scope}'");
+                result.Errors.Add(new ValidationError
+                {
+                    Code = "MANDATORY_MISSING",
+                    FieldPath = rule.Path,
+                    Message = $"Required field '{rule.Path}' is missing or empty",
+                    Scope = scope
+                });
+                return;
+            }
+            
+            _logger?.Info($"      Resource type: {resource.GetType().Name}, ResourceType property: {resource.ResourceType}");
+            
+            // Strip resource type prefix from path before resolving
+            var pathToResolve = StripResourcePrefix(rule.Path, scope);
+            if (pathToResolve != rule.Path)
+            {
+                _logger?.Info($"      Stripped path: '{rule.Path}' -> '{pathToResolve}'");
+            }
+            
+            // If path is empty after stripping (was just the resource name), treat as existence check
+            if (string.IsNullOrEmpty(pathToResolve))
+            {
+                _logger?.Info($"      Path is just resource name - treating as existence check → PASSED");
+                return;
+            }
+            
+            // Debug: log ExtensionData
+            if (resource.ExtensionData != null)
+            {
+                _logger?.Info($"      ExtensionData keys: {string.Join(", ", resource.ExtensionData.Keys)}");
+                
+                // Debug: log the type of each ExtensionData value
+                foreach (var key in resource.ExtensionData.Keys)
+                {
+                    var val = resource.ExtensionData[key];
+                    _logger?.Info($"        {key}: {val?.GetType()?.Name ?? "null"}");
+                }
+            }
+            
+            var value = PathResolver.ResolvePath(resource, pathToResolve);
             _logger?.Info($"      Resolved value: {(value == null ? "null" : $"'{value}' (type: {value.GetType().Name})" )}");
 
             if (value == null || (value is string str && string.IsNullOrWhiteSpace(str)))
@@ -282,9 +363,13 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
             }
         }
 
-        private void EvaluateFixedValueRule(Bundle bundle, ValidationRule rule, string scope, ValidationResult result)
+        private void EvaluateFixedValueRule(Dictionary<string, List<Resource>> index, ValidationRule rule, string scope, ValidationResult result)
         {
-            var value = PathResolver.ResolvePath(bundle, rule.Path);
+            var resource = GetResourceByScope(index, scope);
+            if (resource == null) return;
+            
+            var pathToResolve = StripResourcePrefix(rule.Path, scope);
+            var value = PathResolver.ResolvePath(resource, pathToResolve);
 
             if (value != null && value.ToString() != rule.FixedValue)
             {
@@ -298,9 +383,13 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
             }
         }
 
-        private void EvaluateFixedCodingRule(Bundle bundle, ValidationRule rule, string scope, ValidationResult result)
+        private void EvaluateFixedCodingRule(Dictionary<string, List<Resource>> index, ValidationRule rule, string scope, ValidationResult result)
         {
-            var value = PathResolver.ResolvePath(bundle, rule.Path);
+            var resource = GetResourceByScope(index, scope);
+            if (resource == null) return;
+            
+            var pathToResolve = StripResourcePrefix(rule.Path, scope);
+            var value = PathResolver.ResolvePath(resource, pathToResolve);
             _logger?.Info($"    FixedCoding path '{rule.Path}' resolved to type: {value?.GetType().Name ?? "null"}");
 
             Coding coding = null;
@@ -355,9 +444,13 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
             }
         }
 
-        private void EvaluateAllowedValuesRule(Bundle bundle, ValidationRule rule, string scope, ValidationResult result)
+        private void EvaluateAllowedValuesRule(Dictionary<string, List<Resource>> index, ValidationRule rule, string scope, ValidationResult result)
         {
-            var value = PathResolver.ResolvePath(bundle, rule.Path);
+            var resource = GetResourceByScope(index, scope);
+            if (resource == null) return;
+            
+            var pathToResolve = StripResourcePrefix(rule.Path, scope);
+            var value = PathResolver.ResolvePath(resource, pathToResolve);
 
             if (value != null && rule.AllowedValues != null && rule.AllowedValues.Count > 0)
             {
@@ -375,7 +468,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
             }
         }
 
-        private void EvaluateConditionalRule(Bundle bundle, ValidationRule rule, string scope, ValidationResult result)
+        private void EvaluateConditionalRule(Dictionary<string, List<Resource>> index, ValidationRule rule, string scope, ValidationResult result)
         {
             // Conditional rule supports two modes:
             // 1. JSONPath mode: If/Then contain paths like "Entry[0].Resource.Status"
@@ -392,22 +485,27 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
 
             if (isComponentMode)
             {
-                EvaluateComponentConditionalRule(bundle, rule, scope, result);
+                EvaluateComponentConditionalRule(index, rule, scope, result);
             }
             else
             {
-                EvaluatePathConditionalRule(bundle, rule, scope, result);
+                EvaluatePathConditionalRule(index, rule, scope, result);
             }
         }
 
-        private void EvaluatePathConditionalRule(Bundle bundle, ValidationRule rule, string scope, ValidationResult result)
+        private void EvaluatePathConditionalRule(Dictionary<string, List<Resource>> index, ValidationRule rule, string scope, ValidationResult result)
         {
             // JSONPath-based conditional: if path 'If' exists, then path 'Then' must exist
-            var ifValue = PathResolver.ResolvePath(bundle, rule.If);
+            var resource = GetResourceByScope(index, scope);
+            if (resource == null) return;
+            
+            var ifPathToResolve = StripResourcePrefix(rule.If, scope);
+            var ifValue = PathResolver.ResolvePath(resource, ifPathToResolve);
             
             if (ifValue != null)
             {
-                var thenValue = PathResolver.ResolvePath(bundle, rule.Then);
+                var thenPathToResolve = StripResourcePrefix(rule.Then, scope);
+                var thenValue = PathResolver.ResolvePath(resource, thenPathToResolve);
                 if (thenValue == null)
                 {
                     result.Errors.Add(new ValidationError
@@ -421,18 +519,17 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
             }
         }
 
-        private void EvaluateComponentConditionalRule(Bundle bundle, ValidationRule rule, string scope, ValidationResult result)
+        private void EvaluateComponentConditionalRule(Dictionary<string, List<Resource>> index, ValidationRule rule, string scope, ValidationResult result)
         {
             // Component-based conditional: if question code 'If' has value 'WhenValue', then question code 'Then' must exist
-            var observations = bundle.Entry?
-                .Where(e => e.Resource?.ResourceType == "Observation")
-                .Select(e => e.Resource)
-                .ToList();
-
-            if (observations == null || observations.Count == 0)
+            // Get observations for this scope
+            string observationKey = $"Observation:{scope}";
+            if (!index.ContainsKey(observationKey))
             {
                 return;
             }
+
+            var observations = index[observationKey];
 
             foreach (var resource in observations)
             {
@@ -628,6 +725,104 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Get the first resource from index based on scope name
+        /// Scope can be: Event, Participant, HS, OS, VS, or any custom scope
+        /// Maps to resource types: Encounter, Patient, Observation:HS, Observation:OS, Observation:VS
+        /// For custom scopes, uses the scope name directly as the resource key
+        /// </summary>
+        private Resource GetResourceByScope(Dictionary<string, List<Resource>> index, string scope)
+        {
+            _logger?.Debug($"      GetResourceByScope: scope='{scope}'");
+            
+            // Support both formats:
+            // 1. Logical scope names: "Event", "Participant", "HS", "OS", "VS"
+            // 2. Direct resource type names: "Patient", "Encounter", "Observation.HS", etc.
+            
+            string resourceKey = scope switch
+            {
+                // Legacy logical scope mappings
+                "Event" => "Encounter",
+                "Participant" => "Patient",
+                "HS" => "Observation:HS",
+                "OS" => "Observation:OS",
+                "VS" => "Observation:VS",
+                
+                // Direct resource type names (source-driven rules)
+                "Observation.HS" => "Observation:HS",
+                "Observation.OS" => "Observation:OS",
+                "Observation.VS" => "Observation:VS",
+                "Organization.Provider" => "Organization",
+                "Organization.Cluster" => "Organization",
+                
+                _ => scope // For other scopes (Patient, Encounter, Location, etc.), use scope name as-is
+            };
+
+            _logger?.Debug($"      Mapped to resourceKey='{resourceKey}'");
+            
+            // Try the mapped key first
+            if (index.ContainsKey(resourceKey) && index[resourceKey].Count > 0)
+            {
+                _logger?.Debug($"      Found resource in index['{resourceKey}']");
+                return index[resourceKey][0];
+            }
+
+            // If not found and we used a mapping, also try the original scope name
+            if (resourceKey != scope && index.ContainsKey(scope) && index[scope].Count > 0)
+            {
+                _logger?.Debug($"      Found resource in index['{scope}'] (fallback)");
+                return index[scope][0];
+            }
+
+            _logger?.Debug($"      No resource found for scope '{scope}'");
+            return null;
+        }
+
+        /// <summary>
+        /// Strip resource type prefix from path based on scope
+        /// E.g., "Encounter.actualPeriod.start" -> "actualPeriod.start" when scope is "Event"
+        /// E.g., "Patient.identifier.value" -> "identifier.value" when scope is "Participant"
+        /// E.g., "Observation.component[]" -> "component[]" when scope is "HS/OS/VS"
+        /// E.g., "Location.name" -> "name" for any scope that maps to Location
+        /// 
+        /// This method intelligently detects the resource type prefix from the path itself
+        /// by checking common FHIR resource types
+        /// </summary>
+        private string StripResourcePrefix(string path, string scope)
+        {
+            if (string.IsNullOrEmpty(path))
+                return path;
+
+            // Common FHIR resource types that might appear as prefixes
+            var commonResourceTypes = new[]
+            {
+                "Encounter", "Patient", "Observation", "Location", "Organization",
+                "HealthcareService", "Practitioner", "PractitionerRole", "Device",
+                "Medication", "Condition", "Procedure", "DiagnosticReport", "Specimen"
+            };
+
+            // Check if path is exactly the resource type (no property)
+            foreach (var resourceType in commonResourceTypes)
+            {
+                if (path.Equals(resourceType, StringComparison.OrdinalIgnoreCase))
+                {
+                    return string.Empty; // Return empty to indicate just checking resource existence
+                }
+            }
+
+            // Check if path starts with any resource type prefix followed by dot
+            foreach (var resourceType in commonResourceTypes)
+            {
+                var prefix = resourceType + ".";
+                if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    return path.Substring(prefix.Length);
+                }
+            }
+
+            return path;
         }
 
         private bool DisplayMatches(string actual, string expected)

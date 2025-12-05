@@ -1,0 +1,292 @@
+{
+  "resourceType": "Bundle",
+  "type": "collection",
+  "entry": [
+
+    {
+      "fullUrl": "Patient/p1",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "p1",
+        "identifier": [
+          {
+            "system": "https://fhir.synapxe.sg/NamingSystem/nric",
+            "value": "S1234567A"
+          }
+        ],
+        "name": [
+          {
+            "family": "Tan",
+            "given": ["Ah Kow"]
+          }
+        ],
+        "gender": "male",
+        "birthDate": "1960-05-15",
+        "address": [
+          {
+            "line": ["123 Clementi Ave 3"],
+            "postalCode": "120123"
+          }
+        ],
+        "communication": [
+          {
+            "language": {
+              "coding": [
+                {
+                  "system": "urn:ietf:bcp:47",
+                  "code": "en"
+                }
+              ]
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "https://fhir.synapxe.sg/StructureDefinition/ext-ethnicity",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "https://fhir.synapxe.sg/CodeSystem/ethnicity",
+                  "code": "1"
+                }
+              ]
+            }
+          },
+          {
+            "url": "https://fhir.synapxe.sg/StructureDefinition/ext-residential-status",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "https://fhir.synapxe.sg/CodeSystem/residential-status",
+                  "code": "C"
+                }
+              ]
+            }
+          },
+          {
+            "url": "https://fhir.synapxe.sg/StructureDefinition/ext-subsidy",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "https://fhir.synapxe.sg/CodeSystem/subsidy",
+                  "code": "PG"
+                }
+              ]
+            }
+          },
+          {
+            "url": "https://fhir.synapxe.sg/StructureDefinition/ext-consent-for-sharing",
+            "valueBoolean": true
+          },
+          {
+            "url": "https://fhir.synapxe.sg/StructureDefinition/ext-grc",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "https://fhir.synapxe.sg/CodeSystem/grc",
+                  "code": "01"
+                }
+              ]
+            }
+          },
+          {
+            "url": "https://fhir.synapxe.sg/StructureDefinition/ext-constituency",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "https://fhir.synapxe.sg/CodeSystem/constituency",
+                  "code": "A"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+
+    {
+      "fullUrl": "Encounter/e1",
+      "resource": {
+        "resourceType": "Encounter",
+        "id": "e1",
+        "status": "completed",
+        "identifier": [
+          {
+            "system": "https://fhir.synapxe.sg/NamingSystem/event-id",
+            "value": "EVT123456"
+          }
+        ],
+        "period": {
+          "start": "2024-12-01T10:00:00+08:00"
+        }
+      }
+    },
+
+    {
+      "fullUrl": "HealthcareService/h1",
+      "resource": {
+        "resourceType": "HealthcareService",
+        "id": "h1",
+        "active": true,
+        "identifier": [
+          {
+            "system": "https://fhir.synapxe.sg/NamingSystem/screening-campaign",
+            "value": "SC-2024-01"
+          }
+        ],
+        "name": "Silver Screening Campaign 2024"
+      }
+    },
+
+    {
+      "fullUrl": "Location/l1",
+      "resource": {
+        "resourceType": "Location",
+        "id": "l1",
+        "address": {
+          "line": ["Jurong West Ave 5 Community Centre"],
+          "postalCode": "640123"
+        }
+      }
+    },
+
+    {
+      "fullUrl": "Organization/provider",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "org-prov",
+        "identifier": [
+          {
+            "system": "https://fhir.synapxe.sg/NamingSystem/hci-code",
+            "value": "HCI001"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "https://fhir.synapxe.sg/CodeSystem/organization-type",
+                "code": "PROVIDER"
+              }
+            ]
+          }
+        ],
+        "name": "ABC Polyclinic"
+      }
+    },
+
+    {
+      "fullUrl": "Organization/cluster",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "org-clu",
+        "identifier": [
+          {
+            "system": "https://fhir.synapxe.sg/NamingSystem/hci-code",
+            "value": "CLUST01"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "https://fhir.synapxe.sg/CodeSystem/organization-type",
+                "code": "CLUSTER"
+              }
+            ]
+          }
+        ],
+        "name": "Cluster West"
+      }
+    },
+
+    {
+      "fullUrl": "Observation/hs1",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "hs1",
+        "code": {
+          "coding": [
+            {
+              "system": "https://fhir.synapxe.sg/CodeSystem/screening-type",
+              "code": "HS"
+            }
+          ]
+        },
+        "component": [
+          { "code": { "coding": [{ "code": "SQ-L2H9-00000001", "display": "Is the participant currently wearing hearing aid(s)?" }] }, "valueString": "No (To continue with hearing screening)" },
+          { "code": { "coding": [{ "code": "SQ-Q1P1-00000002", "display": "Do participant need to change your hearing aid(s)?" }] }, "valueString": "No (To skip hearing screening and advise to continue follow up with audiologist)" },
+          { "code": { "coding": [{ "code": "SQ-R5W8-00000003", "display": "Did participant proceed with Hearing Screening?" }] }, "valueString": "Yes" },
+          { "code": { "coding": [{ "code": "SQ-P3C1-00000004", "display": "Background sound heard during Pure Tone Screening?" }] }, "valueString": "Minimal" },
+          { "code": { "coding": [{ "code": "SQ-Q8C5-00000005", "display": "Did participant understand Pure Tone instructions?" }] }, "valueString": "Yes" },
+          { "code": { "coding": [{ "code": "SQ-C5X5-00000006", "display": "Is participant attentive during Pure Tone Screening?" }] }, "valueString": "Yes" },
+          {
+            "code": { "coding": [{ "code": "SQ-F7B7-00000007", "display": "Pure Tone Screening (Multi-Value)" }] },
+            "valueString": "500Hz – R|1000Hz – R|2000Hz – R|4000Hz – R"
+          },
+          { "code": { "coding": [{ "code": "SQ-K4S3-00000008", "display": "Which ear did participant respond first?" }] }, "valueString": "Left" },
+          { "code": { "coding": [{ "code": "SQ-L8W3-00000009", "display": "Did participant respond immediately upon hearing tone?" }] }, "valueString": "Yes" },
+          { "code": { "coding": [{ "code": "SQ-S1C2-00000010", "display": "Did participant respond consistently during Pure Tone Screening?" }] }, "valueString": "Yes" },
+          { "code": { "coding": [{ "code": "SQ-M8Z2-00000011", "display": "Did participant pass Pure Tone Screening?" }] }, "valueString": "Yes" },
+          { "code": { "coding": [{ "code": "SQ-A8U2-00000012", "display": "Does the participant require refer to L2 Hearing?" }] }, "valueString": "No" },
+          { "code": { "coding": [{ "code": "SQ-Z2Y3-00000013", "display": "Does the participant agree to proceed to L2 Hearing?" }] }, "valueString": "No" }
+        ]
+      }
+    },
+
+    {
+      "fullUrl": "Observation/os1",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "os1",
+        "code": {
+          "coding": [
+            {
+              "system": "https://fhir.synapxe.sg/CodeSystem/screening-type",
+              "code": "OS"
+            }
+          ]
+        },
+        "component": [
+          { "code": { "coding": [{ "code": "SQ-J1V1-00000014" }] }, "valueString": "No" },
+          { "code": { "coding": [{ "code": "SQ-G4N3-00000015" }] }, "valueString": "Good" },
+          { "code": { "coding": [{ "code": "SQ-K0J4-00000016" }] }, "valueString": "No" },
+          { "code": { "coding": [{ "code": "SQ-P2C9-00000017" }] }, "valueString": "Healthy" },
+          { "code": { "coding": [{ "code": "SQ-Q7D5-00000018" }] }, "valueString": "Good" },
+          { "code": { "coding": [{ "code": "SQ-G8W2-00000019" }] }, "valueString": "No" },
+          { "code": { "coding": [{ "code": "SQ-J4C3-00000020" }] }, "valueString": "No" },
+          { "code": { "coding": [{ "code": "SQ-M0H3-00000021" }] }, "valueString": "No" },
+          { "code": { "coding": [{ "code": "SQ-B7S6-00000022" }] }, "valueString": "No" },
+          { "code": { "coding": [{ "code": "SQ-H2L5-00000023" }] }, "valueString": "No" }
+        ]
+      }
+    },
+
+    {
+      "fullUrl": "Observation/vs1",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "vs1",
+        "code": {
+          "coding": [
+            {
+              "system": "https://fhir.synapxe.sg/CodeSystem/screening-type",
+              "code": "VS"
+            }
+          ]
+        },
+        "component": [
+          { "code": { "coding": [{ "code": "SQ-V5W4-00000028" }] }, "valueString": "Yes" },
+          { "code": { "coding": [{ "code": "SQ-L4B8-00000029" }] }, "valueString": "Good" },
+          { "code": { "coding": [{ "code": "SQ-D1C3-00000030" }] }, "valueString": "Yes" },
+          { "code": { "coding": [{ "code": "SQ-F3D2-00000031" }] }, "valueString": "Yes" },
+          { "code": { "coding": [{ "code": "SQ-C2L4-00000032" }] }, "valueString": "20/20" },
+          { "code": { "coding": [{ "code": "SQ-G5C4-00000033" }] }, "valueString": "20/25" },
+          { "code": { "coding": [{ "code": "SQ-C4C4-00000034" }] }, "valueString": "No" },
+          { "code": { "coding": [{ "code": "SQ-T6W1-00000035" }] }, "valueString": "No" },
+          { "code": { "coding": [{ "code": "SQ-F1T3-00000036" }] }, "valueString": "No" }
+        ]
+      }
+    }
+  ]
+}

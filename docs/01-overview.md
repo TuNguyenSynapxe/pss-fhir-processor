@@ -8,7 +8,7 @@ Author: System Architecture (based on requirements by Tu Nguyen)
 
 # 1. Introduction
 
-The **PSS FHIR Processor** project provides a reusable, metadata-driven C# library (DLL) and a standalone WebApp playground for validating and extracting data from **put-screening** FHIR Bundle submissions for *Project Silver Screen (PSS)*.
+The **PSS FHIR Processor** project provides a reusable, metadata-driven C# library (DLL) and a modern web application for validating and extracting data from **put-screening** FHIR Bundle submissions for *Project Silver Screen (PSS)*.
 
 It ensures that all screening submissions follow:
 
@@ -21,7 +21,7 @@ It ensures that all screening submissions follow:
 This project is designed to operate inside:
 
 - CRM plugins (Dynamics 365)
-- WebApp test harness
+- Modern web applications
 - Batch/Scheduled processors
 - Integration middleware
 
@@ -98,30 +98,27 @@ Convert FHIR Bundle → **FlattenResult**
 
 ---
 
-## 3.2 WebApp Playground (MVC + Razor)
+## 3.2 Modern Web Application (.NET 8.0 + React)
 
-A standalone .NET Framework WebApp with no DB, featuring:
+A modern full-stack application featuring:
 
-### Playground Page
-- JSON editor
-- Validation option toggles
-- Output tabs:
-  - Validation
-  - Event
-  - Participant
-  - HearingRaw
-  - OralRaw
-  - VisionRaw
-  - Logs
+### Backend (.NET 8.0 Web API)
+- RESTful API endpoints
+- Swagger/OpenAPI documentation
+- Singleton service pattern
+- CORS-enabled for frontend
 
-### Test Suite Page
-- 40+ in-memory test cases
-- Happy cases
-- Failure cases
-- PureTone tests
-- Missing HS/OS/VS
-- Display mismatch
-- Conditional logic
+### Frontend (React + Vite + Ant Design + Tailwind CSS)
+- **Playground** - Interactive JSON editor with validation/extraction
+- **Validation Rules** - Display all configured rules and code systems
+- **Test Cases** - Run predefined test scenarios
+- **API Documentation** - Interactive API explorer
+
+### Features
+- Real-time validation
+- Modern responsive UI
+- Component-based architecture
+- Hot module replacement (HMR)
 
 ### All metadata in-memory
 - RuleSetSeed
@@ -136,7 +133,7 @@ A standalone .NET Framework WebApp with no DB, featuring:
 - Models
 - Validation engine
 - Extraction engine
-- WebApp design
+- Modern web application
 - Test suite
 - Sample bundles
 
@@ -146,9 +143,9 @@ A standalone .NET Framework WebApp with no DB, featuring:
 
 - No CRM model classes
 - No CRM save logic
-- No authentication for Playground
+- No authentication (for local development)
 - No database
-- No hosting sizing
+- No production hosting requirements
 
 ---
 
@@ -156,11 +153,12 @@ A standalone .NET Framework WebApp with no DB, featuring:
 
 | Layer | Technology |
 |------|------------|
-| Core DLL | C#, .NET Framework 4.7.2 |
-| WebApp | ASP.NET MVC + Razor |
+| Core DLL | C#, .NET 6.0 |
+| Backend API | .NET 8.0 Web API |
+| Frontend | React 19 + Vite + Ant Design 5 + Tailwind CSS |
 | Tests | MSTest / NUnit / xUnit |
 | JSON | Newtonsoft.Json |
-| UI | Basic Bootstrap + JS |
+| Build Tools | dotnet, npm, Vite |
 | Metadata | In-memory JSON |
 
 ---
@@ -196,7 +194,7 @@ FlattenResult is purely generic.
 # 7. Users
 
 - CRM Plugin Developers
-- WebApp/Integration Developers
+- Modern web developers (React/REST API)
 - QA engineers
 - Architects
 

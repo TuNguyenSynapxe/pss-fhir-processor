@@ -6,8 +6,7 @@ The PSS FHIR Processor is a metadata-driven engine that validates and extracts
 Healthier SG (HSG) screening submissions (HS/OS/VS) in FHIR Bundle format.
 It includes:
 - Standalone DLL (Validation + Extraction Engines)
-- ASP.NET MVC Playground WebApp
-- Public API (POC)
+- Modern .NET 8.0 Web API + React Frontend
 - Unit Test Suite
 - Metadata RuleSets + Codes Master
 - Comprehensive documentation
@@ -21,22 +20,34 @@ It includes:
 - No CRM or DB dependencies
 
 ## 3. Components
-- **Pss.FhirProcessor** — Core DLL
-- **WebApp** — Interactive Playground
-- **Public API**
+- **Pss.FhirProcessor** — Core DLL (.NET 6.0)
+- **Pss.FhirProcessor.NetCore** — Modern Web Stack
+  - Backend: .NET 8.0 Web API
+  - Frontend: React + Vite + Ant Design + Tailwind CSS
 - **Unit Tests**
 - **Metadata** — JSON rule definitions
 
 ## 4. Documentation
 Located under `/docs`.
 
-## 5. WebApp Playground
-Access:
-```
-/Playground
-```
+## 5. Getting Started
 
-## 6. Public API Endpoints
+### Backend
+```bash
+cd src/Pss.FhirProcessor.NetCore/Backend
+dotnet run
+```
+API runs on `http://localhost:5000`
+
+### Frontend
+```bash
+cd src/Pss.FhirProcessor.NetCore/Frontend
+npm install
+npm run dev
+```
+Frontend runs on `http://localhost:5174`
+
+## 6. API Endpoints
 ```
 POST /api/fhir/validate
 POST /api/fhir/process

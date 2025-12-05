@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Flattened;
+using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Fhir;
 
 namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation
 {
@@ -11,6 +12,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation
         public ValidationResult Validation { get; set; }
         public FlattenResult Flatten { get; set; }
         public List<string> Logs { get; set; }
+        public Bundle OriginalBundle { get; set; }
 
         public ProcessResult()
         {

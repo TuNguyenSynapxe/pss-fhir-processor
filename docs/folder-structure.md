@@ -13,14 +13,24 @@ PSS-FhirProcessor/
 │   │   ├── Utilities/
 │   │   └── Pss.FhirProcessor.csproj
 │   │
-│   ├── Pss.FhirProcessor.WebApp/
-│   │   ├── Controllers/
-│   │   ├── Views/
-│   │   ├── Api/
-│   │   ├── Seed/
-│   │   ├── Scripts/
-│   │   ├── Content/
-│   │   └── Web.config
+│   ├── Pss.FhirProcessor.NetCore/
+│   │   ├── Backend/
+│   │   │   ├── Controllers/
+│   │   │   ├── Services/
+│   │   │   ├── Seed/
+│   │   │   ├── Program.cs
+│   │   │   └── Pss.FhirProcessor.Api.csproj
+│   │   │
+│   │   └── Frontend/
+│   │       ├── src/
+│   │       │   ├── components/
+│   │       │   ├── services/
+│   │       │   ├── App.jsx
+│   │       │   └── main.jsx
+│   │       ├── public/
+│   │       ├── index.html
+│   │       ├── package.json
+│   │       └── vite.config.js
 │   │
 │   └── Pss.FhirProcessor.Tests/
 │       ├── Validation/

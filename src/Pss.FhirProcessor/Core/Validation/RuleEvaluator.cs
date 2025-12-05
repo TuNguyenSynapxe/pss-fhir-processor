@@ -1,0 +1,430 @@
+using System;
+using System.Linq;
+using Newtonsoft.Json.Linq;
+using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata;
+using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path;
+using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Utilities;
+
+namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
+{
+    /// <summary>
+    /// Evaluates validation rules against FHIR resources
+    /// </summary>
+    public static class RuleEvaluator
+    {
+        /// <summary>
+        /// Apply a single rule to a resource
+        /// </summary>
+        public static void ApplyRule(JObject resource, RuleDefinition rule, string scope, 
+            CodesMaster codesMaster, ValidationResult result, Logger logger = null)
+        {
+            logger?.Verbose($"    Evaluating rule: [{rule.RuleType}] {rule.Path}");
+            
+            switch (rule.RuleType)
+            {
+                case "Required":
+                    EvaluateRequired(resource, rule, scope, result, logger);
+                    break;
+
+                case "FixedValue":
+                    EvaluateFixedValue(resource, rule, scope, result, logger);
+                    break;
+
+                case "FixedCoding":
+                    EvaluateFixedCoding(resource, rule, scope, result, logger);
+                    break;
+
+                case "CodesMaster":
+                    EvaluateCodesMaster(resource, rule, scope, codesMaster, result, logger);
+                    break;
+
+                default:
+                    logger?.Warn($"    Unknown rule type: {rule.RuleType}");
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Required rule: Path must exist and have a value
+        /// </summary>
+        private static void EvaluateRequired(JObject resource, RuleDefinition rule, string scope, 
+            ValidationResult result, Logger logger)
+        {
+            logger?.Verbose($"      → Resolving path: {rule.Path}");
+            var values = CpsPathResolver.Resolve(resource, rule.Path);
+            logger?.Verbose($"      → Found {values.Count} value(s)");
+
+            if (values.Count == 0)
+            {
+                logger?.Verbose($"      ✗ Path not found in resource");
+                logger?.Verbose($"      Resource JSON: {resource.ToString(Newtonsoft.Json.Formatting.None).Substring(0, Math.Min(300, resource.ToString().Length))}...");
+                
+                var detailedMessage = $"{rule.Message} | Path '{rule.Path}' not found in {scope} resource. Checked path: {rule.Path}";
+                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope);
+                return;
+            }
+
+            // Check if any value is non-empty
+            bool hasValue = false;
+            foreach (var value in values)
+            {
+                logger?.Verbose($"      → Checking value: {value?.ToString()?.Substring(0, Math.Min(100, value?.ToString()?.Length ?? 0))}");
+                if (value != null && !string.IsNullOrWhiteSpace(value.ToString()))
+                {
+                    hasValue = true;
+                    logger?.Verbose($"      ✓ Valid non-empty value found");
+                    break;
+                }
+            }
+
+            if (!hasValue)
+            {
+                logger?.Verbose($"      ✗ Path found but all values are empty or null");
+                var actualValues = string.Join(", ", values.Select(v => $"'{v}'"));
+                var detailedMessage = $"{rule.Message} | Path '{rule.Path}' found but value is empty or null. Actual values: [{actualValues}]";
+                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope);
+            }
+            else
+            {
+                logger?.Verbose($"      ✓ Required field validation passed");
+            }
+        }
+
+        /// <summary>
+        /// FixedValue rule: Path must exist and equal expected value
+        /// </summary>
+        private static void EvaluateFixedValue(JObject resource, RuleDefinition rule, string scope, 
+            ValidationResult result, Logger logger)
+        {
+            logger?.Verbose($"      → Resolving path: {rule.Path}");
+            logger?.Verbose($"      → Expected value: '{rule.ExpectedValue}'");
+            var values = CpsPathResolver.Resolve(resource, rule.Path);
+            logger?.Verbose($"      → Found {values.Count} value(s)");
+
+            if (values.Count == 0)
+            {
+                logger?.Verbose($"      ✗ Path not found");
+                var detailedMessage = $"{rule.Message} | Path '{rule.Path}' not found. Expected value: '{rule.ExpectedValue}'";
+                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope);
+                return;
+            }
+
+            // Check if any value matches the expected value
+            bool matchFound = false;
+            foreach (var value in values)
+            {
+                var actualValue = value.ToString();
+                logger?.Verbose($"      → Comparing: '{actualValue}' == '{rule.ExpectedValue}' (case-insensitive)");
+                
+                // Case-insensitive comparison for booleans (True/true, False/false)
+                if (string.Equals(actualValue, rule.ExpectedValue, StringComparison.OrdinalIgnoreCase))
+                {
+                    matchFound = true;
+                    logger?.Verbose($"      ✓ Match found!");
+                    break;
+                }
+            }
+
+            if (!matchFound)
+            {
+                logger?.Verbose($"      ✗ No matching value found");
+                var actualValues = string.Join(", ", values.Select(v => $"'{v}'"));
+                var detailedMessage = (rule.Message ?? $"Value mismatch at path '{rule.Path}'") + 
+                    $" | Expected: '{rule.ExpectedValue}', Actual: [{actualValues}]";
+                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope);
+            }
+            else
+            {
+                logger?.Verbose($"      ✓ Fixed value validation passed");
+            }
+        }
+
+        /// <summary>
+        /// FixedCoding rule: Coding must match expected system and code
+        /// </summary>
+        private static void EvaluateFixedCoding(JObject resource, RuleDefinition rule, string scope, 
+            ValidationResult result, Logger logger)
+        {
+            logger?.Verbose($"      → Resolving path: {rule.Path}");
+            logger?.Verbose($"      → Expected: system='{rule.ExpectedSystem}', code='{rule.ExpectedCode}'");
+            var values = CpsPathResolver.Resolve(resource, rule.Path);
+            logger?.Verbose($"      → Found {values.Count} value(s)");
+
+            if (values.Count == 0)
+            {
+                logger?.Verbose($"      ✗ Path not found");
+                var detailedMessage = $"{rule.Message} | Path '{rule.Path}' not found. Expected coding: system='{rule.ExpectedSystem}', code='{rule.ExpectedCode}'";
+                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope);
+                return;
+            }
+
+            // Check if any coding matches the expected system and code
+            bool matchFound = false;
+            var actualCodings = new System.Collections.Generic.List<string>();
+            
+            foreach (var value in values)
+            {
+                if (value.Type == JTokenType.Object)
+                {
+                    var coding = (JObject)value;
+                    var system = coding["system"]?.ToString();
+                    var code = coding["code"]?.ToString();
+                    
+                    actualCodings.Add($"system='{system}', code='{code}'");
+                    logger?.Verbose($"      → Checking coding: system='{system}', code='{code}'");
+
+                    if (system == rule.ExpectedSystem && code == rule.ExpectedCode)
+                    {
+                        matchFound = true;
+                        logger?.Verbose($"      ✓ Matching coding found!");
+                        break;
+                    }
+                }
+            }
+
+            if (!matchFound)
+            {
+                logger?.Verbose($"      ✗ No matching coding found");
+                var actualCodingsStr = actualCodings.Count > 0 
+                    ? string.Join("; ", actualCodings) 
+                    : "none";
+                var detailedMessage = (rule.Message ?? $"Coding mismatch at path '{rule.Path}'") + 
+                    $" | Expected: system='{rule.ExpectedSystem}', code='{rule.ExpectedCode}' | Actual: [{actualCodingsStr}]";
+                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope);
+            }
+            else
+            {
+                logger?.Verbose($"      ✓ Fixed coding validation passed");
+            }
+        }
+
+        /// <summary>
+        /// CodesMaster rule: Validate against question's allowed answers
+        /// Supports two modes:
+        /// 1. Single question validation (ExpectedValue contains question code)
+        /// 2. Component array validation (Path is component[*], validates all components dynamically)
+        /// </summary>
+        private static void EvaluateCodesMaster(JObject resource, RuleDefinition rule, string scope, 
+            CodesMaster codesMaster, ValidationResult result, Logger logger)
+        {
+            if (codesMaster == null || codesMaster.Questions == null)
+            {
+                logger?.Verbose($"      ✗ CodesMaster metadata not available");
+                result.AddError(rule.ErrorCode, rule.Path, 
+                    "CodesMaster metadata not available", scope);
+                return;
+            }
+
+            // Check if this is a component[*] validation (dynamic mode)
+            if (rule.Path.Contains("component[*]"))
+            {
+                logger?.Verbose($"      → CodesMaster: Dynamic component validation mode");
+                EvaluateCodesMasterComponents(resource, rule, scope, codesMaster, result, logger);
+                return;
+            }
+
+            // Single question validation mode (legacy)
+            var questionCode = rule.ExpectedValue;
+            if (string.IsNullOrEmpty(questionCode))
+            {
+                logger?.Verbose($"      ✗ Question code is missing in rule");
+                result.AddError(rule.ErrorCode, rule.Path, 
+                    "CodesMaster rule missing question code", scope);
+                return;
+            }
+
+            logger?.Verbose($"      → CodesMaster: Single question validation for '{questionCode}'");
+
+            // Find question in CodesMaster
+            var question = codesMaster.Questions.FirstOrDefault(q => q.QuestionCode == questionCode);
+            if (question == null)
+            {
+                logger?.Verbose($"      ✗ Question '{questionCode}' not found in CodesMaster");
+                result.AddError(rule.ErrorCode, rule.Path, 
+                    $"Question code '{questionCode}' not found in CodesMaster", scope);
+                return;
+            }
+
+            logger?.Verbose($"      → Allowed answers: {string.Join(", ", question.AllowedAnswers.Select(a => $"'{a}'"))}");
+
+            // Get answer values from resource
+            var answerValues = CpsPathResolver.GetValuesAsStrings(resource, rule.Path);
+            logger?.Verbose($"      → Found {answerValues.Count} answer(s)");
+
+            if (answerValues.Count == 0)
+            {
+                logger?.Verbose($"      ✗ No answer found");
+                result.AddError(rule.ErrorCode, rule.Path, 
+                    rule.Message ?? $"No answer found for question '{questionCode}'", scope);
+                return;
+            }
+
+            // Validate each answer
+            foreach (var answer in answerValues)
+            {
+                if (!question.AllowedAnswers.Contains(answer))
+                {
+                    logger?.Verbose($"      ✗ '{answer}' is NOT allowed");
+                    var allowedStr = string.Join(", ", question.AllowedAnswers.Select(a => $"'{a}'"));
+                    result.AddError(rule.ErrorCode, rule.Path, 
+                        $"Invalid answer '{answer}' for question '{questionCode}' | Allowed: [{allowedStr}]", scope);
+                }
+                else
+                {
+                    logger?.Verbose($"      ✓ '{answer}' is valid");
+                }
+            }
+
+            // Check multi-value constraint
+            if (!question.IsMultiValue && answerValues.Count > 1)
+            {
+                logger?.Verbose($"      ✗ Multiple answers not allowed");
+                result.AddError(rule.ErrorCode, rule.Path, 
+                    $"Question '{questionCode}' does not allow multiple answers", scope);
+            }
+        }
+
+        /// <summary>
+        /// Validate all components in an Observation against CodesMaster
+        /// Each component has: code.coding[0].code (question) and valueString (answer)
+        /// </summary>
+        private static void EvaluateCodesMasterComponents(JObject resource, RuleDefinition rule, string scope,
+            CodesMaster codesMaster, ValidationResult result, Logger logger)
+        {
+            logger?.Info($"    → CodesMaster: Starting component validation for {scope}");
+            
+            // Get the component array from the resource
+            var componentArray = resource["component"] as JArray;
+            
+            if (componentArray == null || componentArray.Count == 0)
+            {
+                logger?.Info($"    → CodesMaster: No components found to validate");
+                return;
+            }
+
+            logger?.Info($"    → CodesMaster: Validating {componentArray.Count} component(s)");
+
+            int componentIndex = 0;
+            foreach (var component in componentArray)
+            {
+                componentIndex++;
+                
+                if (component.Type != JTokenType.Object)
+                {
+                    logger?.Verbose($"      Component #{componentIndex}: Not an object, skipping");
+                    continue;
+                }
+
+                var componentObj = (JObject)component;
+
+                // Extract question code from code.coding[0].code
+                var questionCode = CpsPathResolver.GetValueAsString(componentObj, "code.coding[0].code");
+                
+                if (string.IsNullOrEmpty(questionCode))
+                {
+                    logger?.Verbose($"      Component #{componentIndex}: ✗ No question code found");
+                    result.AddError(rule.ErrorCode, $"component[{componentIndex - 1}].code.coding.code", 
+                        "Component missing question code", scope);
+                    continue;
+                }
+
+                logger?.Verbose($"      Component #{componentIndex}: Question '{questionCode}'");
+
+                // Find question in CodesMaster
+                var question = codesMaster.Questions.FirstOrDefault(q => q.QuestionCode == questionCode);
+                
+                if (question == null)
+                {
+                    logger?.Info($"    ✗ Component #{componentIndex}: Question '{questionCode}' NOT FOUND in CodesMaster");
+                    logger?.Verbose($"        ✗ Question '{questionCode}' not found in CodesMaster");
+                    result.AddError(rule.ErrorCode, $"component[{componentIndex - 1}].code.coding.code", 
+                        $"Unknown question code '{questionCode}'", scope);
+                    continue;
+                }
+
+                logger?.Verbose($"        Expected display: '{question.QuestionDisplay}'");
+                logger?.Verbose($"        Allowed answers: {string.Join(", ", question.AllowedAnswers.Select(a => $"'{a}'"))}");
+                logger?.Verbose($"        Multi-value: {question.IsMultiValue}");
+
+                // Validate display field matches expected QuestionDisplay
+                var actualDisplay = CpsPathResolver.GetValueAsString(componentObj, "code.coding[0].display");
+                
+                if (!string.IsNullOrEmpty(actualDisplay))
+                {
+                    logger?.Verbose($"        Actual display: '{actualDisplay}'");
+                    
+                    if (actualDisplay != question.QuestionDisplay)
+                    {
+                        logger?.Info($"    ✗ Component #{componentIndex}: Display mismatch - Expected: '{question.QuestionDisplay}', Actual: '{actualDisplay}'");
+                        logger?.Verbose($"        ✗ Display text mismatch");
+                        result.AddError(rule.ErrorCode, $"component[{componentIndex - 1}].code.coding.display",
+                            $"Question display mismatch for '{questionCode}' | Expected: '{question.QuestionDisplay}' | Actual: '{actualDisplay}'", scope);
+                    }
+                    else
+                    {
+                        logger?.Verbose($"        ✓ Display text matches");
+                    }
+                }
+                else
+                {
+                    logger?.Verbose($"        ⚠ Display field is empty (optional validation skipped)");
+                }
+
+                // Extract answer from valueString
+                var answerValue = CpsPathResolver.GetValueAsString(componentObj, "valueString");
+                
+                if (string.IsNullOrEmpty(answerValue))
+                {
+                    logger?.Verbose($"        ✗ No answer (valueString) found");
+                    result.AddError(rule.ErrorCode, $"component[{componentIndex - 1}].valueString", 
+                        $"Component with question '{questionCode}' missing answer", scope);
+                    continue;
+                }
+
+                logger?.Verbose($"        Answer: '{answerValue}'");
+
+                // Check if multi-value answer (pipe-separated)
+                var answers = answerValue.Split('|').Select(a => a.Trim()).ToList();
+                
+                if (answers.Count > 1)
+                {
+                    logger?.Verbose($"        → Multi-value answer detected: {answers.Count} values");
+                    
+                    if (!question.IsMultiValue)
+                    {
+                        logger?.Verbose($"        ✗ Multiple answers not allowed for this question");
+                        result.AddError(rule.ErrorCode, $"component[{componentIndex - 1}].valueString",
+                            $"Question '{questionCode}' does not allow multiple answers | Found: {answers.Count} values", scope);
+                        continue;
+                    }
+                }
+
+                // Validate each answer
+                bool allValid = true;
+                foreach (var answer in answers)
+                {
+                    if (!question.AllowedAnswers.Contains(answer))
+                    {
+                        logger?.Info($"    ✗ Component #{componentIndex}: Invalid answer '{answer}' for question '{questionCode}'");
+                        logger?.Verbose($"        ✗ Answer '{answer}' is NOT in allowed list");
+                        allValid = false;
+                        var allowedStr = string.Join(", ", question.AllowedAnswers.Select(a => $"'{a}'"));
+                        result.AddError(rule.ErrorCode, $"component[{componentIndex - 1}].valueString",
+                            $"Invalid answer '{answer}' for question '{questionCode}' | Allowed: [{allowedStr}]", scope);
+                    }
+                    else
+                    {
+                        logger?.Verbose($"        ✓ Answer '{answer}' is valid");
+                    }
+                }
+
+                if (allValid)
+                {
+                    logger?.Verbose($"      Component #{componentIndex}: ✓ All validations passed");
+                }
+            }
+
+            logger?.Verbose($"      → Completed validation of {componentIndex} component(s)");
+        }
+    }
+}

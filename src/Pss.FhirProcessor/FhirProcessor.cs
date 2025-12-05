@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Extraction;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Fhir;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation;
@@ -71,17 +72,33 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor
             logger.Info("========================================");
             logger.Info($"Timestamp: {System.DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
             logger.Info($"Log Level: {_loggingOptions.LogLevel}");
-            logger.Info($"Input JSON length: {fhirJson?.Length ?? 0} characters");
+            logger.Debug($"Input JSON length: {fhirJson?.Length ?? 0} characters");
+            logger.Verbose($"Input JSON preview: {(fhirJson?.Length > 200 ? fhirJson.Substring(0, 200) + "..." : fhirJson)}");
 
             // Deserialize
             logger.Info("\n--- STEP 1: Deserializing FHIR Bundle ---");
+            logger.Debug("Attempting to parse JSON into Bundle object...");
             Bundle bundle = null;
             try
             {
                 bundle = JsonHelper.Deserialize<Bundle>(fhirJson);
                 logger.Info("✓ Bundle deserialized successfully");
-                logger.Info($"  Resource Type: {bundle?.ResourceType}");
-                logger.Info($"  Entry Count: {bundle?.Entry?.Count ?? 0}");
+                logger.Debug($"  Resource Type: {bundle?.ResourceType}");
+                logger.Debug($"  Entry Count: {bundle?.Entry?.Count ?? 0}");
+                
+                if (bundle?.Entry != null)
+                {
+                    logger.Verbose("  Entry breakdown:");
+                    var resourceTypes = bundle.Entry
+                        .Where(e => e.Resource?.ResourceType != null)
+                        .GroupBy(e => e.Resource.ResourceType)
+                        .ToDictionary(g => g.Key, g => g.Count());
+                    
+                    foreach (var rt in resourceTypes)
+                    {
+                        logger.Verbose($"    - {rt.Key}: {rt.Value}");
+                    }
+                }
             }
             catch (System.Exception ex)
             {
@@ -104,51 +121,76 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor
                 return result;
             }
 
+            // Store original bundle
+            result.OriginalBundle = bundle;
+
             // Validate
             logger.Info("\n--- STEP 2: Validation Phase ---");
+            logger.Debug("Starting validation engine...");
             _validationEngine.SetLogger(logger);
             result.Validation = _validationEngine.Validate(bundle);
             logger.Info($"Validation Result: {(result.Validation.IsValid ? "✓ VALID" : "✗ INVALID")}");
             logger.Info($"Total Errors: {result.Validation.Errors.Count}");
+            
             if (result.Validation.Errors.Count > 0)
             {
-                logger.Info("Validation Errors:");
-                for (int i = 0; i < result.Validation.Errors.Count && i < 10; i++)
+                logger.Debug("Validation Errors:");
+                int displayCount = result.Validation.Errors.Count > 10 ? 10 : result.Validation.Errors.Count;
+                
+                for (int i = 0; i < displayCount; i++)
                 {
                     var err = result.Validation.Errors[i];
-                    logger.Info($"  {i+1}. [{err.Code}] {err.FieldPath}: {err.Message}");
+                    logger.Debug($"  {i+1}. [{err.Code}] {err.FieldPath}: {err.Message}");
+                    logger.Verbose($"      Scope: {err.Scope}");
                 }
+                
                 if (result.Validation.Errors.Count > 10)
                 {
-                    logger.Info($"  ... and {result.Validation.Errors.Count - 10} more errors");
+                    logger.Debug($"  ... and {result.Validation.Errors.Count - 10} more errors");
                 }
             }
 
             // Always extract (even if validation fails)
             logger.Info("\n--- STEP 3: Extraction Phase ---");
+            logger.Debug("Starting extraction engine...");
             _extractionEngine.SetLogger(logger);
             result.Flatten = _extractionEngine.Extract(bundle);
             logger.Info($"Extraction Result: {(result.Flatten != null ? "✓ SUCCESS" : "✗ FAILED")}");
+            
             if (result.Flatten != null)
             {
-                logger.Info($"  Event Data: {(result.Flatten.Event != null ? "✓" : "✗")}");
-                logger.Info($"  Participant Data: {(result.Flatten.Participant != null ? "✓" : "✗")}");
-                logger.Info($"  Hearing Screening: {result.Flatten.HearingRaw?.Items?.Count ?? 0} items");
-                logger.Info($"  Oral Screening: {result.Flatten.OralRaw?.Items?.Count ?? 0} items");
-                logger.Info($"  Vision Screening: {result.Flatten.VisionRaw?.Items?.Count ?? 0} items");
+                logger.Debug($"  Event Data: {(result.Flatten.Event != null ? "✓" : "✗")}");
+                logger.Debug($"  Participant Data: {(result.Flatten.Participant != null ? "✓" : "✗")}");
+                logger.Debug($"  Hearing Screening: {result.Flatten.HearingRaw?.Items?.Count ?? 0} items");
+                logger.Debug($"  Oral Screening: {result.Flatten.OralRaw?.Items?.Count ?? 0} items");
+                logger.Debug($"  Vision Screening: {result.Flatten.VisionRaw?.Items?.Count ?? 0} items");
+                
+                logger.Verbose("Extraction details:");
+                if (result.Flatten.Event != null)
+                {
+                    logger.Verbose($"  Event Start: {result.Flatten.Event.Start}");
+                    logger.Verbose($"  Event End: {result.Flatten.Event.End}");
+                    logger.Verbose($"  Venue: {result.Flatten.Event.VenueName}");
+                    logger.Verbose($"  Provider: {result.Flatten.Event.ProviderName}");
+                }
+                if (result.Flatten.Participant != null)
+                {
+                    logger.Verbose($"  Participant NRIC: {result.Flatten.Participant.Nric}");
+                    logger.Verbose($"  Participant Name: {result.Flatten.Participant.Name}");
+                }
             }
             
             // Summary
             logger.Info("\n--- STEP 4: Processing Summary ---");
             if (!result.Validation.IsValid)
             {
-                logger.Info($"⚠ Validation failed with {result.Validation.Errors.Count} error(s), but extraction completed");
+                logger.Warn($"⚠ Validation failed with {result.Validation.Errors.Count} error(s), but extraction completed");
             }
             else
             {
                 logger.Info("✓ Validation passed");
             }
-            logger.Info($"Total log entries: {logger.GetLogs().Count}");
+            logger.Debug($"Total log entries: {logger.GetLogs().Count}");
             logger.Info("========================================");
             logger.Info("FHIR Processing Completed");
             logger.Info("========================================\n");
