@@ -16,5 +16,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation
         public string If { get; set; }
         public string Then { get; set; }
         public string WhenValue { get; set; }
+        public string ExpectedType { get; set; }
+        public string Pattern { get; set; }
     }
 }

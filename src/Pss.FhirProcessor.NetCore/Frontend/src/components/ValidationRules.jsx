@@ -115,98 +115,34 @@ function ValidationRules() {
       <Card title="📋 Validation Rule Sets" className="shadow-md" extra={<MetadataEditor />}>
         <Tabs 
           defaultActiveKey={ruleSets[0]?.Scope || "Patient"}
-          items={[
-            ...ruleSets.map((ruleSet) => {
-              return {
-                key: ruleSet.Scope,
-                label: (
-                  <span>
-                    <CheckCircleOutlined /> {ruleSet.Scope}
-                  </span>
-                ),
-                children: (
-                  <>
-                    <Alert
-                      message={`${ruleSet.Scope} Scope`}
-                      description={`Total Rules: ${ruleSet.Rules.length}`}
-                      type="success"
-                      showIcon
-                      className="mb-4"
-                    />
-                    <Table
-                      columns={ruleColumns}
-                      dataSource={ruleSet.Rules}
-                      rowKey={(record, index) => `${ruleSet.Scope}-${index}`}
-                      pagination={false}
-                      size="small"
-                    />
-                  </>
-                )
-              };
-            }),
-            {
-              key: 'CodeSystems',
+          items={ruleSets.map((ruleSet) => {
+            return {
+              key: ruleSet.Scope,
               label: (
                 <span>
-                  🏷️ Code Systems
+                  <CheckCircleOutlined /> {ruleSet.Scope}
                 </span>
               ),
-              children: codesMaster?.CodeSystems ? (
+              children: (
                 <>
                   <Alert
-                    message="FHIR Code Systems"
-                    description={`Total Code Systems: ${codesMaster.CodeSystems.length}`}
-                    type="info"
+                    message={`${ruleSet.Scope} Scope`}
+                    description={`Total Rules: ${ruleSet.Rules.length}`}
+                    type="success"
                     showIcon
                     className="mb-4"
                   />
-                  
-                  {codesMaster.CodeSystems.map((codeSystem) => (
-                    <Card 
-                      key={codeSystem.Id} 
-                      type="inner" 
-                      title={
-                        <span>
-                          <Tag color="purple">{codeSystem.Id}</Tag>
-                          {codeSystem.Description}
-                        </span>
-                      }
-                      className="mb-4"
-                    >
-                      <div className="mb-2">
-                        <strong>System URI:</strong>{' '}
-                        <code className="bg-gray-100 px-2 py-1 rounded text-sm">{codeSystem.System}</code>
-                      </div>
-                      <div>
-                        <strong>Concepts:</strong>
-                        <Table
-                          columns={[
-                            {
-                              title: 'Code',
-                              dataIndex: 'Code',
-                              key: 'code',
-                              render: (code) => <Tag color="blue">{code}</Tag>
-                            },
-                            {
-                              title: 'Display',
-                              dataIndex: 'Display',
-                              key: 'display'
-                            }
-                          ]}
-                          dataSource={codeSystem.Concepts || []}
-                          rowKey="Code"
-                          pagination={false}
-                          size="small"
-                        />
-                      </div>
-                    </Card>
-                  ))}
+                  <Table
+                    columns={ruleColumns}
+                    dataSource={ruleSet.Rules}
+                    rowKey={(record, index) => `${ruleSet.Scope}-${index}`}
+                    pagination={false}
+                    size="small"
+                  />
                 </>
-              ) : (
-                <Alert message="No Code Systems available" type="warning" />
               )
-            }
-          ]}
+            };
+          })}
         />
       </Card>
 
@@ -249,6 +185,59 @@ function ValidationRules() {
               />
             </Panel>
           </Collapse>
+        </Card>
+      )}
+
+      {codesMaster?.CodeSystems && (
+        <Card title="🏷️ Code Systems" className="shadow-md">
+          <Alert
+            message="FHIR Code Systems"
+            description={`Total Code Systems: ${codesMaster.CodeSystems.length}`}
+            type="info"
+            showIcon
+            className="mb-4"
+          />
+          
+          {codesMaster.CodeSystems.map((codeSystem) => (
+            <Card 
+              key={codeSystem.Id} 
+              type="inner" 
+              title={
+                <span>
+                  <Tag color="purple">{codeSystem.Id}</Tag>
+                  {codeSystem.Description}
+                </span>
+              }
+              className="mb-4"
+            >
+              <div className="mb-2">
+                <strong>System URI:</strong>{' '}
+                <code className="bg-gray-100 px-2 py-1 rounded text-sm">{codeSystem.System}</code>
+              </div>
+              <div>
+                <strong>Concepts:</strong>
+                <Table
+                  columns={[
+                    {
+                      title: 'Code',
+                      dataIndex: 'Code',
+                      key: 'code',
+                      render: (code) => <Tag color="blue">{code}</Tag>
+                    },
+                    {
+                      title: 'Display',
+                      dataIndex: 'Display',
+                      key: 'display'
+                    }
+                  ]}
+                  dataSource={codeSystem.Concepts || []}
+                  rowKey="Code"
+                  pagination={false}
+                  size="small"
+                />
+              </div>
+            </Card>
+          ))}
         </Card>
       )}
 

@@ -1,0 +1,654 @@
+{
+  "resourceType": "Bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "fullUrl": "Patient/p1",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "p1",
+        "identifier": [
+          {
+            "system": "https://fhir.synapxe.sg/NamingSystem/nric",
+            "value": "S1234567A"
+          }
+        ],
+        "name": [
+          {
+            "family": "Tan",
+            "given": [
+              "Ah Kow"
+            ],
+            "text": "Mr Tan Ah Kow"
+          }
+        ],
+        "gender": "male",
+        "birthDate": "1960-05-15",
+        "address": [
+          {
+            "line": [
+              "123 Clementi Ave 3"
+            ],
+            "postalCode": "120123"
+          }
+        ],
+        "communication": [
+          {
+            "language": {
+              "coding": [
+                {
+                  "system": "urn:ietf:bcp:47",
+                  "code": "en"
+                }
+              ]
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "https://fhir.synapxe.sg/StructureDefinition/ext-ethnicity",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "https://fhir.synapxe.sg/CodeSystem/ethnicity",
+                  "code": "1"
+                }
+              ]
+            }
+          },
+          {
+            "url": "https://fhir.synapxe.sg/StructureDefinition/ext-residential-status",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "https://fhir.synapxe.sg/CodeSystem/residential-status",
+                  "code": "C"
+                }
+              ]
+            }
+          },
+          {
+            "url": "https://fhir.synapxe.sg/StructureDefinition/ext-subsidy",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "https://fhir.synapxe.sg/CodeSystem/subsidy",
+                  "code": "PG"
+                }
+              ]
+            }
+          },
+          {
+            "url": "https://fhir.synapxe.sg/StructureDefinition/ext-consent-for-sharing",
+            "valueBoolean": true
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "Encounter/e1",
+      "resource": {
+        "resourceType": "Encounter",
+        "id": "e1",
+        "status": "completed",
+        "identifier": [
+          {
+            "system": "https://fhir.synapxe.sg/NamingSystem/event-id",
+            "value": "EVT123456"
+          }
+        ],
+        "actualPeriod": {
+          "start": "2024-12-01T10:00:00+08:00",
+          "end": "2024-12-01T11:30:00+08:00"
+        }
+      }
+    },
+    {
+      "fullUrl": "HealthcareService/h1",
+      "resource": {
+        "resourceType": "HealthcareService",
+        "id": "h1",
+        "active": true,
+        "identifier": [
+          {
+            "system": "https://fhir.synapxe.sg/NamingSystem/screening-campaign",
+            "value": "SC-2024-01"
+          }
+        ],
+        "name": "Silver Screening Campaign 2024"
+      }
+    },
+    {
+      "fullUrl": "Location/l1",
+      "resource": {
+        "resourceType": "Location",
+        "id": "l1",
+        "address": {
+          "line": [
+            "Jurong West Ave 5 Community Centre"
+          ],
+          "postalCode": "640123"
+        },
+        "extension": [
+          {
+            "url": "https://fhir.synapxe.sg/StructureDefinition/ext-grc",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "https://fhir.synapxe.sg/CodeSystem/grc",
+                  "code": "01"
+                }
+              ]
+            }
+          },
+          {
+            "url": "https://fhir.synapxe.sg/StructureDefinition/ext-constituency",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "https://fhir.synapxe.sg/CodeSystem/constituency",
+                  "code": "A"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "Organization/provider",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "org-prov",
+        "identifier": [
+          {
+            "system": "https://fhir.synapxe.sg/NamingSystem/hci-code",
+            "value": "HCI001"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "https://fhir.synapxe.sg/CodeSystem/organization-type",
+                "code": "PROVIDER"
+              }
+            ]
+          }
+        ],
+        "name": "ABC Polyclinic"
+      }
+    },
+    {
+      "fullUrl": "Organization/cluster",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "org-clu",
+        "identifier": [
+          {
+            "system": "https://fhir.synapxe.sg/NamingSystem/hci-code",
+            "value": "CLUST01"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "https://fhir.synapxe.sg/CodeSystem/organization-type",
+                "code": "CLUSTER"
+              }
+            ]
+          }
+        ],
+        "name": "Cluster West"
+      }
+    },
+    {
+      "fullUrl": "Observation/hs1",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "hs1",
+        "code": {
+          "coding": [
+            {
+              "system": "https://fhir.synapxe.sg/CodeSystem/screening-type",
+              "code": "HS"
+            }
+          ]
+        },
+        "component": [
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-L2H9-00000001",
+                  "display": "Is the participant currently wearing hearing aid(s)?"
+                }
+              ]
+            },
+            "valueString": "Yes (Proceed to next question)"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-Q1P1-00000002",
+                  "display": "Do participant need to change your hearing aid(s)?"
+                }
+              ]
+            },
+            "valueString": "No (To skip hearing screening and advise to continue follow up with audiologist)"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-R5W8-00000003",
+                  "display": "Did participant proceed with Hearing Screening?"
+                }
+              ]
+            },
+            "valueString": "Yes"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-P4Y1-00000004",
+                  "display": "Visual Ear Examination (Left Ear)"
+                }
+              ]
+            },
+            "valueString": "Pass"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-S7Q0-00000005",
+                  "display": "Visual Ear Examination (Right Ear)"
+                }
+              ]
+            },
+            "valueString": "Pass"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-J3J4-00000006",
+                  "display": "Practice Tone (500Hz at 60dB in better ear)"
+                }
+              ]
+            },
+            "valueString": "Pass"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-F7B7-00000007",
+                  "display": "Pure Tone Screening at 25dBHL (Left)"
+                }
+              ]
+            },
+            "valueString": "500Hz – R|1000Hz – R|2000Hz – R|4000Hz – R"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-B7P7-00000008",
+                  "display": "Pure Tone Screening at 25dBHL (Right)"
+                }
+              ]
+            },
+            "valueString": "500Hz – R|1000Hz – R|2000Hz – R|4000Hz - NR"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-C1M5-00000009",
+                  "display": "Pure Tone Screening at 40dBHL (Left)"
+                }
+              ]
+            },
+            "valueString": "500Hz – NR|1000Hz – NR|2000Hz – NR|4000Hz - NR"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-C2S1-00000010",
+                  "display": "Pure Tone Screening at 40dBHL (Right)"
+                }
+              ]
+            },
+            "valueString": "500Hz – NR|1000Hz – NR|2000Hz – NR|4000Hz - NR"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-M8Z2-00000011",
+                  "display": "Does participant have any upcoming appointment with ear specialist?"
+                }
+              ]
+            },
+            "valueString": "Yes (To continue follow up with ear specialist)"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-D3S4-00000012",
+                  "display": "Does the participant require to refer to L2 Hearing?"
+                }
+              ]
+            },
+            "valueString": "No"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-L6T4-00000013",
+                  "display": "Does the participant agree to proceed with L2 Hearing?"
+                }
+              ]
+            },
+            "valueString": "Yes"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "Observation/os1",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "os1",
+        "code": {
+          "coding": [
+            {
+              "system": "https://fhir.synapxe.sg/CodeSystem/screening-type",
+              "code": "OS"
+            }
+          ]
+        },
+        "component": [
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-J1V1-00000014",
+                  "display": "Is the participant currently wearing dentures or has dentures?"
+                }
+              ]
+            },
+            "valueString": "Yes"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-X7V6-00000015",
+                  "display": "Placement of Denture (Upper)"
+                }
+              ]
+            },
+            "valueString": "Upper (partial)"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-V1K0-00000016",
+                  "display": "Placement of Denture (Lower)"
+                }
+              ]
+            },
+            "valueString": "Lower (partial)"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-D7V0-00000017",
+                  "display": "Did participant proceed with Oral Screening?"
+                }
+              ]
+            },
+            "valueString": "Yes"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-V0X0-00000018",
+                  "display": "Do you have any dental pain on a scale of 1 to 10? (On a scale of 1-10, 1 being not painful at all and 10 being extremely painful)"
+                }
+              ]
+            },
+            "valueString": "No (Pain Scale: 1 to 5)"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-J6Q3-00000019",
+                  "display": "Within the past 12 months, have you had any trouble speaking because of problems with your teeth, mouth or dentures?"
+                }
+              ]
+            },
+            "valueString": "No"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-M3F4-00000020",
+                  "display": "Within the past 12 months, have you found it difficult to eat any foods because of problems with your teeth, mouth or dentures?"
+                }
+              ]
+            },
+            "valueString": "No"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-S3K2-00000021",
+                  "display": "OHAT Status"
+                }
+              ]
+            },
+            "valueString": "Healthy"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-X4H3-00000022",
+                  "display": "Does participant have any upcoming appointment with any dentist?"
+                }
+              ]
+            },
+            "valueString": "Yes (To continue follow up with dentist)"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-H6B2-00000023",
+                  "display": "Does the participant require to refer to L2 Oral?"
+                }
+              ]
+            },
+            "valueString": "No"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-Y3R0-00000024",
+                  "display": "Does the participant agree to proceed with L2 Oral?"
+                }
+              ]
+            },
+            "valueString": "Yes"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "Observation/vs1",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "vs1",
+        "code": {
+          "coding": [
+            {
+              "system": "https://fhir.synapxe.sg/CodeSystem/screening-type",
+              "code": "VS"
+            }
+          ]
+        },
+        "component": [
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-X1V3-00000025",
+                  "display": "Is the participant currently wearing spectacles?"
+                }
+              ]
+            },
+            "valueString": "Yes (To carry out vision test with participant's spectacles)"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-Z6G5-00000026",
+                  "display": "Did participant proceed with Vision Screening?"
+                }
+              ]
+            },
+            "valueString": "Yes"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-R1R7-00000027",
+                  "display": "Snellen Test (Right Eye)\n(Please test the right eye first)"
+                }
+              ]
+            },
+            "valueString": "6/9"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-F6X7-00000028",
+                  "display": "Snellen Test (Left Eye)"
+                }
+              ]
+            },
+            "valueString": "6/9"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-L9J4-00000029",
+                  "display": "Pinhole Test (Right Eye)\n(If Snellen is worse than 6/12, please continue with Pinhole and test the right eye first)"
+                }
+              ]
+            },
+            "valueString": "6/6"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-Z2W8-00000030",
+                  "display": "Pinhole Test (Left Eye)"
+                }
+              ]
+            },
+            "valueString": "6/6"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-K8L7-00000031",
+                  "display": "Does participant have any upcoming appointment with any eye specialist or eye review at polyclinic or CHAS GP clinics?"
+                }
+              ]
+            },
+            "valueString": "Yes (To continue follow up with the upcoming eye review in primary care or specialist clinic)"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-G0W6-00000032",
+                  "display": "Does the participant require new spectacles?"
+                }
+              ]
+            },
+            "valueString": "Yes"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-H4N6-00000033",
+                  "display": "Is the participant eligible for SMF (Spectacles)?"
+                }
+              ]
+            },
+            "valueString": "Yes"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-C4C4-00000034",
+                  "display": "Has SMF (Spectacles) applied for the participant?"
+                }
+              ]
+            },
+            "valueString": "No"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-T6W1-00000035",
+                  "display": "Does the participant require to refer to L2 Vision?"
+                }
+              ]
+            },
+            "valueString": "No"
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "code": "SQ-F1T3-00000036",
+                  "display": "Does the participant agree to proceed with L2 Vision?"
+                }
+              ]
+            },
+            "valueString": "Yes"
+          }
+        ]
+      }
+    }
+  ]
+}

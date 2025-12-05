@@ -16,5 +16,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Fhir
     {
         public string Url { get; set; }
         public string ValueString { get; set; }
+        public CodeableConcept ValueCodeableConcept { get; set; }
+        public bool? ValueBoolean { get; set; }
     }
 }

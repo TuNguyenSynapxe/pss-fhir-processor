@@ -224,50 +224,6 @@
           "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-consent-for-sharing].valueBoolean",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Consent for sharing is mandatory."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0].system",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "GRC coding system is mandatory."
-        },
-        {
-          "RuleType": "FixedValue",
-          "PathType": "CPS1",
-          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0].system",
-          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/grc",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "GRC must use the PSS grc CodeSystem."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0].code",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "GRC code is mandatory."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].system",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Constituency coding system is mandatory."
-        },
-        {
-          "RuleType": "FixedValue",
-          "PathType": "CPS1",
-          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].system",
-          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/constituency",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Constituency must use the PSS constituency CodeSystem."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].code",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Constituency code is mandatory."
         }
       ],
       "ScopeDefinition": {
@@ -317,9 +273,9 @@
         {
           "RuleType": "Required",
           "PathType": "CPS1",
-          "Path": "Encounter.period.start",
+          "Path": "Encounter.actualPeriod.start",
           "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Encounter period.start is mandatory."
+          "Message": "Encounter actualPeriod.start is mandatory."
         }
       ],
       "ScopeDefinition": {
@@ -401,11 +357,55 @@
           "Path": "Location.address.postalCode",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Location postalCode is mandatory."
-        }
-      ],
-      "ScopeDefinition": {
-        "ResourceType": "Location"
+        },
+      {
+        "RuleType": "Required",
+        "PathType": "CPS1",
+        "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0].system",
+        "ErrorCode": "MANDATORY_MISSING",
+        "Message": "GRC coding system is mandatory."
+      },
+      {
+        "RuleType": "FixedValue",
+        "PathType": "CPS1",
+        "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0].system",
+        "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/grc",
+        "ErrorCode": "FIXED_VALUE_MISMATCH",
+        "Message": "GRC must use the PSS grc CodeSystem."
+      },
+      {
+        "RuleType": "Required",
+        "PathType": "CPS1",
+        "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0].code",
+        "ErrorCode": "MANDATORY_MISSING",
+        "Message": "GRC code is mandatory."
+      },
+      {
+        "RuleType": "Required",
+        "PathType": "CPS1",
+        "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].system",
+        "ErrorCode": "MANDATORY_MISSING",
+        "Message": "Constituency coding system is mandatory."
+      },
+      {
+        "RuleType": "FixedValue",
+        "PathType": "CPS1",
+        "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].system",
+        "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/constituency",
+        "ErrorCode": "FIXED_VALUE_MISMATCH",
+        "Message": "Constituency must use the PSS constituency CodeSystem."
+      },
+      {
+        "RuleType": "Required",
+        "PathType": "CPS1",
+        "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].code",
+        "ErrorCode": "MANDATORY_MISSING",
+        "Message": "Constituency code is mandatory."
       }
+    ],
+    "ScopeDefinition": {
+      "ResourceType": "Location"
+    }
     },
     {
       "Scope": "Organization.Provider",

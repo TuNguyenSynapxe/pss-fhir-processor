@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path;
@@ -38,6 +39,14 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     EvaluateCodesMaster(resource, rule, scope, codesMaster, result, logger);
                     break;
 
+                case "Type":
+                    EvaluateType(resource, rule, scope, result, logger);
+                    break;
+
+                case "Regex":
+                    EvaluateRegex(resource, rule, scope, result, logger);
+                    break;
+
                 default:
                     logger?.Warn($"    Unknown rule type: {rule.RuleType}");
                     break;
@@ -57,7 +66,9 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             if (values.Count == 0)
             {
                 logger?.Verbose($"      ✗ Path not found in resource");
-                logger?.Verbose($"      Resource JSON: {resource.ToString(Newtonsoft.Json.Formatting.None).Substring(0, Math.Min(300, resource.ToString().Length))}...");
+                var resourceJson = resource.ToString(Newtonsoft.Json.Formatting.None);
+                var preview = resourceJson.Length > 300 ? resourceJson.Substring(0, 300) + "..." : resourceJson;
+                logger?.Verbose($"      Resource JSON: {preview}");
                 
                 var detailedMessage = $"{rule.Message} | Path '{rule.Path}' not found in {scope} resource. Checked path: {rule.Path}";
                 result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope);
@@ -68,8 +79,14 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             bool hasValue = false;
             foreach (var value in values)
             {
-                logger?.Verbose($"      → Checking value: {value?.ToString()?.Substring(0, Math.Min(100, value?.ToString()?.Length ?? 0))}");
-                if (value != null && !string.IsNullOrWhiteSpace(value.ToString()))
+                var valueStr = value?.ToString();
+                if (!string.IsNullOrEmpty(valueStr))
+                {
+                    var preview = valueStr.Length > 100 ? valueStr.Substring(0, 100) + "..." : valueStr;
+                    logger?.Verbose($"      → Checking value: {preview}");
+                }
+                
+                if (value != null && !string.IsNullOrWhiteSpace(valueStr))
                 {
                     hasValue = true;
                     logger?.Verbose($"      ✓ Valid non-empty value found");
@@ -425,6 +442,99 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             }
 
             logger?.Verbose($"      → Completed validation of {componentIndex} component(s)");
+        }
+
+        /// <summary>
+        /// Type rule: Validate that field value matches expected data type
+        /// </summary>
+        private static void EvaluateType(JObject resource, RuleDefinition rule, string scope,
+            ValidationResult result, Logger logger)
+        {
+            if (string.IsNullOrEmpty(rule.ExpectedType))
+            {
+                logger?.Verbose($"      ✗ ExpectedType is missing in rule");
+                result.AddError(rule.ErrorCode ?? "TYPE_VALIDATION_ERROR", rule.Path,
+                    "Type rule missing ExpectedType", scope);
+                return;
+            }
+
+            logger?.Verbose($"      → Resolving path: {rule.Path}");
+            logger?.Verbose($"      → Expected type: '{rule.ExpectedType}'");
+
+            var strValue = CpsPathResolver.GetValueAsString(resource, rule.Path);
+
+            if (strValue == null)
+            {
+                logger?.Verbose($"      ✗ Path not found or value is null");
+                var detailedMessage = $"{rule.Message} | Path '{rule.Path}' not found or value is null";
+                result.AddError(rule.ErrorCode ?? "TYPE_MISMATCH", rule.Path, detailedMessage, scope);
+                return;
+            }
+
+            logger?.Verbose($"      → Actual value: '{strValue}'");
+
+            if (!TypeChecker.IsValid(strValue, rule.ExpectedType))
+            {
+                logger?.Verbose($"      ✗ Type validation failed");
+                var detailedMessage = (rule.Message ?? $"Type mismatch at path '{rule.Path}'") +
+                    $" | Expected type: '{rule.ExpectedType}' | Actual value: '{strValue}'";
+                result.AddError(rule.ErrorCode ?? "TYPE_MISMATCH", rule.Path, detailedMessage, scope);
+            }
+            else
+            {
+                logger?.Verbose($"      ✓ Type validation passed");
+            }
+        }
+
+        /// <summary>
+        /// Regex rule: Validate that field value matches the specified regex pattern
+        /// </summary>
+        private static void EvaluateRegex(JObject resource, RuleDefinition rule, string scope,
+            ValidationResult result, Logger logger)
+        {
+            if (string.IsNullOrEmpty(rule.Pattern))
+            {
+                logger?.Verbose($"      ✗ Pattern is missing in rule");
+                result.AddError(rule.ErrorCode ?? "REGEX_VALIDATION_ERROR", rule.Path,
+                    "Regex rule missing Pattern", scope);
+                return;
+            }
+
+            logger?.Verbose($"      → Resolving path: {rule.Path}");
+            logger?.Verbose($"      → Pattern: '{rule.Pattern}'");
+
+            var strValue = CpsPathResolver.GetValueAsString(resource, rule.Path);
+
+            if (strValue == null)
+            {
+                logger?.Verbose($"      ✗ Path not found or value is null");
+                var detailedMessage = $"{rule.Message} | Path '{rule.Path}' not found or value is null";
+                result.AddError(rule.ErrorCode ?? "REGEX_MISMATCH", rule.Path, detailedMessage, scope);
+                return;
+            }
+
+            logger?.Verbose($"      → Actual value: '{strValue}'");
+
+            try
+            {
+                if (!Regex.IsMatch(strValue, rule.Pattern))
+                {
+                    logger?.Verbose($"      ✗ Regex validation failed");
+                    var detailedMessage = (rule.Message ?? $"Regex mismatch at path '{rule.Path}'") +
+                        $" | Pattern: '{rule.Pattern}' | Actual value: '{strValue}'";
+                    result.AddError(rule.ErrorCode ?? "REGEX_MISMATCH", rule.Path, detailedMessage, scope);
+                }
+                else
+                {
+                    logger?.Verbose($"      ✓ Regex validation passed");
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                logger?.Verbose($"      ✗ Invalid regex pattern: {ex.Message}");
+                result.AddError(rule.ErrorCode ?? "REGEX_PATTERN_ERROR", rule.Path,
+                    $"Invalid regex pattern '{rule.Pattern}': {ex.Message}", scope);
+            }
         }
     }
 }

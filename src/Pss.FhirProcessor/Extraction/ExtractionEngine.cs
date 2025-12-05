@@ -139,7 +139,8 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Extraction
                     var location = Newtonsoft.Json.JsonConvert.DeserializeObject<Location>(json, JsonSettings);
                     if (location != null)
                     {
-                        eventData.VenueName = location.Name;
+                        // Use Name if available, otherwise use first line of address
+                        eventData.VenueName = location.Name ?? location.Address?.Line?.FirstOrDefault();
                         eventData.PostalCode = location.Address?.PostalCode;
 
                         // Extract GRC and Constituency from extensions
@@ -147,11 +148,19 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Extraction
                         {
                             var grcExt = location.Extension.FirstOrDefault(e => e.Url?.Contains("grc") == true);
                             if (grcExt != null)
-                                eventData.Grc = grcExt.ValueString;
+                            {
+                                // Try ValueString first, then ValueCodeableConcept
+                                eventData.Grc = grcExt.ValueString ?? 
+                                                grcExt.ValueCodeableConcept?.Coding?.FirstOrDefault()?.Code;
+                            }
 
                             var constExt = location.Extension.FirstOrDefault(e => e.Url?.Contains("constituency") == true);
                             if (constExt != null)
-                                eventData.Constituency = constExt.ValueString;
+                            {
+                                // Try ValueString first, then ValueCodeableConcept
+                                eventData.Constituency = constExt.ValueString ?? 
+                                                        constExt.ValueCodeableConcept?.Coding?.FirstOrDefault()?.Code;
+                            }
                         }
                     }
                 }

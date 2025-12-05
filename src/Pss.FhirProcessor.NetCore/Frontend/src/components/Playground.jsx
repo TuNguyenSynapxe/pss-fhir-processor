@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Card, Button, Input, Select, Switch, Tabs, Alert, Spin, message } from 'antd';
-import { PlayCircleOutlined, ClearOutlined } from '@ant-design/icons';
+import { useState, useEffect, useMemo } from 'react';
+import { Card, Button, Input, Select, Switch, Tabs, Alert, Spin, message, Tree } from 'antd';
+import { PlayCircleOutlined, ClearOutlined, FolderOutlined, FileOutlined } from '@ant-design/icons';
 import { fhirApi } from '../services/api';
 import { useMetadata } from '../contexts/MetadataContext';
 import MetadataEditor from './MetadataEditor';
@@ -18,6 +18,106 @@ function Playground() {
   const [result, setResult] = useState(null);
   const [sampleFiles, setSampleFiles] = useState([]);
   const [selectedSample, setSelectedSample] = useState(null);
+
+  // Convert JSON to tree data structure
+  const jsonToTreeData = (obj, parentKey = 'root') => {
+    if (obj === null || obj === undefined) {
+      return [];
+    }
+
+    const buildNode = (value, key, path) => {
+      const nodeKey = `${path}.${key}`;
+      
+      if (Array.isArray(value)) {
+        return {
+          title: (
+            <span>
+              <strong>{key}</strong>: <span className="text-blue-600">[Array({value.length})]</span>
+            </span>
+          ),
+          key: nodeKey,
+          icon: <FolderOutlined />,
+          children: value.map((item, idx) => buildNode(item, `[${idx}]`, nodeKey))
+        };
+      } else if (typeof value === 'object' && value !== null) {
+        const keys = Object.keys(value);
+        return {
+          title: (
+            <span>
+              <strong>{key}</strong>: <span className="text-purple-600">{`{Object}`}</span>
+            </span>
+          ),
+          key: nodeKey,
+          icon: <FolderOutlined />,
+          children: keys.map(k => buildNode(value[k], k, nodeKey))
+        };
+      } else {
+        const valueStr = String(value);
+        const displayValue = valueStr.length > 50 ? valueStr.substring(0, 50) + '...' : valueStr;
+        const valueColor = typeof value === 'string' ? 'text-green-600' : 
+                          typeof value === 'number' ? 'text-orange-600' : 
+                          typeof value === 'boolean' ? 'text-red-600' : 'text-gray-600';
+        
+        return {
+          title: (
+            <span>
+              <strong>{key}</strong>: <span className={valueColor}>"{displayValue}"</span>
+            </span>
+          ),
+          key: nodeKey,
+          icon: <FileOutlined />,
+          isLeaf: true
+        };
+      }
+    };
+
+    try {
+      const parsed = typeof obj === 'string' ? JSON.parse(obj) : obj;
+      const keys = Object.keys(parsed);
+      return keys.map(key => buildNode(parsed[key], key, parentKey));
+    } catch (error) {
+      return [{
+        title: <span className="text-red-600">Invalid JSON</span>,
+        key: 'error',
+        isLeaf: true,
+        icon: <FileOutlined />
+      }];
+    }
+  };
+
+  // Memoize tree data to avoid rebuilding on every render
+  const treeData = useMemo(() => {
+    if (!fhirJson.trim()) return [];
+    try {
+      return jsonToTreeData(fhirJson);
+    } catch {
+      return [];
+    }
+  }, [fhirJson]);
+
+  // Generate keys for default expansion - expand root level and all children under 'entry'
+  const defaultExpandedKeys = useMemo(() => {
+    const keys = [];
+    const collectKeys = (nodes, parentKey = '') => {
+      nodes.forEach(node => {
+        if (!node.isLeaf) {
+          // Always expand root level
+          const isRootLevel = node.key.split('.').length === 2;
+          // Always expand if we're inside the entry array or it's a root-level node
+          const isUnderEntry = node.key.includes('.entry.');
+          
+          if (isRootLevel || isUnderEntry) {
+            keys.push(node.key);
+            if (node.children) {
+              collectKeys(node.children, node.key);
+            }
+          }
+        }
+      });
+    };
+    collectKeys(treeData);
+    return keys;
+  }, [treeData]);
 
   // Load all happy-*.json files from seed folder
   useEffect(() => {
@@ -191,13 +291,37 @@ function Playground() {
                 Load Sample
               </Button>
             </div>
-            <TextArea
-              value={fhirJson}
-              onChange={(e) => setFhirJson(e.target.value)}
-              placeholder="Paste your FHIR Bundle JSON here..."
-              rows={15}
-              className="font-mono text-sm"
-            />
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="mb-1 text-sm font-medium text-gray-600">JSON Editor</div>
+                <TextArea
+                  value={fhirJson}
+                  onChange={(e) => setFhirJson(e.target.value)}
+                  placeholder="Paste your FHIR Bundle JSON here..."
+                  rows={20}
+                  className="font-mono text-sm"
+                />
+              </div>
+              
+              <div>
+                <div className="mb-1 text-sm font-medium text-gray-600">Tree View</div>
+                <div className="border border-gray-300 rounded p-2 bg-white overflow-auto" style={{ height: '500px' }}>
+                  {treeData.length > 0 ? (
+                    <Tree
+                      treeData={treeData}
+                      defaultExpandedKeys={defaultExpandedKeys}
+                      showIcon
+                      className="text-sm"
+                    />
+                  ) : (
+                    <div className="text-gray-400 text-center py-8">
+                      No JSON data to display
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="flex gap-2">
