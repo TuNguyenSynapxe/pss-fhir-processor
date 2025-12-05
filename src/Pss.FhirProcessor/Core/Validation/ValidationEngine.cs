@@ -17,6 +17,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
     {
         private ValidationMetadata _metadata;
         private Logger _logger;
+        private JObject _bundleRoot;
 
         public ValidationEngine()
         {
@@ -122,6 +123,9 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 _logger.Debug("Parsing FHIR Bundle JSON...");
                 var bundle = JObject.Parse(bundleJson);
+                
+                // Store bundle root for reference validation
+                _bundleRoot = bundle;
 
                 // Verify it's a Bundle
                 var resourceType = bundle["resourceType"]?.ToString();
@@ -354,7 +358,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 // Normalize the path by removing resource type prefix if present
                 var normalizedRule = NormalizeRulePath(rule, ruleSet.Scope);
-                RuleEvaluator.ApplyRule(resource, normalizedRule, ruleSet.Scope, _metadata.CodesMaster, result, _logger);
+                RuleEvaluator.ApplyRule(resource, normalizedRule, ruleSet.Scope, _metadata.CodesMaster, _bundleRoot, result, _logger);
             }
         }
 
@@ -377,8 +381,9 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 ExpectedValue = rule.ExpectedValue,
                 ExpectedSystem = rule.ExpectedSystem,
                 ExpectedCode = rule.ExpectedCode,
-                ExpectedType = rule.ExpectedType,      // ADD: Type validation
-                Pattern = rule.Pattern,                 // ADD: Regex validation
+                ExpectedType = rule.ExpectedType,      // Type validation
+                Pattern = rule.Pattern,                 // Regex validation
+                TargetTypes = rule.TargetTypes,         // Reference validation
                 ErrorCode = rule.ErrorCode,
                 Message = rule.Message
             };

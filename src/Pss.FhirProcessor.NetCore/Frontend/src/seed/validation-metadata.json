@@ -1,5 +1,5 @@
 {
-  "Version": "7.0",
+  "Version": "9.0",
   "PathSyntax": "CPS1",
   "RuleSets": [
     {
@@ -247,7 +247,7 @@
           "Path": "Patient.birthDate",
           "ExpectedType": "date",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Patient.birthDate must YYYY-MM-DD."
+          "Message": "Patient.birthDate must be YYYY-MM-DD."
         },
         {
           "RuleType": "Type",
@@ -255,7 +255,7 @@
           "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-consent-for-sharing].valueBoolean",
           "ExpectedType": "boolean",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Consent must be boolean."
+          "Message": "Consent for sharing must be boolean."
         },
         {
           "RuleType": "Regex",
@@ -263,7 +263,7 @@
           "Path": "Patient.identifier[system:https://fhir.synapxe.sg/NamingSystem/nric].value",
           "Pattern": "^[STFG]\\d{7}[A-Z]$",
           "ErrorCode": "REGEX_INVALID_NRIC",
-          "Message": "Invalid NRIC format."
+          "Message": "NRIC format is invalid."
         }
       ],
       "ScopeDefinition": {
@@ -323,7 +323,7 @@
           "Path": "Encounter.id",
           "ExpectedType": "guid",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Encounter.id must GUID."
+          "Message": "Encounter.id must be GUID."
         },
         {
           "RuleType": "Type",
@@ -331,7 +331,47 @@
           "Path": "Encounter.actualPeriod.start",
           "ExpectedType": "datetime",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Encounter.start must ISO datetime."
+          "Message": "Encounter.actualPeriod.start must be ISO-8601 datetime."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Encounter.serviceType.reference",
+          "TargetTypes": [
+            "HealthcareService"
+          ],
+          "ErrorCode": "REF_SERVICE_TYPE_INVALID",
+          "Message": "Encounter.serviceType.reference must reference a HealthcareService."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Encounter.serviceProvider.reference",
+          "TargetTypes": [
+            "Organization"
+          ],
+          "ErrorCode": "REF_SERVICE_PROVIDER_INVALID",
+          "Message": "Encounter.serviceProvider.reference must reference an Organization."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Encounter.subject.reference",
+          "TargetTypes": [
+            "Patient"
+          ],
+          "ErrorCode": "REF_SUBJECT_INVALID",
+          "Message": "Encounter.subject.reference must reference a Patient."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Encounter.location[*].location.reference",
+          "TargetTypes": [
+            "Location"
+          ],
+          "ErrorCode": "REF_LOCATION_INVALID",
+          "Message": "Encounter.location.location.reference must reference a Location."
         }
       ],
       "ScopeDefinition": {
@@ -391,7 +431,7 @@
           "Path": "HealthcareService.id",
           "ExpectedType": "guid",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "HealthcareService.id must GUID."
+          "Message": "HealthcareService.id must be GUID."
         },
         {
           "RuleType": "Type",
@@ -399,7 +439,17 @@
           "Path": "HealthcareService.active",
           "ExpectedType": "boolean",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "HealthcareService.active must boolean."
+          "Message": "HealthcareService.active must be boolean."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.providedBy.reference",
+          "TargetTypes": [
+            "Organization"
+          ],
+          "ErrorCode": "REF_PROVIDEDBY_INVALID",
+          "Message": "HealthcareService.providedBy.reference must reference an Organization."
         }
       ],
       "ScopeDefinition": {
@@ -480,7 +530,7 @@
           "Path": "Location.id",
           "ExpectedType": "guid",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Location.id must GUID."
+          "Message": "Location.id must be GUID."
         },
         {
           "RuleType": "Regex",
@@ -488,7 +538,7 @@
           "Path": "Location.address.postalCode",
           "Pattern": "^\\d{6}$",
           "ErrorCode": "REGEX_INVALID_POSTAL",
-          "Message": "Postal code must be 6 digits."
+          "Message": "Location.postalCode must be a 6-digit value."
         }
       ],
       "ScopeDefinition": {
@@ -563,7 +613,7 @@
           "Path": "Organization.id",
           "ExpectedType": "guid",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Organization.id must GUID."
+          "Message": "Organization.id must be GUID."
         }
       ],
       "ScopeDefinition": {
@@ -644,7 +694,7 @@
           "Path": "Organization.id",
           "ExpectedType": "guid",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Organization.id must GUID."
+          "Message": "Organization.id must be GUID."
         }
       ],
       "ScopeDefinition": {
@@ -666,6 +716,22 @@
           "Path": "Observation.id",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Observation id is mandatory."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.subject.reference",
+          "TargetTypes": ["Patient"],
+          "ErrorCode": "INVALID_PATIENT_REFERENCE",
+          "Message": "Observation.subject must reference a valid Patient."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.encounter.reference",
+          "TargetTypes": ["Encounter"],
+          "ErrorCode": "INVALID_ENCOUNTER_REFERENCE",
+          "Message": "Observation.encounter must reference a valid Encounter."
         },
         {
           "RuleType": "Required",
@@ -717,7 +783,7 @@
           "Path": "Observation.id",
           "ExpectedType": "guid",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Observation.id must GUID."
+          "Message": "Observation.id must be GUID."
         },
         {
           "RuleType": "Type",
@@ -725,7 +791,7 @@
           "Path": "Observation.component[QuestionCode:SQ-F7B7-00000007].valueString",
           "ExpectedType": "pipestring[]",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Pure tone 25dBHL Left must be pipe-separated list."
+          "Message": "Pure Tone 25dBHL (Left) must be a pipe-separated list of values."
         },
         {
           "RuleType": "Type",
@@ -733,7 +799,7 @@
           "Path": "Observation.component[QuestionCode:SQ-B7P7-00000008].valueString",
           "ExpectedType": "pipestring[]",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Pure tone 25dBHL Right must be pipe-separated list."
+          "Message": "Pure Tone 25dBHL (Right) must be a pipe-separated list of values."
         },
         {
           "RuleType": "Type",
@@ -741,7 +807,7 @@
           "Path": "Observation.component[QuestionCode:SQ-C1M5-00000009].valueString",
           "ExpectedType": "pipestring[]",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Pure tone 40dBHL Left must be pipe-separated list."
+          "Message": "Pure Tone 40dBHL (Left) must be a pipe-separated list of values."
         },
         {
           "RuleType": "Type",
@@ -749,7 +815,37 @@
           "Path": "Observation.component[QuestionCode:SQ-C2S1-00000010].valueString",
           "ExpectedType": "pipestring[]",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Pure tone 40dBHL Right must be pipe-separated list."
+          "Message": "Pure Tone 40dBHL (Right) must be a pipe-separated list of values."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.subject.reference",
+          "TargetTypes": [
+            "Patient"
+          ],
+          "ErrorCode": "REF_OBS_SUBJECT_INVALID",
+          "Message": "Observation.subject.reference must reference a Patient."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.encounter.reference",
+          "TargetTypes": [
+            "Encounter"
+          ],
+          "ErrorCode": "REF_OBS_ENCOUNTER_INVALID",
+          "Message": "Observation.encounter.reference must reference an Encounter."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.performer[*].reference",
+          "TargetTypes": [
+            "Organization"
+          ],
+          "ErrorCode": "REF_OBS_PERFORMER_INVALID",
+          "Message": "Observation.performer.reference must reference an Organization."
         }
       ],
       "ScopeDefinition": {
@@ -822,7 +918,37 @@
           "Path": "Observation.id",
           "ExpectedType": "guid",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Observation.id must GUID."
+          "Message": "Observation.id must be GUID."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.subject.reference",
+          "TargetTypes": [
+            "Patient"
+          ],
+          "ErrorCode": "REF_OBS_SUBJECT_INVALID",
+          "Message": "Observation.subject.reference must reference a Patient."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.encounter.reference",
+          "TargetTypes": [
+            "Encounter"
+          ],
+          "ErrorCode": "REF_OBS_ENCOUNTER_INVALID",
+          "Message": "Observation.encounter.reference must reference an Encounter."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.performer[*].reference",
+          "TargetTypes": [
+            "Organization"
+          ],
+          "ErrorCode": "REF_OBS_PERFORMER_INVALID",
+          "Message": "Observation.performer.reference must reference an Organization."
         }
       ],
       "ScopeDefinition": {
@@ -895,7 +1021,37 @@
           "Path": "Observation.id",
           "ExpectedType": "guid",
           "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Observation.id must GUID."
+          "Message": "Observation.id must be GUID."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.subject.reference",
+          "TargetTypes": [
+            "Patient"
+          ],
+          "ErrorCode": "REF_OBS_SUBJECT_INVALID",
+          "Message": "Observation.subject.reference must reference a Patient."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.encounter.reference",
+          "TargetTypes": [
+            "Encounter"
+          ],
+          "ErrorCode": "REF_OBS_ENCOUNTER_INVALID",
+          "Message": "Observation.encounter.reference must reference an Encounter."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.performer[*].reference",
+          "TargetTypes": [
+            "Organization"
+          ],
+          "ErrorCode": "REF_OBS_PERFORMER_INVALID",
+          "Message": "Observation.performer.reference must reference an Organization."
         }
       ],
       "ScopeDefinition": {

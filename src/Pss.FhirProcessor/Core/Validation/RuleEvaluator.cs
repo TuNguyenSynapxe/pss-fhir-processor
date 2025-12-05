@@ -17,7 +17,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         /// Apply a single rule to a resource
         /// </summary>
         public static void ApplyRule(JObject resource, RuleDefinition rule, string scope, 
-            CodesMaster codesMaster, ValidationResult result, Logger logger = null)
+            CodesMaster codesMaster, JObject bundleRoot, ValidationResult result, Logger logger = null)
         {
             logger?.Verbose($"    Evaluating rule: [{rule.RuleType}] {rule.Path}");
             
@@ -40,13 +40,15 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     break;
 
                 case "Type":
-                    Console.WriteLine($"[RuleEvaluator.ApplyRule] Calling EvaluateType for path: {rule.Path}");
                     EvaluateType(resource, rule, scope, result, logger);
                     break;
 
                 case "Regex":
-                    Console.WriteLine($"[RuleEvaluator.ApplyRule] Calling EvaluateRegex for path: {rule.Path}");
                     EvaluateRegex(resource, rule, scope, result, logger);
+                    break;
+
+                case "Reference":
+                    EvaluateReference(resource, rule, scope, bundleRoot, result, logger);
                     break;
 
                 default:
@@ -452,8 +454,6 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         private static void EvaluateType(JObject resource, RuleDefinition rule, string scope,
             ValidationResult result, Logger logger)
         {
-            Console.WriteLine($"[RuleEvaluator.EvaluateType] Path={rule.Path}, ExpectedType={rule.ExpectedType ?? "NULL"}, ErrorCode={rule.ErrorCode ?? "NULL"}, Message={rule.Message ?? "NULL"}");
-            
             if (string.IsNullOrEmpty(rule.ExpectedType))
             {
                 logger?.Verbose($"      ✗ ExpectedType is missing in rule");
@@ -501,8 +501,6 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         private static void EvaluateRegex(JObject resource, RuleDefinition rule, string scope,
             ValidationResult result, Logger logger)
         {
-            Console.WriteLine($"[RuleEvaluator.EvaluateRegex] Path={rule.Path}, Pattern={rule.Pattern ?? "NULL"}, ErrorCode={rule.ErrorCode ?? "NULL"}, Message={rule.Message ?? "NULL"}");
-            
             if (string.IsNullOrEmpty(rule.Pattern))
             {
                 logger?.Verbose($"      ✗ Pattern is missing in rule");
@@ -550,6 +548,147 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 logger?.Verbose($"      ✗ Invalid regex pattern: {ex.Message}");
                 result.AddError(rule.ErrorCode ?? "REGEX_PATTERN_ERROR", rule.Path,
                     $"Invalid regex pattern '{rule.Pattern}': {ex.Message}", scope);
+            }
+        }
+
+        /// <summary>
+        /// Reference rule: Validate that a reference points to an existing resource in the bundle
+        /// Supports formats: "ResourceType/id" and "urn:uuid:guid"
+        /// </summary>
+        private static void EvaluateReference(JObject resource, RuleDefinition rule, string scope,
+            JObject bundleRoot, ValidationResult result, Logger logger)
+        {
+            if (rule.TargetTypes == null || rule.TargetTypes.Count == 0)
+            {
+                logger?.Verbose($"      ✗ TargetTypes is missing in rule");
+                result.AddError("REFERENCE_VALIDATION_ERROR", rule.Path,
+                    "Reference rule missing TargetTypes", scope);
+                return;
+            }
+
+            logger?.Verbose($"      → Resolving path: {rule.Path}");
+            logger?.Verbose($"      → Target types: {string.Join(", ", rule.TargetTypes)}");
+
+            var refValue = CpsPathResolver.GetValueAsString(resource, rule.Path);
+
+            if (refValue == null || string.IsNullOrWhiteSpace(refValue))
+            {
+                logger?.Verbose($"      ⊘ Path not found or value is null/empty - skipping reference validation (use Required rule for mandatory checks)");
+                return;
+            }
+
+            logger?.Verbose($"      → Reference value: '{refValue}'");
+
+            // Parse reference: "ResourceType/id" or "urn:uuid:guid"
+            string referencedResourceType = null;
+            string referencedId = null;
+
+            if (refValue.StartsWith("urn:uuid:"))
+            {
+                // Format: urn:uuid:12345678-1234-1234-1234-123456789abc
+                referencedId = refValue;
+                logger?.Verbose($"      → URN UUID format detected: {referencedId}");
+            }
+            else if (refValue.Contains("/"))
+            {
+                // Format: ResourceType/id
+                var parts = refValue.Split('/');
+                if (parts.Length == 2)
+                {
+                    referencedResourceType = parts[0];
+                    referencedId = parts[1];
+                    logger?.Verbose($"      → FHIR reference format: Type={referencedResourceType}, Id={referencedId}");
+                }
+                else
+                {
+                    logger?.Verbose($"      ✗ Invalid reference format");
+                    result.AddError(rule.ErrorCode ?? "INVALID_REFERENCE_FORMAT", rule.Path,
+                        $"{rule.Message ?? "Invalid reference format"} | Value: '{refValue}'", scope);
+                    return;
+                }
+            }
+            else
+            {
+                logger?.Verbose($"      ✗ Unsupported reference format");
+                result.AddError(rule.ErrorCode ?? "INVALID_REFERENCE_FORMAT", rule.Path,
+                    $"{rule.Message ?? "Reference must be 'ResourceType/id' or 'urn:uuid:guid'"} | Value: '{refValue}'", scope);
+                return;
+            }
+
+            // Search for referenced resource in bundle
+            if (bundleRoot == null)
+            {
+                logger?.Verbose($"      ✗ Bundle root not available for reference validation");
+                result.AddError("REFERENCE_VALIDATION_ERROR", rule.Path,
+                    "Bundle root not available for reference validation", scope);
+                return;
+            }
+
+            var entries = bundleRoot["entry"] as JArray;
+            if (entries == null || entries.Count == 0)
+            {
+                logger?.Verbose($"      ✗ No entries found in bundle");
+                result.AddError(rule.ErrorCode ?? "REFERENCE_NOT_FOUND", rule.Path,
+                    $"{rule.Message ?? "Referenced resource not found"} | Reference: '{refValue}' | Expected types: {string.Join(", ", rule.TargetTypes)}", scope);
+                return;
+            }
+
+            bool foundResource = false;
+            string foundResourceType = null;
+            string foundResourceId = null;
+
+            foreach (var entry in entries)
+            {
+                var entryResource = entry["resource"] as JObject;
+                if (entryResource == null) continue;
+
+                var resourceType = entryResource["resourceType"]?.ToString();
+                var resourceId = entryResource["id"]?.ToString();
+                var fullUrl = entry["fullUrl"]?.ToString();
+
+                if (resourceType == null || (resourceId == null && fullUrl == null)) continue;
+
+                // Check if this is the referenced resource
+                bool isMatch = false;
+
+                if (referencedId.StartsWith("urn:uuid:"))
+                {
+                    // Match by fullUrl (urn:uuid format)
+                    isMatch = fullUrl == referencedId || $"urn:uuid:{resourceId}" == referencedId;
+                }
+                else
+                {
+                    // Match by resourceType/id
+                    isMatch = resourceType == referencedResourceType && resourceId == referencedId;
+                }
+
+                if (isMatch)
+                {
+                    foundResource = true;
+                    foundResourceType = resourceType;
+                    foundResourceId = resourceId;
+                    logger?.Verbose($"      → Found resource: {resourceType}/{resourceId}");
+
+                    // Check if resource type is in allowed TargetTypes
+                    if (!rule.TargetTypes.Contains(resourceType))
+                    {
+                        logger?.Verbose($"      ✗ Resource type mismatch");
+                        result.AddError(rule.ErrorCode ?? "REFERENCE_TYPE_MISMATCH", rule.Path,
+                            $"{rule.Message ?? "Referenced resource has wrong type"} | Reference: '{refValue}' | Expected types: {string.Join(", ", rule.TargetTypes)} | Found: {resourceType}", scope);
+                        return;
+                    }
+
+                    logger?.Verbose($"      ✓ Reference validation passed");
+                    return;
+                }
+            }
+
+            // Resource not found
+            if (!foundResource)
+            {
+                logger?.Verbose($"      ✗ Referenced resource not found in bundle");
+                result.AddError(rule.ErrorCode ?? "REFERENCE_NOT_FOUND", rule.Path,
+                    $"{rule.Message ?? "Referenced resource not found"} | Reference: '{refValue}' | Expected types: {string.Join(", ", rule.TargetTypes)}", scope);
             }
         }
     }

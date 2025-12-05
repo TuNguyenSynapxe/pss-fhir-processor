@@ -3,10 +3,10 @@
   "type": "collection",
   "entry": [
     {
-      "fullUrl": "Patient/p1",
+      "fullUrl": "urn:uuid:a3f9c2d1-2b40-4ab9-8133-5b1f2d4e9f91",
       "resource": {
         "resourceType": "Patient",
-        "id": "p1",
+        "id": "a3f9c2d1-2b40-4ab9-8133-5b1f2d4e9f91",
         "identifier": [
           {
             "system": "https://fhir.synapxe.sg/NamingSystem/nric",
@@ -86,10 +86,10 @@
       }
     },
     {
-      "fullUrl": "Encounter/e1",
+      "fullUrl": "urn:uuid:bb7c8a63-0c49-40cf-9b0c-66e8b64d9254",
       "resource": {
         "resourceType": "Encounter",
-        "id": "e1",
+        "id": "bb7c8a63-0c49-40cf-9b0c-66e8b64d9254",
         "status": "completed",
         "identifier": [
           {
@@ -104,10 +104,10 @@
       }
     },
     {
-      "fullUrl": "HealthcareService/h1",
+      "fullUrl": "urn:uuid:c4e5a0b2-9d87-4c0a-a3f3-05869125bc11",
       "resource": {
         "resourceType": "HealthcareService",
-        "id": "h1",
+        "id": "c4e5a0b2-9d87-4c0a-a3f3-05869125bc11",
         "active": true,
         "identifier": [
           {
@@ -119,10 +119,10 @@
       }
     },
     {
-      "fullUrl": "Location/l1",
+      "fullUrl": "urn:uuid:d12b174f-6598-4f2f-b4cb-48df5113458c",
       "resource": {
         "resourceType": "Location",
-        "id": "l1",
+        "id": "d12b174f-6598-4f2f-b4cb-48df5113458c",
         "address": {
           "line": [
             "Jurong West Ave 5 Community Centre"
@@ -156,10 +156,10 @@
       }
     },
     {
-      "fullUrl": "Organization/provider",
+      "fullUrl": "urn:uuid:e0a3f4c1-32a1-4df2-8f36-9b164ea7db04",
       "resource": {
         "resourceType": "Organization",
-        "id": "org-prov",
+        "id": "e0a3f4c1-32a1-4df2-8f36-9b164ea7db04",
         "identifier": [
           {
             "system": "https://fhir.synapxe.sg/NamingSystem/hci-code",
@@ -180,10 +180,10 @@
       }
     },
     {
-      "fullUrl": "Organization/cluster",
+      "fullUrl": "urn:uuid:f91b0cd8-3fc2-4d12-a1e9-6e85c2124b22",
       "resource": {
         "resourceType": "Organization",
-        "id": "org-clu",
+        "id": "f91b0cd8-3fc2-4d12-a1e9-6e85c2124b22",
         "identifier": [
           {
             "system": "https://fhir.synapxe.sg/NamingSystem/hci-code",
@@ -204,10 +204,16 @@
       }
     },
     {
-      "fullUrl": "Observation/hs1",
+      "fullUrl": "urn:uuid:0a9b7d21-4f27-4a86-b787-d1b6b4ee68ab",
       "resource": {
         "resourceType": "Observation",
-        "id": "hs1",
+        "id": "0a9b7d21-4f27-4a86-b787-d1b6b4ee68ab",
+        "subject": {
+          "reference": "urn:uuid:a3f9c2d1-2b40-4ab9-8133-5b1f2d4e9f91"
+        },
+        "encounter": {
+          "reference": "urn:uuid:bb7c8a63-0c49-40cf-9b0c-66e8b64d9254"
+        },
         "code": {
           "coding": [
             {
@@ -364,10 +370,10 @@
       }
     },
     {
-      "fullUrl": "Observation/os1",
+      "fullUrl": "urn:uuid:1c5d3f82-0bb1-4cc2-9f14-993baf0d0d33",
       "resource": {
         "resourceType": "Observation",
-        "id": "os1",
+        "id": "1c5d3f82-0bb1-4cc2-9f14-993baf0d0d33",
         "code": {
           "coding": [
             {
@@ -502,10 +508,10 @@
       }
     },
     {
-      "fullUrl": "Observation/vs1",
+      "fullUrl": "urn:uuid:2e4a6c11-8f53-447a-a8f1-1dc93c4fd3ba",
       "resource": {
         "resourceType": "Observation",
-        "id": "vs1",
+        "id": "2e4a6c11-8f53-447a-a8f1-1dc93c4fd3ba",
         "code": {
           "coding": [
             {

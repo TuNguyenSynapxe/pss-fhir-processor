@@ -42,7 +42,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             var result = CreateValidationResult();
 
             // Act
-            RuleEvaluator.ApplyRule(resource, rule, "Patient", null, result);
+            RuleEvaluator.ApplyRule(resource, rule, "Patient", null, null, result, null);
 
             // Assert
             result.IsValid.Should().BeTrue();
@@ -66,7 +66,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             var result = CreateValidationResult();
 
             // Act
-            RuleEvaluator.ApplyRule(resource, rule, "Patient", null, result);
+            RuleEvaluator.ApplyRule(resource, rule, "Patient", null, null, result, null);
 
             // Assert
             result.IsValid.Should().BeFalse();
@@ -93,7 +93,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             var result = CreateValidationResult();
 
             // Act
-            RuleEvaluator.ApplyRule(resource, rule, "Patient", null, result);
+            RuleEvaluator.ApplyRule(resource, rule, "Patient", null, null, result, null);
 
             // Assert
             result.IsValid.Should().BeTrue();
@@ -117,7 +117,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             var result = CreateValidationResult();
 
             // Act
-            RuleEvaluator.ApplyRule(resource, rule, "Patient", null, result);
+            RuleEvaluator.ApplyRule(resource, rule, "Patient", null, null, result, null);
 
             // Assert
             result.IsValid.Should().BeFalse();
@@ -141,7 +141,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             var result = CreateValidationResult();
 
             // Act
-            RuleEvaluator.ApplyRule(resource, rule, "Patient", null, result);
+            RuleEvaluator.ApplyRule(resource, rule, "Patient", null, null, result, null);
 
             // Assert
             result.IsValid.Should().BeTrue();
@@ -168,7 +168,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             var result = CreateValidationResult();
 
             // Act
-            RuleEvaluator.ApplyRule(resource, rule, "Observation", null, result);
+            RuleEvaluator.ApplyRule(resource, rule, "Observation", null, null, result, null);
 
             // Assert
             result.IsValid.Should().BeTrue();
@@ -195,7 +195,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             var result = CreateValidationResult();
 
             // Act
-            RuleEvaluator.ApplyRule(resource, rule, "Observation", null, result);
+            RuleEvaluator.ApplyRule(resource, rule, "Observation", null, null, result, null);
 
             // Assert
             result.IsValid.Should().BeFalse();
@@ -219,7 +219,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             var result = CreateValidationResult();
 
             // Act
-            RuleEvaluator.ApplyRule(resource, rule, "Test", null, result);
+            RuleEvaluator.ApplyRule(resource, rule, "Test", null, null, result, null);
 
             // Assert - Should skip validation for null values
             result.IsValid.Should().BeTrue();
@@ -243,7 +243,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             var result = CreateValidationResult();
 
             // Act
-            RuleEvaluator.ApplyRule(resource, rule, "Test", null, result);
+            RuleEvaluator.ApplyRule(resource, rule, "Test", null, null, result, null);
 
             // Assert
             result.IsValid.Should().BeFalse();

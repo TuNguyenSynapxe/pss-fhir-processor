@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata
 {
     /// <summary>
@@ -6,7 +8,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata
     /// </summary>
     public class RuleDefinition
     {
-        public string RuleType { get; set; }           // Required, FixedValue, FixedCoding, CodesMaster, Type, Regex
+        public string RuleType { get; set; }           // Required, FixedValue, FixedCoding, CodesMaster, Type, Regex, Reference
         public string PathType { get; set; }           // "CPS1"
         public string Path { get; set; }               // Custom Path Syntax
         public string ExpectedValue { get; set; }
@@ -14,6 +16,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata
         public string ExpectedCode { get; set; }
         public string ExpectedType { get; set; }       // Type validation: string, integer, decimal, boolean, guid, guid-uri, date, datetime, pipestring[], array, object
         public string Pattern { get; set; }            // Regex validation: regex pattern
+        public List<string> TargetTypes { get; set; }  // Reference validation: allowed resource types
         public string ErrorCode { get; set; }
         public string Message { get; set; }
     }
