@@ -203,7 +203,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
         }
 
         [Fact]
-        public void TypeRule_ShouldFail_WhenPathNotFound()
+        public void TypeRule_ShouldPass_WhenPathNotFound()
         {
             // Arrange
             var rule = new RuleDefinition
@@ -221,10 +221,9 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             // Act
             RuleEvaluator.ApplyRule(resource, rule, "Test", null, result);
 
-            // Assert
-            result.IsValid.Should().BeFalse();
-            result.Errors.Should().HaveCount(1);
-            result.Errors[0].Message.Should().Contain("not found or value is null");
+            // Assert - Should skip validation for null values
+            result.IsValid.Should().BeTrue();
+            result.Errors.Should().HaveCount(0);
         }
 
         [Fact]

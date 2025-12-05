@@ -6,7 +6,9 @@ Added two new validation features:
 1. **guid-uri Type**: Validates URN UUID format (e.g., `urn:uuid:12345678-1234-1234-1234-123456789abc`)
 2. **Regex RuleType**: Custom pattern matching validation
 
-**Test Results**: All 186 tests passing (124 existing + 62 new)
+**Important**: Both Type and Regex rules **skip validation** when values are null, undefined, or empty strings. Use the `Required` rule type for mandatory field validation.
+
+**Test Results**: All 185 tests passing (124 existing + 61 new)
 
 ## Implementation Details
 
@@ -54,7 +56,7 @@ Added two new validation features:
 **Features**:
 - Custom regex pattern validation
 - Invalid pattern detection
-- Null value handling
+- **Skips validation if value is null, undefined, or empty** (use `Required` rule for mandatory checks)
 - Detailed error messages with pattern and actual value
 
 **Usage Example**:
@@ -106,7 +108,59 @@ Added two new validation features:
 ^([^|]+\|)*[^|]+$
 ```
 
-## Test Coverage
+## Validation Behavior
+
+### Type and Regex Rules Skip Empty Values
+
+Both `Type` and `Regex` rules **only validate when a value is present**:
+
+✅ **Skip validation** when:
+- Path doesn't exist (undefined)
+- Value is `null`
+- Value is empty string `""`
+- Value is whitespace-only
+
+❌ **Perform validation** when:
+- Value exists and is non-empty
+
+**Example - Separate Rules for Optional Field**:
+```json
+[
+  {
+    "Name": "ValidateEmailFormat",
+    "RuleType": "Regex",
+    "Path": "telecom[?(@.system=='email')].value",
+    "Pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+    "ErrorCode": "INVALID_EMAIL",
+    "Message": "Email format is invalid"
+  }
+]
+```
+☝️ This rule only validates if email exists. If email is optional, no error is raised when missing.
+
+**Example - Required Field with Type Validation**:
+```json
+[
+  {
+    "Name": "RequireIdentifier",
+    "RuleType": "Required",
+    "Path": "identifier.value",
+    "ErrorCode": "IDENTIFIER_REQUIRED",
+    "Message": "Identifier is mandatory"
+  },
+  {
+    "Name": "ValidateIdentifierFormat",
+    "RuleType": "Regex",
+    "Path": "identifier.value",
+    "Pattern": "^[STFG][0-9]{7}[A-Z]$",
+    "ErrorCode": "INVALID_IDENTIFIER",
+    "Message": "Identifier must be valid NRIC format"
+  }
+]
+```
+☝️ First rule ensures field exists, second rule validates format when present.
+
+### Test Coverage
 
 ### TypeGuidUriTests.cs (8 tests)
 - ✅ Valid formats (mixed case, uppercase, lowercase)
@@ -114,10 +168,10 @@ Added two new validation features:
 - ✅ Edge cases (null, empty, spaces, trailing chars)
 - ✅ Case insensitivity
 
-### RegexValidationTests.cs (54 tests)
+### RegexValidationTests.cs (53 tests)
 - ✅ NRIC validation (valid/invalid formats)
 - ✅ Email validation
-- ✅ Null/empty value handling
+- ✅ **Null/empty value handling (skips validation)**
 - ✅ Missing pattern detection
 - ✅ Invalid pattern exception handling
 - ✅ Unicode support (Chinese, Japanese, Korean)
@@ -130,6 +184,7 @@ Added two new validation features:
 ✅ All 124 existing tests still pass
 ✅ No breaking changes to existing Type rules
 ✅ No changes to existing RuleTypes
+✅ **New behavior**: Type and Regex rules now skip validation for null/empty values (more lenient)
 
 ## Technical Notes
 
@@ -142,7 +197,7 @@ case "guid-uri":
     return Regex.IsMatch(value, guidPattern);
 ```
 
-**RuleEvaluator.cs**:
+**RuleEvaluator.cs - EvaluateRegex()**:
 ```csharp
 private static void EvaluateRegex(JObject resource, RuleDefinition rule, string scope,
     ValidationResult result, Logger logger)
@@ -158,11 +213,10 @@ private static void EvaluateRegex(JObject resource, RuleDefinition rule, string 
     // 2. Resolve path value
     var strValue = CpsPathResolver.GetValueAsString(resource, rule.Path);
     
-    // 3. Handle null values
-    if (strValue == null)
+    // 3. Skip validation for null/empty values (use Required rule for mandatory checks)
+    if (strValue == null || string.IsNullOrWhiteSpace(strValue))
     {
-        result.AddError(rule.ErrorCode ?? "REGEX_MISMATCH", rule.Path,
-            $"{rule.Message} | Path '{rule.Path}' not found or value is null", scope);
+        logger?.Verbose($"      ⊘ Value is null/empty - skipping regex validation");
         return;
     }
 
@@ -179,6 +233,38 @@ private static void EvaluateRegex(JObject resource, RuleDefinition rule, string 
     {
         result.AddError(rule.ErrorCode ?? "REGEX_PATTERN_ERROR", rule.Path,
             $"Invalid regex pattern '{rule.Pattern}': {ex.Message}", scope);
+    }
+}
+```
+
+**RuleEvaluator.cs - EvaluateType()**:
+```csharp
+private static void EvaluateType(JObject resource, RuleDefinition rule, string scope,
+    ValidationResult result, Logger logger)
+{
+    // 1. Check ExpectedType is configured
+    if (string.IsNullOrEmpty(rule.ExpectedType))
+    {
+        result.AddError(rule.ErrorCode ?? "TYPE_VALIDATION_ERROR", rule.Path,
+            "Type rule missing ExpectedType", scope);
+        return;
+    }
+
+    // 2. Resolve path value
+    var strValue = CpsPathResolver.GetValueAsString(resource, rule.Path);
+    
+    // 3. Skip validation for null/empty values (use Required rule for mandatory checks)
+    if (strValue == null || string.IsNullOrWhiteSpace(strValue))
+    {
+        logger?.Verbose($"      ⊘ Value is null/empty - skipping type validation");
+        return;
+    }
+
+    // 4. Validate type
+    if (!TypeChecker.IsValid(strValue, rule.ExpectedType))
+    {
+        result.AddError(rule.ErrorCode ?? "TYPE_MISMATCH", rule.Path,
+            $"{rule.Message} | Expected type: '{rule.ExpectedType}' | Actual value: '{strValue}'", scope);
     }
 }
 ```

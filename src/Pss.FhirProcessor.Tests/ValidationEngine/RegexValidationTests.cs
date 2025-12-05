@@ -63,7 +63,6 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
         [InlineData("S12345671")] // Number as last char
         [InlineData("1234567A")] // Missing first letter
         [InlineData("S1234567")] // Missing last letter
-        [InlineData("")] // Empty
         [InlineData("S1234567A ")] // Trailing space
         [InlineData(" S1234567A")] // Leading space
         public void RegexRule_NRIC_ShouldFail_WhenValueDoesNotMatchPattern(string nric)
@@ -89,10 +88,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             result.Errors.Should().HaveCount(1);
             result.Errors[0].Code.Should().Be("INVALID_NRIC");
             result.Errors[0].Message.Should().Contain("NRIC format invalid");
-            if (!string.IsNullOrEmpty(nric))
-            {
-                result.Errors[0].Message.Should().Contain(nric);
-            }
+            result.Errors[0].Message.Should().Contain(nric);
         }
 
         #endregion
@@ -159,7 +155,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
         #region Null and Empty Value Tests
 
         [Fact]
-        public void RegexRule_ShouldFail_WhenValueIsNull()
+        public void RegexRule_ShouldPass_WhenValueIsNull()
         {
             // Arrange
             var rule = new RuleDefinition
@@ -177,14 +173,13 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             // Act
             RuleEvaluator.ApplyRule(resource, rule, "Patient", null, result);
 
-            // Assert
-            result.IsValid.Should().BeFalse();
-            result.Errors.Should().HaveCount(1);
-            result.Errors[0].Message.Should().Contain("not found or value is null");
+            // Assert - Should skip validation for null values
+            result.IsValid.Should().BeTrue();
+            result.Errors.Should().HaveCount(0);
         }
 
         [Fact]
-        public void RegexRule_ShouldFail_WhenValueIsEmptyString()
+        public void RegexRule_ShouldPass_WhenValueIsEmptyString()
         {
             // Arrange
             var rule = new RuleDefinition
@@ -202,9 +197,9 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             // Act
             RuleEvaluator.ApplyRule(resource, rule, "Patient", null, result);
 
-            // Assert
-            result.IsValid.Should().BeFalse();
-            result.Errors.Should().HaveCount(1);
+            // Assert - Should skip validation for empty strings
+            result.IsValid.Should().BeTrue();
+            result.Errors.Should().HaveCount(0);
         }
 
         #endregion

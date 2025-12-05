@@ -51,11 +51,45 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         /// </summary>
         public void LoadMetadataFromJson(string json)
         {
+            Console.WriteLine("[ValidationEngine] LoadMetadataFromJson - START");
+            Console.WriteLine($"[ValidationEngine] JSON length: {json?.Length ?? 0}");
+            
             _metadata = JsonConvert.DeserializeObject<ValidationMetadata>(json);
 
             if (_metadata == null)
             {
                 throw new InvalidOperationException("Failed to deserialize validation metadata");
+            }
+            
+            Console.WriteLine($"[ValidationEngine] Deserialized metadata - Version: {_metadata.Version}");
+            Console.WriteLine($"[ValidationEngine] RuleSets count: {_metadata.RuleSets?.Count ?? 0}");
+            
+            // Log Type and Regex rules to verify ExpectedType and Pattern
+            if (_metadata.RuleSets != null)
+            {
+                foreach (var ruleSet in _metadata.RuleSets)
+                {
+                    var typeRules = ruleSet.Rules?.Where(r => r.RuleType == "Type").ToList();
+                    var regexRules = ruleSet.Rules?.Where(r => r.RuleType == "Regex").ToList();
+                    
+                    Console.WriteLine($"[ValidationEngine] Scope '{ruleSet.Scope}': {typeRules?.Count ?? 0} Type rules, {regexRules?.Count ?? 0} Regex rules");
+                    
+                    if (typeRules != null)
+                    {
+                        foreach (var rule in typeRules.Take(3))
+                        {
+                            Console.WriteLine($"[ValidationEngine]   Type rule: Path={rule.Path}, ExpectedType={rule.ExpectedType ?? "NULL"}");
+                        }
+                    }
+                    
+                    if (regexRules != null)
+                    {
+                        foreach (var rule in regexRules.Take(3))
+                        {
+                            Console.WriteLine($"[ValidationEngine]   Regex rule: Path={rule.Path}, Pattern={rule.Pattern ?? "NULL"}");
+                        }
+                    }
+                }
             }
 
             if (_metadata.PathSyntax != "CPS1")
@@ -343,6 +377,8 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 ExpectedValue = rule.ExpectedValue,
                 ExpectedSystem = rule.ExpectedSystem,
                 ExpectedCode = rule.ExpectedCode,
+                ExpectedType = rule.ExpectedType,      // ADD: Type validation
+                Pattern = rule.Pattern,                 // ADD: Regex validation
                 ErrorCode = rule.ErrorCode,
                 Message = rule.Message
             };

@@ -40,10 +40,12 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     break;
 
                 case "Type":
+                    Console.WriteLine($"[RuleEvaluator.ApplyRule] Calling EvaluateType for path: {rule.Path}");
                     EvaluateType(resource, rule, scope, result, logger);
                     break;
 
                 case "Regex":
+                    Console.WriteLine($"[RuleEvaluator.ApplyRule] Calling EvaluateRegex for path: {rule.Path}");
                     EvaluateRegex(resource, rule, scope, result, logger);
                     break;
 
@@ -450,6 +452,8 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         private static void EvaluateType(JObject resource, RuleDefinition rule, string scope,
             ValidationResult result, Logger logger)
         {
+            Console.WriteLine($"[RuleEvaluator.EvaluateType] Path={rule.Path}, ExpectedType={rule.ExpectedType ?? "NULL"}, ErrorCode={rule.ErrorCode ?? "NULL"}, Message={rule.Message ?? "NULL"}");
+            
             if (string.IsNullOrEmpty(rule.ExpectedType))
             {
                 logger?.Verbose($"      ✗ ExpectedType is missing in rule");
@@ -465,9 +469,14 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
 
             if (strValue == null)
             {
-                logger?.Verbose($"      ✗ Path not found or value is null");
-                var detailedMessage = $"{rule.Message} | Path '{rule.Path}' not found or value is null";
-                result.AddError(rule.ErrorCode ?? "TYPE_MISMATCH", rule.Path, detailedMessage, scope);
+                logger?.Verbose($"      ⊘ Path not found or value is null - skipping type validation (use Required rule for mandatory checks)");
+                return;
+            }
+
+            // Skip validation for empty strings
+            if (string.IsNullOrWhiteSpace(strValue))
+            {
+                logger?.Verbose($"      ⊘ Value is empty - skipping type validation (use Required rule for mandatory checks)");
                 return;
             }
 
@@ -492,6 +501,8 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         private static void EvaluateRegex(JObject resource, RuleDefinition rule, string scope,
             ValidationResult result, Logger logger)
         {
+            Console.WriteLine($"[RuleEvaluator.EvaluateRegex] Path={rule.Path}, Pattern={rule.Pattern ?? "NULL"}, ErrorCode={rule.ErrorCode ?? "NULL"}, Message={rule.Message ?? "NULL"}");
+            
             if (string.IsNullOrEmpty(rule.Pattern))
             {
                 logger?.Verbose($"      ✗ Pattern is missing in rule");
@@ -507,9 +518,14 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
 
             if (strValue == null)
             {
-                logger?.Verbose($"      ✗ Path not found or value is null");
-                var detailedMessage = $"{rule.Message} | Path '{rule.Path}' not found or value is null";
-                result.AddError(rule.ErrorCode ?? "REGEX_MISMATCH", rule.Path, detailedMessage, scope);
+                logger?.Verbose($"      ⊘ Path not found or value is null - skipping regex validation (use Required rule for mandatory checks)");
+                return;
+            }
+
+            // Skip validation for empty strings
+            if (string.IsNullOrWhiteSpace(strValue))
+            {
+                logger?.Verbose($"      ⊘ Value is empty - skipping regex validation (use Required rule for mandatory checks)");
                 return;
             }
 

@@ -67,6 +67,14 @@
           "Path": "Bundle.entry[Observation:VS]",
           "ErrorCode": "MISSING_SCREENING_TYPE",
           "Message": "Bundle must contain a Vision Screening (VS) Observation."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Bundle.entry[*].fullUrl",
+          "ExpectedType": "guid-uri",
+          "ErrorCode": "TYPE_INVALID_FULLURL",
+          "Message": "Bundle.entry.fullUrl must be urn:uuid:<GUID>."
         }
       ]
     },
@@ -224,6 +232,38 @@
           "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-consent-for-sharing].valueBoolean",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Consent for sharing is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Patient.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Patient.id must be GUID."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Patient.birthDate",
+          "ExpectedType": "date",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Patient.birthDate must YYYY-MM-DD."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-consent-for-sharing].valueBoolean",
+          "ExpectedType": "boolean",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Consent must be boolean."
+        },
+        {
+          "RuleType": "Regex",
+          "PathType": "CPS1",
+          "Path": "Patient.identifier[system:https://fhir.synapxe.sg/NamingSystem/nric].value",
+          "Pattern": "^[STFG]\\d{7}[A-Z]$",
+          "ErrorCode": "REGEX_INVALID_NRIC",
+          "Message": "Invalid NRIC format."
         }
       ],
       "ScopeDefinition": {
@@ -276,6 +316,22 @@
           "Path": "Encounter.actualPeriod.start",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Encounter actualPeriod.start is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Encounter.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Encounter.id must GUID."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Encounter.actualPeriod.start",
+          "ExpectedType": "datetime",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Encounter.start must ISO datetime."
         }
       ],
       "ScopeDefinition": {
@@ -328,6 +384,22 @@
           "Path": "HealthcareService.name",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "HealthcareService.name is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "HealthcareService.id must GUID."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.active",
+          "ExpectedType": "boolean",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "HealthcareService.active must boolean."
         }
       ],
       "ScopeDefinition": {
@@ -358,54 +430,70 @@
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Location postalCode is mandatory."
         },
-      {
-        "RuleType": "Required",
-        "PathType": "CPS1",
-        "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0].system",
-        "ErrorCode": "MANDATORY_MISSING",
-        "Message": "GRC coding system is mandatory."
-      },
-      {
-        "RuleType": "FixedValue",
-        "PathType": "CPS1",
-        "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0].system",
-        "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/grc",
-        "ErrorCode": "FIXED_VALUE_MISMATCH",
-        "Message": "GRC must use the PSS grc CodeSystem."
-      },
-      {
-        "RuleType": "Required",
-        "PathType": "CPS1",
-        "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0].code",
-        "ErrorCode": "MANDATORY_MISSING",
-        "Message": "GRC code is mandatory."
-      },
-      {
-        "RuleType": "Required",
-        "PathType": "CPS1",
-        "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].system",
-        "ErrorCode": "MANDATORY_MISSING",
-        "Message": "Constituency coding system is mandatory."
-      },
-      {
-        "RuleType": "FixedValue",
-        "PathType": "CPS1",
-        "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].system",
-        "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/constituency",
-        "ErrorCode": "FIXED_VALUE_MISMATCH",
-        "Message": "Constituency must use the PSS constituency CodeSystem."
-      },
-      {
-        "RuleType": "Required",
-        "PathType": "CPS1",
-        "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].code",
-        "ErrorCode": "MANDATORY_MISSING",
-        "Message": "Constituency code is mandatory."
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0].system",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "GRC coding system is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0].system",
+          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/grc",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "GRC must use the PSS grc CodeSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0].code",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "GRC code is mandatory."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].system",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Constituency coding system is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].system",
+          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/constituency",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Constituency must use the PSS constituency CodeSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].code",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Constituency code is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Location.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Location.id must GUID."
+        },
+        {
+          "RuleType": "Regex",
+          "PathType": "CPS1",
+          "Path": "Location.address.postalCode",
+          "Pattern": "^\\d{6}$",
+          "ErrorCode": "REGEX_INVALID_POSTAL",
+          "Message": "Postal code must be 6 digits."
+        }
+      ],
+      "ScopeDefinition": {
+        "ResourceType": "Location"
       }
-    ],
-    "ScopeDefinition": {
-      "ResourceType": "Location"
-    }
     },
     {
       "Scope": "Organization.Provider",
@@ -468,6 +556,14 @@
           "Path": "Organization.name",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Provider Organization name is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Organization.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Organization.id must GUID."
         }
       ],
       "ScopeDefinition": {
@@ -541,6 +637,14 @@
           "Path": "Organization.name",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Cluster Organization name is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Organization.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Organization.id must GUID."
         }
       ],
       "ScopeDefinition": {
@@ -606,6 +710,46 @@
           "Path": "Observation.component[*]",
           "ErrorCode": "INVALID_ANSWER_VALUE",
           "Message": "Observation components must use valid question codes, displays, and allowed answers."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Observation.id must GUID."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.component[QuestionCode:SQ-F7B7-00000007].valueString",
+          "ExpectedType": "pipestring[]",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Pure tone 25dBHL Left must be pipe-separated list."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.component[QuestionCode:SQ-B7P7-00000008].valueString",
+          "ExpectedType": "pipestring[]",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Pure tone 25dBHL Right must be pipe-separated list."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.component[QuestionCode:SQ-C1M5-00000009].valueString",
+          "ExpectedType": "pipestring[]",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Pure tone 40dBHL Left must be pipe-separated list."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.component[QuestionCode:SQ-C2S1-00000010].valueString",
+          "ExpectedType": "pipestring[]",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Pure tone 40dBHL Right must be pipe-separated list."
         }
       ],
       "ScopeDefinition": {
@@ -671,6 +815,14 @@
           "Path": "Observation.component[*]",
           "ErrorCode": "INVALID_ANSWER_VALUE",
           "Message": "Observation components must use valid question codes, displays, and allowed answers."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Observation.id must GUID."
         }
       ],
       "ScopeDefinition": {
@@ -736,6 +888,14 @@
           "Path": "Observation.component[*]",
           "ErrorCode": "INVALID_ANSWER_VALUE",
           "Message": "Observation components must use valid question codes, displays, and allowed answers."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Observation.id must GUID."
         }
       ],
       "ScopeDefinition": {
@@ -816,14 +976,14 @@
         "QuestionDisplay": "Pure Tone Screening at 25dBHL (Left)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
-          "500Hz – R",
-          "500Hz – NR",
-          "1000Hz – R",
-          "1000Hz – NR",
-          "2000Hz – R",
-          "2000Hz – NR",
-          "4000Hz – R",
-          "4000Hz – NR"
+          "500Hz \u2013 R",
+          "500Hz \u2013 NR",
+          "1000Hz \u2013 R",
+          "1000Hz \u2013 NR",
+          "2000Hz \u2013 R",
+          "2000Hz \u2013 NR",
+          "4000Hz \u2013 R",
+          "4000Hz \u2013 NR"
         ],
         "IsMultiValue": true
       },
@@ -832,13 +992,13 @@
         "QuestionDisplay": "Pure Tone Screening at 25dBHL (Right)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
-          "500Hz – R",
-          "500Hz – NR",
-          "1000Hz – R",
-          "1000Hz – NR",
-          "2000Hz – R",
-          "2000Hz – NR",
-          "4000Hz – R",
+          "500Hz \u2013 R",
+          "500Hz \u2013 NR",
+          "1000Hz \u2013 R",
+          "1000Hz \u2013 NR",
+          "2000Hz \u2013 R",
+          "2000Hz \u2013 NR",
+          "4000Hz \u2013 R",
           "4000Hz - NR"
         ],
         "IsMultiValue": true
@@ -848,13 +1008,13 @@
         "QuestionDisplay": "Pure Tone Screening at 40dBHL (Left)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
-          "500Hz – R",
-          "500Hz – NR",
-          "1000Hz – R",
-          "1000Hz – NR",
-          "2000Hz – R",
-          "2000Hz – NR",
-          "4000Hz – R",
+          "500Hz \u2013 R",
+          "500Hz \u2013 NR",
+          "1000Hz \u2013 R",
+          "1000Hz \u2013 NR",
+          "2000Hz \u2013 R",
+          "2000Hz \u2013 NR",
+          "4000Hz \u2013 R",
           "4000Hz - NR"
         ],
         "IsMultiValue": true
@@ -864,13 +1024,13 @@
         "QuestionDisplay": "Pure Tone Screening at 40dBHL (Right)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
-          "500Hz – R",
-          "500Hz – NR",
-          "1000Hz – R",
-          "1000Hz – NR",
-          "2000Hz – R",
-          "2000Hz – NR",
-          "4000Hz – R",
+          "500Hz \u2013 R",
+          "500Hz \u2013 NR",
+          "1000Hz \u2013 R",
+          "1000Hz \u2013 NR",
+          "2000Hz \u2013 R",
+          "2000Hz \u2013 NR",
+          "4000Hz \u2013 R",
           "4000Hz - NR"
         ],
         "IsMultiValue": true
