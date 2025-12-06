@@ -28,7 +28,16 @@ It includes:
 - **Metadata** — JSON rule definitions
 
 ## 4. Documentation
-Located under `/docs`.
+Located under `/docs/`:
+- **01-10**: Core documentation (Overview, Architecture, FHIR Spec, etc.)
+- **11**: Unit Test Plan
+- **12**: Deployment Guide
+- **13**: Appendix (Sample Bundles)
+- **14**: Validation Rules Reference (Complete guide to all 10 rule types)
+- **15**: Implementation Notes (Advanced features)
+- **LOGGING_GUIDE.md**: Comprehensive logging documentation
+- **metadata-user-guide.md**: Metadata configuration guide
+- **folder-structure.md**: Project structure overview
 
 ## 5. Getting Started
 
@@ -56,9 +65,12 @@ GET  /api/fhir/rules
 ```
 
 ## 7. Running Tests
-**82/82 tests passing (100%)**
-- 29 unit tests (validation rules, extraction logic)
-- 53 end-to-end tests (complete bundle scenarios)
+**213/213 tests passing (100%)**
+- 107 unit tests (TypeChecker, validation rules, extraction logic)
+- 53 integration tests (complete bundle scenarios)
+- 15 reference validation tests
+- 11 FullUrlIdMatch tests
+- 27 extraction tests
 
 ```bash
 dotnet test --framework net6.0
