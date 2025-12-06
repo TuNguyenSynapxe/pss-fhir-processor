@@ -212,7 +212,12 @@
           "reference": "urn:uuid:a3f9c2d1-2b40-4ab9-8133-5b1f2d4e9f91"
         },
         "encounter": {
-          "reference": "urn:uuid:bb7c8a63-0c49-40cf-9b0c-66e8b64d9254"
+          "reference": "urn:uuid:bb7c8a63-0c49-40cf-9b0c-66e8b64d9254",
+          "display":""
+        },
+        "performer": {
+              "reference": "urn:uuid:e0a3f4c1-32a1-4df2-8f36-9b164ea7db04",
+              "display":"ABC Polyclinic"
         },
         "code": {
           "coding": [
@@ -309,7 +314,7 @@
                 }
               ]
             },
-            "valueString": "500Hz – R|1000Hz – R|2000Hz – R|4000Hz - NR"
+            "valueString": "500Hz – R|1000Hz – R|2000Hz – R|4000Hz – NR"
           },
           {
             "code": {
@@ -320,7 +325,7 @@
                 }
               ]
             },
-            "valueString": "500Hz – NR|1000Hz – NR|2000Hz – NR|4000Hz - NR"
+            "valueString": "500Hz – NR|1000Hz – NR|2000Hz – NR|4000Hz – NR"
           },
           {
             "code": {
@@ -331,7 +336,7 @@
                 }
               ]
             },
-            "valueString": "500Hz – NR|1000Hz – NR|2000Hz – NR|4000Hz - NR"
+            "valueString": "500Hz – NR|1000Hz – NR|2000Hz – NR|4000Hz – NR"
           },
           {
             "code": {
@@ -381,6 +386,10 @@
               "code": "OS"
             }
           ]
+        },
+        "performer": {
+          "reference": "urn:uuid:e0a3f4c1-32a1-4df2-8f36-9b164ea7db04",
+          "display":"ABC Polyclinic"
         },
         "component": [
           {
@@ -519,6 +528,10 @@
               "code": "VS"
             }
           ]
+        },
+        "performer": {
+          "reference": "urn:uuid:e0a3f4c1-32a1-4df2-8f36-9b164ea7db04",
+          "display":"ABC Polyclinic"
         },
         "component": [
           {

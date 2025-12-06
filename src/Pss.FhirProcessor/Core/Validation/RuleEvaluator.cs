@@ -17,7 +17,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         /// Apply a single rule to a resource
         /// </summary>
         public static void ApplyRule(JObject resource, RuleDefinition rule, string scope, 
-            CodesMaster codesMaster, JObject bundleRoot, ValidationResult result, Logger logger = null)
+            CodesMaster codesMaster, JObject bundleRoot, ValidationResult result, Logger logger = null, string entryFullUrl = null)
         {
             logger?.Verbose($"    Evaluating rule: [{rule.RuleType}] {rule.Path}");
             
@@ -49,6 +49,10 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
 
                 case "Reference":
                     EvaluateReference(resource, rule, scope, bundleRoot, result, logger);
+                    break;
+
+                case "FullUrlIdMatch":
+                    EvaluateFullUrlIdMatch(resource, entryFullUrl, rule, scope, result, logger);
                     break;
 
                 default:
@@ -690,6 +694,51 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 result.AddError(rule.ErrorCode ?? "REFERENCE_NOT_FOUND", rule.Path,
                     $"{rule.Message ?? "Referenced resource not found"} | Reference: '{refValue}' | Expected types: {string.Join(", ", rule.TargetTypes)}", scope);
             }
+        }
+
+        /// <summary>
+        /// FullUrlIdMatch rule: Validate that resource.id matches the GUID portion of entry.fullUrl (urn:uuid:GUID)
+        /// ONLY validates when BOTH values exist - lets Required/Type rules handle missing/malformed values
+        /// </summary>
+        private static void EvaluateFullUrlIdMatch(JObject resource, string entryFullUrl, RuleDefinition rule, string scope,
+            ValidationResult result, Logger logger)
+        {
+            // Extract resource.id
+            var resourceId = resource["id"]?.ToString();
+
+            // Skip validation if either value is missing
+            if (string.IsNullOrWhiteSpace(resourceId) || string.IsNullOrWhiteSpace(entryFullUrl))
+            {
+                logger?.Verbose($"      ⊘ Skip FullUrlIdMatch because id or fullUrl is missing (Required/Type rules will handle this)");
+                return;
+            }
+
+            // Skip validation if fullUrl is not urn:uuid: format
+            if (!entryFullUrl.StartsWith("urn:uuid:", StringComparison.OrdinalIgnoreCase))
+            {
+                logger?.Verbose($"      ⊘ Skip FullUrlIdMatch because fullUrl is not urn:uuid: format (Type rule will handle this)");
+                return;
+            }
+
+            // Extract GUID portion from fullUrl
+            var guidFromFullUrl = entryFullUrl.Substring("urn:uuid:".Length);
+
+            logger?.Verbose($"      → Comparing resource.id: '{resourceId}'");
+            logger?.Verbose($"      → With fullUrl GUID: '{guidFromFullUrl}'");
+
+            // Compare GUIDs (case-insensitive)
+            if (!string.Equals(resourceId, guidFromFullUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                logger?.Verbose($"      ✗ FullUrlIdMatch FAILED");
+                result.AddError(
+                    rule.ErrorCode ?? "ID_FULLURL_MISMATCH",
+                    "",
+                    $"{rule.Message ?? "Resource.id must match GUID portion of entry.fullUrl"} (id: {resourceId}, fullUrl: {entryFullUrl})",
+                    scope);
+                return;
+            }
+
+            logger?.Verbose($"      ✓ FullUrlIdMatch OK");
         }
     }
 }

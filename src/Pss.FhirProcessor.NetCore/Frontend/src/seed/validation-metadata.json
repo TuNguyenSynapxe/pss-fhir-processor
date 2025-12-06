@@ -1,5 +1,5 @@
 {
-  "Version": "9.0",
+  "Version": "10.0",
   "PathSyntax": "CPS1",
   "RuleSets": [
     {
@@ -82,11 +82,24 @@
       "Scope": "Patient",
       "Rules": [
         {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
           "RuleType": "Required",
           "PathType": "CPS1",
           "Path": "Patient.id",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Logical id of Patient is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Patient.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Patient.id must be GUID."
         },
         {
           "RuleType": "Required",
@@ -102,6 +115,14 @@
           "ExpectedValue": "https://fhir.synapxe.sg/NamingSystem/nric",
           "ErrorCode": "FIXED_VALUE_MISMATCH",
           "Message": "NRIC identifier.system must be the PSS NRIC NamingSystem."
+        },
+        {
+          "RuleType": "Regex",
+          "PathType": "CPS1",
+          "Path": "Patient.identifier[system:https://fhir.synapxe.sg/NamingSystem/nric].value",
+          "Pattern": "^[STFG]\\d{7}[A-Z]$",
+          "ErrorCode": "REGEX_INVALID_NRIC",
+          "Message": "NRIC format is invalid."
         },
         {
           "RuleType": "Required",
@@ -123,6 +144,14 @@
           "Path": "Patient.birthDate",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Patient birthDate is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Patient.birthDate",
+          "ExpectedType": "date",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Patient.birthDate must be YYYY-MM-DD."
         },
         {
           "RuleType": "Required",
@@ -236,34 +265,10 @@
         {
           "RuleType": "Type",
           "PathType": "CPS1",
-          "Path": "Patient.id",
-          "ExpectedType": "guid",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Patient.id must be GUID."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Patient.birthDate",
-          "ExpectedType": "date",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Patient.birthDate must be YYYY-MM-DD."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
           "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-consent-for-sharing].valueBoolean",
           "ExpectedType": "boolean",
           "ErrorCode": "TYPE_MISMATCH",
           "Message": "Consent for sharing must be boolean."
-        },
-        {
-          "RuleType": "Regex",
-          "PathType": "CPS1",
-          "Path": "Patient.identifier[system:https://fhir.synapxe.sg/NamingSystem/nric].value",
-          "Pattern": "^[STFG]\\d{7}[A-Z]$",
-          "ErrorCode": "REGEX_INVALID_NRIC",
-          "Message": "NRIC format is invalid."
         }
       ],
       "ScopeDefinition": {
@@ -274,11 +279,24 @@
       "Scope": "Encounter",
       "Rules": [
         {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
           "RuleType": "Required",
           "PathType": "CPS1",
           "Path": "Encounter.id",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Encounter id is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Encounter.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Encounter.id must be GUID."
         },
         {
           "RuleType": "Required",
@@ -316,14 +334,6 @@
           "Path": "Encounter.actualPeriod.start",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Encounter actualPeriod.start is mandatory."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Encounter.id",
-          "ExpectedType": "guid",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Encounter.id must be GUID."
         },
         {
           "RuleType": "Type",
@@ -382,11 +392,24 @@
       "Scope": "HealthcareService",
       "Rules": [
         {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
           "RuleType": "Required",
           "PathType": "CPS1",
           "Path": "HealthcareService.id",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "HealthcareService id is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "HealthcareService.id must be GUID."
         },
         {
           "RuleType": "Required",
@@ -402,6 +425,14 @@
           "ExpectedValue": "true",
           "ErrorCode": "FIXED_VALUE_MISMATCH",
           "Message": "HealthcareService.active must be true."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.active",
+          "ExpectedType": "boolean",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "HealthcareService.active must be boolean."
         },
         {
           "RuleType": "Required",
@@ -426,30 +457,14 @@
           "Message": "HealthcareService.name is mandatory."
         },
         {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "HealthcareService.id",
-          "ExpectedType": "guid",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "HealthcareService.id must be GUID."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "HealthcareService.active",
-          "ExpectedType": "boolean",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "HealthcareService.active must be boolean."
-        },
-        {
           "RuleType": "Reference",
           "PathType": "CPS1",
           "Path": "HealthcareService.providedBy.reference",
           "TargetTypes": [
-            "Organization"
+            "Organization.Provider"
           ],
           "ErrorCode": "REF_PROVIDEDBY_INVALID",
-          "Message": "HealthcareService.providedBy.reference must reference an Organization."
+          "Message": "HealthcareService.providedBy.reference must reference a Provider Organization."
         }
       ],
       "ScopeDefinition": {
@@ -460,11 +475,24 @@
       "Scope": "Location",
       "Rules": [
         {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
           "RuleType": "Required",
           "PathType": "CPS1",
           "Path": "Location.id",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Location id is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Location.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Location.id must be GUID."
         },
         {
           "RuleType": "Required",
@@ -479,6 +507,14 @@
           "Path": "Location.address.postalCode",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Location postalCode is mandatory."
+        },
+        {
+          "RuleType": "Regex",
+          "PathType": "CPS1",
+          "Path": "Location.address.postalCode",
+          "Pattern": "^\\d{6}$",
+          "ErrorCode": "REGEX_INVALID_POSTAL",
+          "Message": "Location.postalCode must be a 6-digit value."
         },
         {
           "RuleType": "Required",
@@ -523,22 +559,6 @@
           "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].code",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Constituency code is mandatory."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Location.id",
-          "ExpectedType": "guid",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Location.id must be GUID."
-        },
-        {
-          "RuleType": "Regex",
-          "PathType": "CPS1",
-          "Path": "Location.address.postalCode",
-          "Pattern": "^\\d{6}$",
-          "ErrorCode": "REGEX_INVALID_POSTAL",
-          "Message": "Location.postalCode must be a 6-digit value."
         }
       ],
       "ScopeDefinition": {
@@ -549,11 +569,24 @@
       "Scope": "Organization.Provider",
       "Rules": [
         {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
           "RuleType": "Required",
           "PathType": "CPS1",
           "Path": "Organization.id",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Provider Organization id is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Organization.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Organization.id must be GUID."
         },
         {
           "RuleType": "Required",
@@ -606,14 +639,6 @@
           "Path": "Organization.name",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Provider Organization name is mandatory."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Organization.id",
-          "ExpectedType": "guid",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Organization.id must be GUID."
         }
       ],
       "ScopeDefinition": {
@@ -630,11 +655,24 @@
       "Scope": "Organization.Cluster",
       "Rules": [
         {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
           "RuleType": "Required",
           "PathType": "CPS1",
           "Path": "Organization.id",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Cluster Organization id is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Organization.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Organization.id must be GUID."
         },
         {
           "RuleType": "Required",
@@ -687,14 +725,6 @@
           "Path": "Organization.name",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Cluster Organization name is mandatory."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Organization.id",
-          "ExpectedType": "guid",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Organization.id must be GUID."
         }
       ],
       "ScopeDefinition": {
@@ -711,6 +741,11 @@
       "Scope": "Observation.HearingScreening",
       "Rules": [
         {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
           "RuleType": "Required",
           "PathType": "CPS1",
           "Path": "Observation.id",
@@ -718,20 +753,12 @@
           "Message": "Observation id is mandatory."
         },
         {
-          "RuleType": "Reference",
+          "RuleType": "Type",
           "PathType": "CPS1",
-          "Path": "Observation.subject.reference",
-          "TargetTypes": ["Patient"],
-          "ErrorCode": "INVALID_PATIENT_REFERENCE",
-          "Message": "Observation.subject must reference a valid Patient."
-        },
-        {
-          "RuleType": "Reference",
-          "PathType": "CPS1",
-          "Path": "Observation.encounter.reference",
-          "TargetTypes": ["Encounter"],
-          "ErrorCode": "INVALID_ENCOUNTER_REFERENCE",
-          "Message": "Observation.encounter must reference a valid Encounter."
+          "Path": "Observation.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Observation.id must be GUID."
         },
         {
           "RuleType": "Required",
@@ -776,14 +803,6 @@
           "Path": "Observation.component[*]",
           "ErrorCode": "INVALID_ANSWER_VALUE",
           "Message": "Observation components must use valid question codes, displays, and allowed answers."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Observation.id",
-          "ExpectedType": "guid",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Observation.id must be GUID."
         },
         {
           "RuleType": "Type",
@@ -838,6 +857,13 @@
           "Message": "Observation.encounter.reference must reference an Encounter."
         },
         {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.performer[*].reference",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation.performer.reference is mandatory."
+        },
+        {
           "RuleType": "Reference",
           "PathType": "CPS1",
           "Path": "Observation.performer[*].reference",
@@ -862,11 +888,24 @@
       "Scope": "Observation.OralScreening",
       "Rules": [
         {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
           "RuleType": "Required",
           "PathType": "CPS1",
           "Path": "Observation.id",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Observation id is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Observation.id must be GUID."
         },
         {
           "RuleType": "Required",
@@ -913,14 +952,6 @@
           "Message": "Observation components must use valid question codes, displays, and allowed answers."
         },
         {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Observation.id",
-          "ExpectedType": "guid",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Observation.id must be GUID."
-        },
-        {
           "RuleType": "Reference",
           "PathType": "CPS1",
           "Path": "Observation.subject.reference",
@@ -939,6 +970,13 @@
           ],
           "ErrorCode": "REF_OBS_ENCOUNTER_INVALID",
           "Message": "Observation.encounter.reference must reference an Encounter."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.performer[*].reference",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation.performer.reference is mandatory."
         },
         {
           "RuleType": "Reference",
@@ -965,11 +1003,24 @@
       "Scope": "Observation.VisionScreening",
       "Rules": [
         {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
           "RuleType": "Required",
           "PathType": "CPS1",
           "Path": "Observation.id",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Observation id is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Observation.id must be GUID."
         },
         {
           "RuleType": "Required",
@@ -1016,14 +1067,6 @@
           "Message": "Observation components must use valid question codes, displays, and allowed answers."
         },
         {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Observation.id",
-          "ExpectedType": "guid",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Observation.id must be GUID."
-        },
-        {
           "RuleType": "Reference",
           "PathType": "CPS1",
           "Path": "Observation.subject.reference",
@@ -1042,6 +1085,13 @@
           ],
           "ErrorCode": "REF_OBS_ENCOUNTER_INVALID",
           "Message": "Observation.encounter.reference must reference an Encounter."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.performer[*].reference",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation.performer.reference is mandatory."
         },
         {
           "RuleType": "Reference",
@@ -1132,14 +1182,14 @@
         "QuestionDisplay": "Pure Tone Screening at 25dBHL (Left)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
-          "500Hz \u2013 R",
-          "500Hz \u2013 NR",
-          "1000Hz \u2013 R",
-          "1000Hz \u2013 NR",
-          "2000Hz \u2013 R",
-          "2000Hz \u2013 NR",
-          "4000Hz \u2013 R",
-          "4000Hz \u2013 NR"
+          "500Hz – R",
+          "500Hz – NR",
+          "1000Hz – R",
+          "1000Hz – NR",
+          "2000Hz – R",
+          "2000Hz – NR",
+          "4000Hz – R",
+          "4000Hz – NR"
         ],
         "IsMultiValue": true
       },
@@ -1148,14 +1198,14 @@
         "QuestionDisplay": "Pure Tone Screening at 25dBHL (Right)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
-          "500Hz \u2013 R",
-          "500Hz \u2013 NR",
-          "1000Hz \u2013 R",
-          "1000Hz \u2013 NR",
-          "2000Hz \u2013 R",
-          "2000Hz \u2013 NR",
-          "4000Hz \u2013 R",
-          "4000Hz - NR"
+          "500Hz – R",
+          "500Hz – NR",
+          "1000Hz – R",
+          "1000Hz – NR",
+          "2000Hz – R",
+          "2000Hz – NR",
+          "4000Hz – R",
+          "4000Hz – NR"
         ],
         "IsMultiValue": true
       },
@@ -1164,14 +1214,14 @@
         "QuestionDisplay": "Pure Tone Screening at 40dBHL (Left)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
-          "500Hz \u2013 R",
-          "500Hz \u2013 NR",
-          "1000Hz \u2013 R",
-          "1000Hz \u2013 NR",
-          "2000Hz \u2013 R",
-          "2000Hz \u2013 NR",
-          "4000Hz \u2013 R",
-          "4000Hz - NR"
+          "500Hz – R",
+          "500Hz – NR",
+          "1000Hz – R",
+          "1000Hz – NR",
+          "2000Hz – R",
+          "2000Hz – NR",
+          "4000Hz – R",
+          "4000Hz – NR"
         ],
         "IsMultiValue": true
       },
@@ -1180,14 +1230,14 @@
         "QuestionDisplay": "Pure Tone Screening at 40dBHL (Right)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
-          "500Hz \u2013 R",
-          "500Hz \u2013 NR",
-          "1000Hz \u2013 R",
-          "1000Hz \u2013 NR",
-          "2000Hz \u2013 R",
-          "2000Hz \u2013 NR",
-          "4000Hz \u2013 R",
-          "4000Hz - NR"
+          "500Hz – R",
+          "500Hz – NR",
+          "1000Hz – R",
+          "1000Hz – NR",
+          "2000Hz – R",
+          "2000Hz – NR",
+          "4000Hz – R",
+          "4000Hz – NR"
         ],
         "IsMultiValue": true
       },
@@ -1491,7 +1541,7 @@
       },
       {
         "Id": "ethnicity",
-        "System": "https://fhir.synapxe.sg/CodeSystem/subsidy",
+        "System": "https://fhir.synapxe.sg/CodeSystem/ethnicity",
         "Description": "Ethnicity",
         "Concepts": [
           {
@@ -1503,12 +1553,12 @@
             "Display": "Malay"
           },
           {
-            "Code": "XX",
-            "Display": "Others"
-          },
-          {
             "Code": "IN",
             "Display": "Indian"
+          },
+          {
+            "Code": "XX",
+            "Display": "Others"
           }
         ]
       },
@@ -1541,16 +1591,20 @@
         "Description": "Organization Type",
         "Concepts": [
           {
+            "Code": "CLUSTER",
+            "Display": "cluster"
+          },
+          {
+            "Code": "PROVIDER",
+            "Display": "primary care provider"
+          },
+          {
             "Code": "GP",
             "Display": "general practitioner"
           },
           {
             "Code": "POLY",
             "Display": "polyclinic"
-          },
-          {
-            "Code": "CLUSTER",
-            "Display": "cluster"
           },
           {
             "Code": "OTHER",
@@ -1619,7 +1673,7 @@
           },
           {
             "Code": "Other",
-            "Display": "Other Public Assistance Scheme (Public Assistance, ComCare, Medifund, Medical Fee Exemption Card)"
+            "Display": "Other Public Assistance Scheme"
           }
         ]
       }

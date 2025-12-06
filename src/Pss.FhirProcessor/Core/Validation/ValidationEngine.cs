@@ -152,25 +152,27 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     return result;
                 }
 
-                // Extract resources
+                // Extract resources with their fullUrls
                 _logger.Debug("Extracting resources from bundle entries...");
-                var resources = new List<JObject>();
+                var resourcesWithFullUrls = new List<(JObject resource, string fullUrl)>();
                 foreach (var entry in entries)
                 {
                     var resource = entry["resource"] as JObject;
+                    var fullUrl = entry["fullUrl"]?.ToString();
                     if (resource != null)
                     {
-                        resources.Add(resource);
+                        resourcesWithFullUrls.Add((resource, fullUrl));
                         var rt = resource["resourceType"]?.ToString();
-                        _logger.Verbose($"  Found resource: {rt}");
+                        _logger.Verbose($"  Found resource: {rt} (fullUrl: {fullUrl ?? "none"})");
                     }
                 }
                 
-                _logger.Info($"Extracted {resources.Count} resources");
+                _logger.Info($"Extracted {resourcesWithFullUrls.Count} resources");
                 
                 // Log resource type breakdown
-                var resourceTypes = resources
-                    .Select(r => r["resourceType"]?.ToString())
+                var resourceTypes = resourcesWithFullUrls
+                    .Where(r => r.resource != null)
+                    .Select(r => r.resource["resourceType"]?.ToString())
                     .Where(rt => rt != null)
                     .GroupBy(rt => rt)
                     .ToDictionary(g => g.Key, g => g.Count());
@@ -189,20 +191,20 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     _logger.Debug($"\nProcessing RuleSet: {ruleSet.Scope}");
                     _logger.Debug($"  Rules: {ruleSet.Rules.Count}");
                     
-                    var scopeResources = SelectResourcesByScope(resources, ruleSet);
-                    _logger.Debug($"  Matching resources: {scopeResources.Count}");
+                    var scopeResourcesWithUrls = SelectResourcesByScope(resourcesWithFullUrls, ruleSet);
+                    _logger.Debug($"  Matching resources: {scopeResourcesWithUrls.Count}");
 
-                    if (scopeResources.Count == 0)
+                    if (scopeResourcesWithUrls.Count == 0)
                     {
                         _logger.Verbose($"  No resources found for scope {ruleSet.Scope} - skipping");
                         continue;
                     }
 
-                    foreach (var resource in scopeResources)
+                    foreach (var (resource, fullUrl) in scopeResourcesWithUrls)
                     {
                         var resourceId = resource["id"]?.ToString() ?? "unknown";
                         _logger.Verbose($"  Validating resource: {ruleSet.Scope}/{resourceId}");
-                        ValidateResource(resource, ruleSet, result);
+                        ValidateResource(resource, fullUrl, ruleSet, result);
                     }
                 }
 
@@ -241,7 +243,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             catch (Exception ex)
             {
                 _logger.Error($"Validation error: {ex.Message}");
-                _logger.Verbose($"Stack trace: {ex.StackTrace}");
+                _logger.Error($"Stack trace: {ex.StackTrace}");
                 result.AddError("VALIDATION_ERROR", "", $"Validation error: {ex.Message}");
             }
 
@@ -252,9 +254,9 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         /// <summary>
         /// Select resources by scope using metadata-driven matching
         /// </summary>
-        private List<JObject> SelectResourcesByScope(List<JObject> resources, RuleSet ruleSet)
+        private List<(JObject resource, string fullUrl)> SelectResourcesByScope(List<(JObject resource, string fullUrl)> resourcesWithUrls, RuleSet ruleSet)
         {
-            var results = new List<JObject>();
+            var results = new List<(JObject resource, string fullUrl)>();
 
             // Use ScopeDefinition if available (metadata-driven)
             if (ruleSet.ScopeDefinition != null)
@@ -263,11 +265,13 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 _logger?.Verbose($"    ResourceType: {ruleSet.ScopeDefinition.ResourceType}");
                 _logger?.Verbose($"    Match conditions: {ruleSet.ScopeDefinition.Match?.Count ?? 0}");
 
-                foreach (var resource in resources)
+                foreach (var (resource, fullUrl) in resourcesWithUrls)
                 {
+                    if (resource == null) continue; // Skip null resources
+                    
                     if (ResourceMatchesScope(resource, ruleSet.ScopeDefinition))
                     {
-                        results.Add(resource);
+                        results.Add((resource, fullUrl));
                         var resourceId = resource["id"]?.ToString() ?? "unknown";
                         _logger?.Verbose($"    ✓ Resource {resourceId} matched scope {ruleSet.Scope}");
                     }
@@ -284,19 +288,21 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 
                 _logger?.Verbose($"    Matching by ResourceType: {resourceType}");
 
-                foreach (var resource in resources)
+                foreach (var (resource, fullUrl) in resourcesWithUrls)
                 {
+                    if (resource == null) continue; // Skip null resources
+                    
                     var type = resource["resourceType"]?.ToString();
                     if (type == resourceType)
                     {
-                        results.Add(resource);
+                        results.Add((resource, fullUrl));
                         var resourceId = resource["id"]?.ToString() ?? "unknown";
                         _logger?.Verbose($"    ✓ Resource {resourceId} matched type {resourceType}");
                     }
                 }
             }
 
-            _logger?.Debug($"  Selected {results.Count}/{resources.Count} resources");
+            _logger?.Debug($"  Selected {results.Count}/{resourcesWithUrls.Count} resources");
             return results;
         }
 
@@ -351,14 +357,14 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         /// <summary>
         /// Validate a single resource against a RuleSet
         /// </summary>
-        private void ValidateResource(JObject resource, RuleSet ruleSet, ValidationResult result)
+        private void ValidateResource(JObject resource, string fullUrl, RuleSet ruleSet, ValidationResult result)
         {
             _logger?.Debug($"    Validating {ruleSet.Rules.Count} rule(s)...");
             foreach (var rule in ruleSet.Rules)
             {
                 // Normalize the path by removing resource type prefix if present
                 var normalizedRule = NormalizeRulePath(rule, ruleSet.Scope);
-                RuleEvaluator.ApplyRule(resource, normalizedRule, ruleSet.Scope, _metadata.CodesMaster, _bundleRoot, result, _logger);
+                RuleEvaluator.ApplyRule(resource, normalizedRule, ruleSet.Scope, _metadata.CodesMaster, _bundleRoot, result, _logger, fullUrl);
             }
         }
 
@@ -389,7 +395,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             };
 
             // Strip resource type prefix if present
-            if (normalizedRule.Path.StartsWith(resourceType + "."))
+            if (normalizedRule.Path != null && normalizedRule.Path.StartsWith(resourceType + "."))
             {
                 normalizedRule.Path = normalizedRule.Path.Substring(resourceType.Length + 1);
             }

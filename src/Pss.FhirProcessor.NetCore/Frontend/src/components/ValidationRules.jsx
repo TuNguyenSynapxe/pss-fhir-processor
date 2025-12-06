@@ -11,36 +11,45 @@ function ValidationRules() {
 
   const ruleColumns = [
     {
-      title: 'Rule Type',
-      dataIndex: 'RuleType',
-      key: 'ruleType',
-      render: (type) => {
+      title: 'Rule Type & Path',
+      key: 'ruleTypeAndPath',
+      render: (_, record) => {
         const colors = {
           Required: 'blue',
           CodesMaster: 'green',
           FixedCoding: 'orange',
-          Display: 'purple'
+          Display: 'purple',
+          FullUrlIdMatch: 'cyan'
         };
-        return <Tag color={colors[type] || 'default'}>{type}</Tag>;
+        return (
+          <div className="space-y-1">
+            <div>
+              <Tag color={colors[record.RuleType] || 'default'}>{record.RuleType}</Tag>
+            </div>
+            {record.Path && (
+              <div>
+                <code className="bg-gray-100 px-2 py-1 rounded text-xs">{record.Path}</code>
+              </div>
+            )}
+          </div>
+        );
       }
     },
     {
-      title: 'Path',
-      dataIndex: 'Path',
-      key: 'path',
-      render: (path) => <code className="bg-gray-100 px-2 py-1 rounded">{path}</code>
-    },
-    {
-      title: 'Error Code',
-      dataIndex: 'ErrorCode',
-      key: 'errorCode',
-      render: (code) => code ? <Tag color="red">{code}</Tag> : '-'
-    },
-    {
-      title: 'Message',
-      dataIndex: 'Message',
-      key: 'message',
-      render: (msg) => msg || '-'
+      title: 'Error Code & Message',
+      key: 'errorCodeAndMessage',
+      render: (_, record) => (
+        <div className="space-y-1">
+          {record.ErrorCode && (
+            <div>
+              <Tag color="red">{record.ErrorCode}</Tag>
+            </div>
+          )}
+          {record.Message && (
+            <div className="text-sm text-gray-700">{record.Message}</div>
+          )}
+        </div>
+      )
     }
   ];
 
