@@ -55,6 +55,10 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     EvaluateFullUrlIdMatch(resource, entryFullUrl, rule, scope, result, logger);
                     break;
 
+                case "CodeSystem":
+                    EvaluateCodeSystem(resource, rule, scope, codesMaster, result, logger);
+                    break;
+
                 default:
                     logger?.Warn($"    Unknown rule type: {rule.RuleType}");
                     break;
@@ -63,10 +67,38 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
 
         /// <summary>
         /// Required rule: Path must exist and have a value
+        /// Supports Bundle.entry[ResourceType] syntax for checking resource existence in bundles
         /// </summary>
         private static void EvaluateRequired(JObject resource, RuleDefinition rule, string scope, 
             ValidationResult result, Logger logger)
         {
+            logger?.Verbose($"      → Evaluating Required rule: path='{rule.Path}'");
+            
+            // Special handling for Bundle.entry[ResourceType] syntax
+            // This checks if a specific resource type exists in the bundle
+            if (rule.Path != null && rule.Path.StartsWith("Bundle.entry[") && rule.Path.EndsWith("]"))
+            {
+                logger?.Verbose($"      → Bundle resource existence check detected");
+                
+                // For this check, resource should be the bundle itself
+                // Use CpsPathResolver's ExistsResourceByType method
+                bool exists = CpsPathResolver.ExistsResourceByType(resource, rule.Path);
+                
+                if (!exists)
+                {
+                    logger?.Verbose($"      ✗ Resource type not found in bundle");
+                    var detailedMessage = rule.Message ?? $"Required resource not found in bundle";
+                    detailedMessage += $" | Path '{rule.Path}'";
+                    result.AddError(rule.ErrorCode ?? "MANDATORY_MISSING", rule.Path, detailedMessage, scope);
+                }
+                else
+                {
+                    logger?.Verbose($"      ✓ Resource type found in bundle");
+                }
+                return;
+            }
+            
+            // Standard path resolution for other Required rules
             logger?.Verbose($"      → Resolving path: {rule.Path}");
             var values = CpsPathResolver.Resolve(resource, rule.Path);
             logger?.Verbose($"      → Found {values.Count} value(s)");
@@ -79,7 +111,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 logger?.Verbose($"      Resource JSON: {preview}");
                 
                 var detailedMessage = $"{rule.Message} | Path '{rule.Path}' not found in {scope} resource. Checked path: {rule.Path}";
-                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope);
+                result.AddError(rule.ErrorCode ?? "MANDATORY_MISSING", rule.Path, detailedMessage, scope);
                 return;
             }
 
@@ -107,7 +139,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 logger?.Verbose($"      ✗ Path found but all values are empty or null");
                 var actualValues = string.Join(", ", values.Select(v => $"'{v}'"));
                 var detailedMessage = $"{rule.Message} | Path '{rule.Path}' found but value is empty or null. Actual values: [{actualValues}]";
-                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope);
+                result.AddError(rule.ErrorCode ?? "MANDATORY_MISSING", rule.Path, detailedMessage, scope);
             }
             else
             {
@@ -558,6 +590,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         /// <summary>
         /// Reference rule: Validate that a reference points to an existing resource in the bundle
         /// Supports formats: "ResourceType/id" and "urn:uuid:guid"
+        /// Updated for v11: Check if reference property exists first, return MANDATORY_MISSING if not
         /// </summary>
         private static void EvaluateReference(JObject resource, RuleDefinition rule, string scope,
             JObject bundleRoot, ValidationResult result, Logger logger)
@@ -573,11 +606,26 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             logger?.Verbose($"      → Resolving path: {rule.Path}");
             logger?.Verbose($"      → Target types: {string.Join(", ", rule.TargetTypes)}");
 
-            var refValue = CpsPathResolver.GetValueAsString(resource, rule.Path);
-
-            if (refValue == null || string.IsNullOrWhiteSpace(refValue))
+            // Check if reference path exists first
+            var refValues = CpsPathResolver.Resolve(resource, rule.Path);
+            
+            if (refValues.Count == 0)
             {
-                logger?.Verbose($"      ⊘ Path not found or value is null/empty - skipping reference validation (use Required rule for mandatory checks)");
+                // Reference property is missing entirely - return MANDATORY_MISSING
+                logger?.Verbose($"      ✗ Reference property '{rule.Path}' not found (missing)");
+                result.AddError("MANDATORY_MISSING", rule.Path,
+                    $"Required reference field '{rule.Path}' is missing", scope);
+                return;
+            }
+
+            var refValue = refValues[0]?.ToString();
+
+            if (string.IsNullOrWhiteSpace(refValue))
+            {
+                // Reference property exists but is empty - return MANDATORY_MISSING
+                logger?.Verbose($"      ✗ Reference property '{rule.Path}' is empty");
+                result.AddError("MANDATORY_MISSING", rule.Path,
+                    $"Required reference field '{rule.Path}' is empty", scope);
                 return;
             }
 
@@ -739,6 +787,104 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             }
 
             logger?.Verbose($"      ✓ FullUrlIdMatch OK");
+        }
+
+        /// <summary>
+        /// CodeSystem rule: Validate that a coding's code exists in the specified CodeSystem
+        /// Path should point to a Coding object with 'system' and 'code' properties
+        /// </summary>
+        private static void EvaluateCodeSystem(JObject resource, RuleDefinition rule, string scope,
+            CodesMaster codesMaster, ValidationResult result, Logger logger)
+        {
+            if (string.IsNullOrEmpty(rule.System))
+            {
+                logger?.Verbose($"      ✗ System is missing in CodeSystem rule");
+                result.AddError("CODESYSTEM_VALIDATION_ERROR", rule.Path,
+                    "CodeSystem rule missing System property", scope);
+                return;
+            }
+
+            if (codesMaster == null || codesMaster.CodeSystems == null)
+            {
+                logger?.Verbose($"      ✗ CodesMaster or CodeSystems not available");
+                result.AddError("CODESYSTEM_VALIDATION_ERROR", rule.Path,
+                    "CodesMaster metadata not available for CodeSystem validation", scope);
+                return;
+            }
+
+            logger?.Verbose($"      → Resolving path: {rule.Path}");
+            logger?.Verbose($"      → Expected system: '{rule.System}'");
+
+            var codingValues = CpsPathResolver.Resolve(resource, rule.Path);
+
+            if (codingValues.Count == 0)
+            {
+                logger?.Verbose($"      ⊘ Path not found - skipping CodeSystem validation (use Required rule for mandatory checks)");
+                return;
+            }
+
+            // Find the matching CodeSystem in metadata
+            var codeSystem = codesMaster.CodeSystems?.FirstOrDefault(cs => 
+                cs.System != null && cs.System.Equals(rule.System, StringComparison.OrdinalIgnoreCase));
+
+            if (codeSystem == null)
+            {
+                logger?.Verbose($"      ✗ CodeSystem '{rule.System}' not found in metadata");
+                result.AddError("CODESYSTEM_NOT_FOUND", rule.Path,
+                    $"CodeSystem '{rule.System}' not found in metadata", scope);
+                return;
+            }
+
+            if (codeSystem.Concepts == null || codeSystem.Concepts.Count == 0)
+            {
+                logger?.Verbose($"      ⚠ CodeSystem '{rule.System}' has no concepts defined");
+                return;
+            }
+
+            logger?.Verbose($"      → CodeSystem found with {codeSystem.Concepts.Count} concept(s)");
+
+            // Validate each coding
+            foreach (var codingToken in codingValues)
+            {
+                if (codingToken.Type != JTokenType.Object)
+                {
+                    logger?.Verbose($"      ✗ Value is not a Coding object");
+                    continue;
+                }
+
+                var coding = (JObject)codingToken;
+                var system = coding["system"]?.ToString();
+                var code = coding["code"]?.ToString();
+
+                logger?.Verbose($"      → Checking coding: system='{system}', code='{code}'");
+
+                // Skip if system doesn't match
+                if (system != rule.System)
+                {
+                    logger?.Verbose($"      ⊘ System doesn't match, skipping");
+                    continue;
+                }
+
+                // Check if code exists in CodeSystem concepts
+                var conceptExists = codeSystem.Concepts.Any(c => 
+                    c.Code != null && c.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
+
+                if (!conceptExists)
+                {
+                    logger?.Verbose($"      ✗ Code '{code}' not found in CodeSystem '{rule.System}'");
+                    var availableCodes = string.Join(", ", codeSystem.Concepts.Select(c => $"'{c.Code}'").Take(10));
+                    if (codeSystem.Concepts.Count > 10)
+                    {
+                        availableCodes += $" (and {codeSystem.Concepts.Count - 10} more)";
+                    }
+                    result.AddError(rule.ErrorCode ?? "INVALID_CODE", rule.Path,
+                        $"{rule.Message ?? $"Invalid code in CodeSystem '{rule.System}'"} | Code: '{code}' | Available codes: [{availableCodes}]", scope);
+                }
+                else
+                {
+                    logger?.Verbose($"      ✓ Code '{code}' is valid");
+                }
+            }
         }
     }
 }

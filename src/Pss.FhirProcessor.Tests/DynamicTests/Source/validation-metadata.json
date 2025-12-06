@@ -1,0 +1,1682 @@
+{
+  "Version": "10.0",
+  "PathSyntax": "CPS1",
+  "RuleSets": [
+    {
+      "Scope": "Bundle",
+      "Rules": [
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Bundle.entry[Patient]",
+          "ErrorCode": "MISSING_PATIENT",
+          "Message": "Bundle must contain a Patient resource."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Bundle.entry[Encounter]",
+          "ErrorCode": "MISSING_ENCOUNTER",
+          "Message": "Bundle must contain an Encounter resource."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Bundle.entry[HealthcareService]",
+          "ErrorCode": "MISSING_HEALTHCARESERVICE",
+          "Message": "Bundle must contain a HealthcareService resource."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Bundle.entry[Location]",
+          "ErrorCode": "MISSING_LOCATION",
+          "Message": "Bundle must contain a Location resource."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Bundle.entry[Organization.Provider]",
+          "ErrorCode": "MISSING_PROVIDER_ORG",
+          "Message": "Bundle must contain a Provider Organization."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Bundle.entry[Organization.Cluster]",
+          "ErrorCode": "MISSING_CLUSTER_ORG",
+          "Message": "Bundle must contain a Cluster Organization."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Bundle.entry[Observation:HS]",
+          "ErrorCode": "MISSING_SCREENING_TYPE",
+          "Message": "Bundle must contain a Hearing Screening (HS) Observation."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Bundle.entry[Observation:OS]",
+          "ErrorCode": "MISSING_SCREENING_TYPE",
+          "Message": "Bundle must contain an Oral Screening (OS) Observation."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Bundle.entry[Observation:VS]",
+          "ErrorCode": "MISSING_SCREENING_TYPE",
+          "Message": "Bundle must contain a Vision Screening (VS) Observation."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Bundle.entry[*].fullUrl",
+          "ExpectedType": "guid-uri",
+          "ErrorCode": "TYPE_INVALID_FULLURL",
+          "Message": "Bundle.entry.fullUrl must be urn:uuid:<GUID>."
+        }
+      ]
+    },
+    {
+      "Scope": "Patient",
+      "Rules": [
+        {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.id",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Logical id of Patient is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Patient.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Patient.id must be GUID."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.identifier[system:https://fhir.synapxe.sg/NamingSystem/nric].value",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "NRIC is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Patient.identifier[system:https://fhir.synapxe.sg/NamingSystem/nric].system",
+          "ExpectedValue": "https://fhir.synapxe.sg/NamingSystem/nric",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "NRIC identifier.system must be the PSS NRIC NamingSystem."
+        },
+        {
+          "RuleType": "Regex",
+          "PathType": "CPS1",
+          "Path": "Patient.identifier[system:https://fhir.synapxe.sg/NamingSystem/nric].value",
+          "Pattern": "^[STFG]\\d{7}[A-Z]$",
+          "ErrorCode": "REGEX_INVALID_NRIC",
+          "Message": "NRIC format is invalid."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.name",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Patient name is mandatory."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.gender",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Patient gender is mandatory."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.birthDate",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Patient birthDate is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Patient.birthDate",
+          "ExpectedType": "date",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Patient.birthDate must be YYYY-MM-DD."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.address.line",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "At least one address line is mandatory."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.address.postalCode",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Postal code is mandatory."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.communication.language.coding.system",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Language coding system is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Patient.communication.language.coding.system",
+          "ExpectedValue": "urn:ietf:bcp:47",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Language coding system must be urn:ietf:bcp:47."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.communication.language.coding.code",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Preferred language code is mandatory."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-ethnicity].valueCodeableConcept.coding[0].system",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Ethnicity coding system is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-ethnicity].valueCodeableConcept.coding[0].system",
+          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/ethnicity",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Ethnicity must use the PSS ethnicity CodeSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-ethnicity].valueCodeableConcept.coding[0].code",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Ethnicity code is mandatory."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-residential-status].valueCodeableConcept.coding[0].system",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Residential status coding system is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-residential-status].valueCodeableConcept.coding[0].system",
+          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/residential-status",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Residential status must use the PSS residential-status CodeSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-residential-status].valueCodeableConcept.coding[0].code",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Residential status code is mandatory."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-subsidy].valueCodeableConcept.coding[0].system",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Subsidy coding system is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-subsidy].valueCodeableConcept.coding[0].system",
+          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/subsidy",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Subsidy must use the PSS subsidy CodeSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-subsidy].valueCodeableConcept.coding[0].code",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Subsidy code is mandatory."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-consent-for-sharing].valueBoolean",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Consent for sharing is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-consent-for-sharing].valueBoolean",
+          "ExpectedType": "boolean",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Consent for sharing must be boolean."
+        }
+      ],
+      "ScopeDefinition": {
+        "ResourceType": "Patient"
+      }
+    },
+    {
+      "Scope": "Encounter",
+      "Rules": [
+        {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Encounter.id",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Encounter id is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Encounter.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Encounter.id must be GUID."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Encounter.status",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Encounter status is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Encounter.status",
+          "ExpectedValue": "completed",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Encounter status must be 'completed'."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Encounter.identifier[system:https://fhir.synapxe.sg/NamingSystem/event-id].value",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Event identifier is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Encounter.identifier[system:https://fhir.synapxe.sg/NamingSystem/event-id].system",
+          "ExpectedValue": "https://fhir.synapxe.sg/NamingSystem/event-id",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Encounter identifier.system must be the event-id NamingSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Encounter.actualPeriod.start",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Encounter actualPeriod.start is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Encounter.actualPeriod.start",
+          "ExpectedType": "datetime",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Encounter.actualPeriod.start must be ISO-8601 datetime."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Encounter.serviceType.reference",
+          "TargetTypes": [
+            "HealthcareService"
+          ],
+          "ErrorCode": "REF_SERVICE_TYPE_INVALID",
+          "Message": "Encounter.serviceType.reference must reference a HealthcareService."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Encounter.serviceProvider.reference",
+          "TargetTypes": [
+            "Organization"
+          ],
+          "ErrorCode": "REF_SERVICE_PROVIDER_INVALID",
+          "Message": "Encounter.serviceProvider.reference must reference an Organization."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Encounter.subject.reference",
+          "TargetTypes": [
+            "Patient"
+          ],
+          "ErrorCode": "REF_SUBJECT_INVALID",
+          "Message": "Encounter.subject.reference must reference a Patient."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Encounter.location[*].location.reference",
+          "TargetTypes": [
+            "Location"
+          ],
+          "ErrorCode": "REF_LOCATION_INVALID",
+          "Message": "Encounter.location.location.reference must reference a Location."
+        }
+      ],
+      "ScopeDefinition": {
+        "ResourceType": "Encounter"
+      }
+    },
+    {
+      "Scope": "HealthcareService",
+      "Rules": [
+        {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.id",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "HealthcareService id is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "HealthcareService.id must be GUID."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.active",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "HealthcareService.active is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.active",
+          "ExpectedValue": "true",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "HealthcareService.active must be true."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.active",
+          "ExpectedType": "boolean",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "HealthcareService.active must be boolean."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.identifier[system:https://fhir.synapxe.sg/NamingSystem/screening-campaign].value",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Screening campaign identifier is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.identifier[system:https://fhir.synapxe.sg/NamingSystem/screening-campaign].system",
+          "ExpectedValue": "https://fhir.synapxe.sg/NamingSystem/screening-campaign",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "HealthcareService identifier.system must be screening-campaign NamingSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.name",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "HealthcareService.name is mandatory."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.providedBy.reference",
+          "TargetTypes": [
+            "Organization.Provider"
+          ],
+          "ErrorCode": "REF_PROVIDEDBY_INVALID",
+          "Message": "HealthcareService.providedBy.reference must reference a Provider Organization."
+        }
+      ],
+      "ScopeDefinition": {
+        "ResourceType": "HealthcareService"
+      }
+    },
+    {
+      "Scope": "Location",
+      "Rules": [
+        {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Location.id",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Location id is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Location.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Location.id must be GUID."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Location.address.line",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Location address line is mandatory."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Location.address.postalCode",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Location postalCode is mandatory."
+        },
+        {
+          "RuleType": "Regex",
+          "PathType": "CPS1",
+          "Path": "Location.address.postalCode",
+          "Pattern": "^\\d{6}$",
+          "ErrorCode": "REGEX_INVALID_POSTAL",
+          "Message": "Location.postalCode must be a 6-digit value."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0].system",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "GRC coding system is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0].system",
+          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/grc",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "GRC must use the PSS grc CodeSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0].code",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "GRC code is mandatory."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].system",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Constituency coding system is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].system",
+          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/constituency",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Constituency must use the PSS constituency CodeSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].code",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Constituency code is mandatory."
+        }
+      ],
+      "ScopeDefinition": {
+        "ResourceType": "Location"
+      }
+    },
+    {
+      "Scope": "Organization.Provider",
+      "Rules": [
+        {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Organization.id",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Provider Organization id is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Organization.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Organization.id must be GUID."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Organization.identifier[system:https://fhir.synapxe.sg/NamingSystem/hci-code].value",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Provider Organization HCI code is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Organization.identifier[system:https://fhir.synapxe.sg/NamingSystem/hci-code].system",
+          "ExpectedValue": "https://fhir.synapxe.sg/NamingSystem/hci-code",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Provider Organization HCI identifier.system must be hci-code NamingSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Organization.type.coding.system",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Provider Organization type.coding.system is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Organization.type.coding.system",
+          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/organization-type",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Provider Organization type must use organization-type CodeSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Organization.type.coding.code",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Provider Organization type.coding.code is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Organization.type.coding.code",
+          "ExpectedValue": "PROVIDER",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Provider Organization type.coding.code must be PROVIDER."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Organization.name",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Provider Organization name is mandatory."
+        }
+      ],
+      "ScopeDefinition": {
+        "ResourceType": "Organization",
+        "Match": [
+          {
+            "Path": "type.coding[system:https://fhir.synapxe.sg/CodeSystem/organization-type].code",
+            "Expected": "PROVIDER"
+          }
+        ]
+      }
+    },
+    {
+      "Scope": "Organization.Cluster",
+      "Rules": [
+        {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Organization.id",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Cluster Organization id is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Organization.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Organization.id must be GUID."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Organization.identifier[system:https://fhir.synapxe.sg/NamingSystem/hci-code].value",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Cluster Organization HCI code is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Organization.identifier[system:https://fhir.synapxe.sg/NamingSystem/hci-code].system",
+          "ExpectedValue": "https://fhir.synapxe.sg/NamingSystem/hci-code",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Cluster Organization HCI identifier.system must be hci-code NamingSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Organization.type.coding.system",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Cluster Organization type.coding.system is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Organization.type.coding.system",
+          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/organization-type",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Cluster Organization type must use organization-type CodeSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Organization.type.coding.code",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Cluster Organization type.coding.code is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Organization.type.coding.code",
+          "ExpectedValue": "CLUSTER",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Cluster Organization type.coding.code must be CLUSTER."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Organization.name",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Cluster Organization name is mandatory."
+        }
+      ],
+      "ScopeDefinition": {
+        "ResourceType": "Organization",
+        "Match": [
+          {
+            "Path": "type.coding[system:https://fhir.synapxe.sg/CodeSystem/organization-type].code",
+            "Expected": "CLUSTER"
+          }
+        ]
+      }
+    },
+    {
+      "Scope": "Observation.HearingScreening",
+      "Rules": [
+        {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.id",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation id is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Observation.id must be GUID."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.code.coding.system",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation.code.coding.system is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Observation.code.coding.system",
+          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/screening-type",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Observation.code.coding.system must be screening-type CodeSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.code.coding.code",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation screening-type code is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Observation.code.coding.code",
+          "ExpectedValue": "HS",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Observation screening-type code must be HS."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.component[*]",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "At least one Observation.component is required."
+        },
+        {
+          "RuleType": "CodesMaster",
+          "PathType": "CPS1",
+          "Path": "Observation.component[*]",
+          "ErrorCode": "INVALID_ANSWER_VALUE",
+          "Message": "Observation components must use valid question codes, displays, and allowed answers."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.component[QuestionCode:SQ-F7B7-00000007].valueString",
+          "ExpectedType": "pipestring[]",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Pure Tone 25dBHL (Left) must be a pipe-separated list of values."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.component[QuestionCode:SQ-B7P7-00000008].valueString",
+          "ExpectedType": "pipestring[]",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Pure Tone 25dBHL (Right) must be a pipe-separated list of values."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.component[QuestionCode:SQ-C1M5-00000009].valueString",
+          "ExpectedType": "pipestring[]",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Pure Tone 40dBHL (Left) must be a pipe-separated list of values."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.component[QuestionCode:SQ-C2S1-00000010].valueString",
+          "ExpectedType": "pipestring[]",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Pure Tone 40dBHL (Right) must be a pipe-separated list of values."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.subject.reference",
+          "TargetTypes": [
+            "Patient"
+          ],
+          "ErrorCode": "REF_OBS_SUBJECT_INVALID",
+          "Message": "Observation.subject.reference must reference a Patient."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.encounter.reference",
+          "TargetTypes": [
+            "Encounter"
+          ],
+          "ErrorCode": "REF_OBS_ENCOUNTER_INVALID",
+          "Message": "Observation.encounter.reference must reference an Encounter."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.performer[*].reference",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation.performer.reference is mandatory."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.performer[*].reference",
+          "TargetTypes": [
+            "Organization"
+          ],
+          "ErrorCode": "REF_OBS_PERFORMER_INVALID",
+          "Message": "Observation.performer.reference must reference an Organization."
+        }
+      ],
+      "ScopeDefinition": {
+        "ResourceType": "Observation",
+        "Match": [
+          {
+            "Path": "code.coding[system:https://fhir.synapxe.sg/CodeSystem/screening-type].code",
+            "Expected": "HS"
+          }
+        ]
+      }
+    },
+    {
+      "Scope": "Observation.OralScreening",
+      "Rules": [
+        {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.id",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation id is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Observation.id must be GUID."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.code.coding.system",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation.code.coding.system is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Observation.code.coding.system",
+          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/screening-type",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Observation.code.coding.system must be screening-type CodeSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.code.coding.code",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation screening-type code is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Observation.code.coding.code",
+          "ExpectedValue": "OS",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Observation screening-type code must be OS."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.component[*]",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "At least one Observation.component is required."
+        },
+        {
+          "RuleType": "CodesMaster",
+          "PathType": "CPS1",
+          "Path": "Observation.component[*]",
+          "ErrorCode": "INVALID_ANSWER_VALUE",
+          "Message": "Observation components must use valid question codes, displays, and allowed answers."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.subject.reference",
+          "TargetTypes": [
+            "Patient"
+          ],
+          "ErrorCode": "REF_OBS_SUBJECT_INVALID",
+          "Message": "Observation.subject.reference must reference a Patient."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.encounter.reference",
+          "TargetTypes": [
+            "Encounter"
+          ],
+          "ErrorCode": "REF_OBS_ENCOUNTER_INVALID",
+          "Message": "Observation.encounter.reference must reference an Encounter."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.performer[*].reference",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation.performer.reference is mandatory."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.performer[*].reference",
+          "TargetTypes": [
+            "Organization"
+          ],
+          "ErrorCode": "REF_OBS_PERFORMER_INVALID",
+          "Message": "Observation.performer.reference must reference an Organization."
+        }
+      ],
+      "ScopeDefinition": {
+        "ResourceType": "Observation",
+        "Match": [
+          {
+            "Path": "code.coding[system:https://fhir.synapxe.sg/CodeSystem/screening-type].code",
+            "Expected": "OS"
+          }
+        ]
+      }
+    },
+    {
+      "Scope": "Observation.VisionScreening",
+      "Rules": [
+        {
+          "RuleType": "FullUrlIdMatch",
+          "ErrorCode": "ID_FULLURL_MISMATCH",
+          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.id",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation id is mandatory."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Observation.id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Observation.id must be GUID."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.code.coding.system",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation.code.coding.system is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Observation.code.coding.system",
+          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/screening-type",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Observation.code.coding.system must be screening-type CodeSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.code.coding.code",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation screening-type code is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "Observation.code.coding.code",
+          "ExpectedValue": "VS",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Observation screening-type code must be VS."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.component[*]",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "At least one Observation.component is required."
+        },
+        {
+          "RuleType": "CodesMaster",
+          "PathType": "CPS1",
+          "Path": "Observation.component[*]",
+          "ErrorCode": "INVALID_ANSWER_VALUE",
+          "Message": "Observation components must use valid question codes, displays, and allowed answers."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.subject.reference",
+          "TargetTypes": [
+            "Patient"
+          ],
+          "ErrorCode": "REF_OBS_SUBJECT_INVALID",
+          "Message": "Observation.subject.reference must reference a Patient."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.encounter.reference",
+          "TargetTypes": [
+            "Encounter"
+          ],
+          "ErrorCode": "REF_OBS_ENCOUNTER_INVALID",
+          "Message": "Observation.encounter.reference must reference an Encounter."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.performer[*].reference",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation.performer.reference is mandatory."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
+          "Path": "Observation.performer[*].reference",
+          "TargetTypes": [
+            "Organization"
+          ],
+          "ErrorCode": "REF_OBS_PERFORMER_INVALID",
+          "Message": "Observation.performer.reference must reference an Organization."
+        }
+      ],
+      "ScopeDefinition": {
+        "ResourceType": "Observation",
+        "Match": [
+          {
+            "Path": "code.coding[system:https://fhir.synapxe.sg/CodeSystem/screening-type].code",
+            "Expected": "VS"
+          }
+        ]
+      }
+    }
+  ],
+  "CodesMaster": {
+    "Questions": [
+      {
+        "QuestionCode": "SQ-L2H9-00000001",
+        "QuestionDisplay": "Is the participant currently wearing hearing aid(s)?",
+        "ScreeningType": "HS",
+        "AllowedAnswers": [
+          "Yes (Proceed to next question)",
+          "No (To continue with hearing screening)"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-Q1P1-00000002",
+        "QuestionDisplay": "Do participant need to change your hearing aid(s)?",
+        "ScreeningType": "HS",
+        "AllowedAnswers": [
+          "Yes (To skip hearing screening and refer to L2 Hearing)",
+          "No (To skip hearing screening and advise to continue follow up with audiologist)"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-R5W8-00000003",
+        "QuestionDisplay": "Did participant proceed with Hearing Screening?",
+        "ScreeningType": "HS",
+        "AllowedAnswers": [
+          "Yes",
+          "No"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-P4Y1-00000004",
+        "QuestionDisplay": "Visual Ear Examination (Left Ear)",
+        "ScreeningType": "HS",
+        "AllowedAnswers": [
+          "Pass",
+          "Refer"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-S7Q0-00000005",
+        "QuestionDisplay": "Visual Ear Examination (Right Ear)",
+        "ScreeningType": "HS",
+        "AllowedAnswers": [
+          "Pass",
+          "Refer"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-J3J4-00000006",
+        "QuestionDisplay": "Practice Tone (500Hz at 60dB in better ear)",
+        "ScreeningType": "HS",
+        "AllowedAnswers": [
+          "Pass",
+          "Refer"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-F7B7-00000007",
+        "QuestionDisplay": "Pure Tone Screening at 25dBHL (Left)",
+        "ScreeningType": "HS",
+        "AllowedAnswers": [
+          "500Hz – R",
+          "500Hz – NR",
+          "1000Hz – R",
+          "1000Hz – NR",
+          "2000Hz – R",
+          "2000Hz – NR",
+          "4000Hz – R",
+          "4000Hz – NR"
+        ],
+        "IsMultiValue": true
+      },
+      {
+        "QuestionCode": "SQ-B7P7-00000008",
+        "QuestionDisplay": "Pure Tone Screening at 25dBHL (Right)",
+        "ScreeningType": "HS",
+        "AllowedAnswers": [
+          "500Hz – R",
+          "500Hz – NR",
+          "1000Hz – R",
+          "1000Hz – NR",
+          "2000Hz – R",
+          "2000Hz – NR",
+          "4000Hz – R",
+          "4000Hz – NR"
+        ],
+        "IsMultiValue": true
+      },
+      {
+        "QuestionCode": "SQ-C1M5-00000009",
+        "QuestionDisplay": "Pure Tone Screening at 40dBHL (Left)",
+        "ScreeningType": "HS",
+        "AllowedAnswers": [
+          "500Hz – R",
+          "500Hz – NR",
+          "1000Hz – R",
+          "1000Hz – NR",
+          "2000Hz – R",
+          "2000Hz – NR",
+          "4000Hz – R",
+          "4000Hz – NR"
+        ],
+        "IsMultiValue": true
+      },
+      {
+        "QuestionCode": "SQ-C2S1-00000010",
+        "QuestionDisplay": "Pure Tone Screening at 40dBHL (Right)",
+        "ScreeningType": "HS",
+        "AllowedAnswers": [
+          "500Hz – R",
+          "500Hz – NR",
+          "1000Hz – R",
+          "1000Hz – NR",
+          "2000Hz – R",
+          "2000Hz – NR",
+          "4000Hz – R",
+          "4000Hz – NR"
+        ],
+        "IsMultiValue": true
+      },
+      {
+        "QuestionCode": "SQ-M8Z2-00000011",
+        "QuestionDisplay": "Does participant have any upcoming appointment with ear specialist?",
+        "ScreeningType": "HS",
+        "AllowedAnswers": [
+          "Yes (To continue follow up with ear specialist)",
+          "No (Refer to L2 Hearing Follow Up if necessary)"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-D3S4-00000012",
+        "QuestionDisplay": "Does the participant require to refer to L2 Hearing?",
+        "ScreeningType": "HS",
+        "AllowedAnswers": [
+          "Yes",
+          "No"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-L6T4-00000013",
+        "QuestionDisplay": "Does the participant agree to proceed with L2 Hearing?",
+        "ScreeningType": "HS",
+        "AllowedAnswers": [
+          "Yes",
+          "No"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-J1V1-00000014",
+        "QuestionDisplay": "Is the participant currently wearing dentures or has dentures?",
+        "ScreeningType": "OS",
+        "AllowedAnswers": [
+          "Yes",
+          "No"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-X7V6-00000015",
+        "QuestionDisplay": "Placement of Denture (Upper)",
+        "ScreeningType": "OS",
+        "AllowedAnswers": [
+          "Upper (partial)",
+          "Upper (full)"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-V1K0-00000016",
+        "QuestionDisplay": "Placement of Denture (Lower)",
+        "ScreeningType": "OS",
+        "AllowedAnswers": [
+          "Lower (partial)",
+          "Lower (full)"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-D7V0-00000017",
+        "QuestionDisplay": "Did participant proceed with Oral Screening?",
+        "ScreeningType": "OS",
+        "AllowedAnswers": [
+          "Yes",
+          "No"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-V0X0-00000018",
+        "QuestionDisplay": "Do you have any dental pain on a scale of 1 to 10? (On a scale of 1-10, 1 being not painful at all and 10 being extremely painful)",
+        "ScreeningType": "OS",
+        "AllowedAnswers": [
+          "Yes (Pain Scale: 6 to 10)",
+          "No (Pain Scale: 1 to 5)"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-J6Q3-00000019",
+        "QuestionDisplay": "Within the past 12 months, have you had any trouble speaking because of problems with your teeth, mouth or dentures?",
+        "ScreeningType": "OS",
+        "AllowedAnswers": [
+          "Yes",
+          "No"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-M3F4-00000020",
+        "QuestionDisplay": "Within the past 12 months, have you found it difficult to eat any foods because of problems with your teeth, mouth or dentures?",
+        "ScreeningType": "OS",
+        "AllowedAnswers": [
+          "Yes",
+          "No"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-S3K2-00000021",
+        "QuestionDisplay": "OHAT Status",
+        "ScreeningType": "OS",
+        "AllowedAnswers": [
+          "Healthy",
+          "Require Self Care",
+          "Unhealthy (Require L2 Oral Follow Up)"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-X4H3-00000022",
+        "QuestionDisplay": "Does participant have any upcoming appointment with any dentist?",
+        "ScreeningType": "OS",
+        "AllowedAnswers": [
+          "Yes (To continue follow up with dentist)",
+          "No (Refer to L2 Oral Follow Up)"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-H6B2-00000023",
+        "QuestionDisplay": "Does the participant require to refer to L2 Oral?",
+        "ScreeningType": "OS",
+        "AllowedAnswers": [
+          "Yes",
+          "No"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-Y3R0-00000024",
+        "QuestionDisplay": "Does the participant agree to proceed with L2 Oral?",
+        "ScreeningType": "OS",
+        "AllowedAnswers": [
+          "Yes",
+          "No"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-X1V3-00000025",
+        "QuestionDisplay": "Is the participant currently wearing spectacles?",
+        "ScreeningType": "VS",
+        "AllowedAnswers": [
+          "Yes (To carry out vision test with participant's spectacles)",
+          "No"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-Z6G5-00000026",
+        "QuestionDisplay": "Did participant proceed with Vision Screening?",
+        "ScreeningType": "VS",
+        "AllowedAnswers": [
+          "Yes",
+          "No"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-R1R7-00000027",
+        "QuestionDisplay": "Snellen Test (Right Eye)\n(Please test the right eye first)",
+        "ScreeningType": "VS",
+        "AllowedAnswers": [
+          "6/6",
+          "6/9",
+          "6/12",
+          "6/18",
+          "6/24",
+          "6/36",
+          "6/60",
+          "Worse than 6/60"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-F6X7-00000028",
+        "QuestionDisplay": "Snellen Test (Left Eye)",
+        "ScreeningType": "VS",
+        "AllowedAnswers": [
+          "6/6",
+          "6/9",
+          "6/12",
+          "6/18",
+          "6/24",
+          "6/36",
+          "6/60",
+          "Worse than 6/60"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-L9J4-00000029",
+        "QuestionDisplay": "Pinhole Test (Right Eye)\n(If Snellen is worse than 6/12, please continue with Pinhole and test the right eye first)",
+        "ScreeningType": "VS",
+        "AllowedAnswers": [
+          "6/6",
+          "6/9",
+          "6/12",
+          "6/18",
+          "6/24",
+          "6/36",
+          "6/60",
+          "Worse than 6/60"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-Z2W8-00000030",
+        "QuestionDisplay": "Pinhole Test (Left Eye)",
+        "ScreeningType": "VS",
+        "AllowedAnswers": [
+          "6/6",
+          "6/9",
+          "6/12",
+          "6/18",
+          "6/24",
+          "6/36",
+          "6/60",
+          "Worse than 6/60"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-K8L7-00000031",
+        "QuestionDisplay": "Does participant have any upcoming appointment with any eye specialist or eye review at polyclinic or CHAS GP clinics?",
+        "ScreeningType": "VS",
+        "AllowedAnswers": [
+          "Yes (To continue follow up with the upcoming eye review in primary care or specialist clinic)",
+          "No (Refer to L2 Vision Follow Up)"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-G0W6-00000032",
+        "QuestionDisplay": "Does the participant require new spectacles?",
+        "ScreeningType": "VS",
+        "AllowedAnswers": [
+          "Yes",
+          "No"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-H4N6-00000033",
+        "QuestionDisplay": "Is the participant eligible for SMF (Spectacles)?",
+        "ScreeningType": "VS",
+        "AllowedAnswers": [
+          "Yes",
+          "No"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-C4C4-00000034",
+        "QuestionDisplay": "Has SMF (Spectacles) applied for the participant?",
+        "ScreeningType": "VS",
+        "AllowedAnswers": [
+          "Yes",
+          "No"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-T6W1-00000035",
+        "QuestionDisplay": "Does the participant require to refer to L2 Vision?",
+        "ScreeningType": "VS",
+        "AllowedAnswers": [
+          "Yes",
+          "No"
+        ],
+        "IsMultiValue": false
+      },
+      {
+        "QuestionCode": "SQ-F1T3-00000036",
+        "QuestionDisplay": "Does the participant agree to proceed with L2 Vision?",
+        "ScreeningType": "VS",
+        "AllowedAnswers": [
+          "Yes",
+          "No"
+        ],
+        "IsMultiValue": false
+      }
+    ],
+    "CodeSystems": [
+      {
+        "Id": "campaign-type",
+        "System": "https://fhir.synapxe.sg/CodeSystem/campaign-type",
+        "Description": "Campaign Type",
+        "Concepts": [
+          {
+            "Code": "silver-screening-assessment",
+            "Display": "Silver Screening Assessment"
+          }
+        ]
+      },
+      {
+        "Id": "ethnicity",
+        "System": "https://fhir.synapxe.sg/CodeSystem/ethnicity",
+        "Description": "Ethnicity",
+        "Concepts": [
+          {
+            "Code": "CN",
+            "Display": "Chinese"
+          },
+          {
+            "Code": "MY",
+            "Display": "Malay"
+          },
+          {
+            "Code": "IN",
+            "Display": "Indian"
+          },
+          {
+            "Code": "XX",
+            "Display": "Others"
+          }
+        ]
+      },
+      {
+        "Id": "language",
+        "System": "https://fhir.synapxe.sg/CodeSystem/language",
+        "Description": "Language",
+        "Concepts": [
+          {
+            "Code": "CN",
+            "Display": "Mandarin/Dialect"
+          },
+          {
+            "Code": "MY",
+            "Display": "Malay"
+          },
+          {
+            "Code": "EN",
+            "Display": "English"
+          },
+          {
+            "Code": "IN",
+            "Display": "Tamil"
+          }
+        ]
+      },
+      {
+        "Id": "organization-type",
+        "System": "https://fhir.synapxe.sg/CodeSystem/organization-type",
+        "Description": "Organization Type",
+        "Concepts": [
+          {
+            "Code": "CLUSTER",
+            "Display": "cluster"
+          },
+          {
+            "Code": "PROVIDER",
+            "Display": "primary care provider"
+          },
+          {
+            "Code": "GP",
+            "Display": "general practitioner"
+          },
+          {
+            "Code": "POLY",
+            "Display": "polyclinic"
+          },
+          {
+            "Code": "OTHER",
+            "Display": "other"
+          }
+        ]
+      },
+      {
+        "Id": "residential-status",
+        "System": "https://fhir.synapxe.sg/CodeSystem/residential-status",
+        "Description": "Residential Status",
+        "Concepts": [
+          {
+            "Code": "C",
+            "Display": "Singaporean"
+          },
+          {
+            "Code": "P",
+            "Display": "Singapore PR"
+          }
+        ]
+      },
+      {
+        "Id": "screening-type",
+        "System": "https://fhir.synapxe.sg/CodeSystem/screening-type",
+        "Description": "Screening Type",
+        "Concepts": [
+          {
+            "Code": "HS",
+            "Display": "hearing-screening"
+          },
+          {
+            "Code": "OS",
+            "Display": "oral-screening"
+          },
+          {
+            "Code": "VS",
+            "Display": "vision-screening"
+          }
+        ]
+      },
+      {
+        "Id": "subsidy",
+        "System": "https://fhir.synapxe.sg/CodeSystem/subsidy",
+        "Description": "Subsidy",
+        "Concepts": [
+          {
+            "Code": "PG",
+            "Display": "Pioneer Generation"
+          },
+          {
+            "Code": "MG",
+            "Display": "Merdeka Generation"
+          },
+          {
+            "Code": "CHAS",
+            "Display": "CHAS Blue/Orange"
+          },
+          {
+            "Code": "Citizen",
+            "Display": "Singaporean/CHAS Green"
+          },
+          {
+            "Code": "PR",
+            "Display": "Singapore PR"
+          },
+          {
+            "Code": "Other",
+            "Display": "Other Public Assistance Scheme"
+          }
+        ]
+      }
+    ]
+  }
+}

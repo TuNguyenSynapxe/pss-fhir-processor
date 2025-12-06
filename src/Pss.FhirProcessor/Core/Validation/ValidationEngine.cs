@@ -191,6 +191,14 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     _logger.Debug($"\nProcessing RuleSet: {ruleSet.Scope}");
                     _logger.Debug($"  Rules: {ruleSet.Rules.Count}");
                     
+                    // Special handling for Bundle scope - validate against the bundle itself
+                    if (ruleSet.Scope == "Bundle")
+                    {
+                        _logger.Debug($"  Bundle scope detected - validating against bundle root");
+                        ValidateResource(bundle, null, ruleSet, result);
+                        continue;
+                    }
+                    
                     var scopeResourcesWithUrls = SelectResourcesByScope(resourcesWithFullUrls, ruleSet);
                     _logger.Debug($"  Matching resources: {scopeResourcesWithUrls.Count}");
 
@@ -372,6 +380,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         /// Normalize rule path by removing resource type prefix
         /// E.g., "Patient.identifier" -> "identifier"
         /// E.g., "Observation.component[*]" -> "component[*]"
+        /// Special: Bundle.entry[ResourceType] is NOT normalized (kept as-is for resource existence checks)
         /// </summary>
         private RuleDefinition NormalizeRulePath(RuleDefinition rule, string scope)
         {
@@ -390,9 +399,16 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 ExpectedType = rule.ExpectedType,      // Type validation
                 Pattern = rule.Pattern,                 // Regex validation
                 TargetTypes = rule.TargetTypes,         // Reference validation
+                System = rule.System,                   // CodeSystem validation
                 ErrorCode = rule.ErrorCode,
                 Message = rule.Message
             };
+
+            // Don't strip Bundle prefix for Bundle scope rules (they need full path for entry checks)
+            if (resourceType == "Bundle")
+            {
+                return normalizedRule;
+            }
 
             // Strip resource type prefix if present
             if (normalizedRule.Path != null && normalizedRule.Path.StartsWith(resourceType + "."))

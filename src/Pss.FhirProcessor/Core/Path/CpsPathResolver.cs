@@ -124,6 +124,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path
         ///   "url:ext-ethnicity" → KeyValue filter
         ///   "system:https://..." → KeyValue filter
         ///   "code:HS" → KeyValue filter
+        ///   "QuestionCode:SQ-xxx" → KeyValue filter (maps to code.coding[0].code)
         ///   "0" → Index filter
         ///   "*" → Wildcard filter
         /// </summary>
@@ -138,11 +139,21 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path
             if (colonIndex != -1)
             {
                 // KeyValue filter
+                var key = filterContent.Substring(0, colonIndex);
+                var value = filterContent.Substring(colonIndex + 1);
+                
+                // Special handling for QuestionCode selector
+                // component[QuestionCode:SQ-xxx] maps to component where code.coding[0].code == SQ-xxx
+                if (key.Equals("QuestionCode", StringComparison.OrdinalIgnoreCase))
+                {
+                    key = "code.coding[0].code";
+                }
+                
                 return new CpsFilter
                 {
                     Type = FilterType.KeyValue,
-                    Key = filterContent.Substring(0, colonIndex),
-                    Value = filterContent.Substring(colonIndex + 1)
+                    Key = key,
+                    Value = value
                 };
             }
 
@@ -256,11 +267,24 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path
                         if (element.Type == JTokenType.Object)
                         {
                             var obj = (JObject)element;
-                            var keyProperty = obj[filter.Key];
-
-                            if (keyProperty != null && MatchesValue(keyProperty, filter.Value))
+                            
+                            // Check if filter.Key contains nested path (e.g., "code.coding[0].code")
+                            if (filter.Key.Contains(".") || filter.Key.Contains("["))
                             {
-                                results.Add(element);
+                                // Use nested path matching for complex selectors
+                                if (MatchesNestedPath(obj, filter.Key, filter.Value))
+                                {
+                                    results.Add(element);
+                                }
+                            }
+                            else
+                            {
+                                // Simple property matching
+                                var keyProperty = obj[filter.Key];
+                                if (keyProperty != null && MatchesValue(keyProperty, filter.Value))
+                                {
+                                    results.Add(element);
+                                }
                             }
                         }
                     }
@@ -277,7 +301,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path
 
         /// <summary>
         /// Check if a token's value matches the expected value
-        /// Handles simple values, nested objects (for "code", "system"), and arrays
+        /// Handles simple values, nested objects (for "code", "system"), nested paths (for "code.coding[0].code"), and arrays
         /// </summary>
         private static bool MatchesValue(JToken token, string expectedValue)
         {
@@ -298,14 +322,14 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path
             {
                 var obj = (JObject)token;
                 
-                // Check code property
+                // Check simple code property
                 var code = obj["code"];
                 if (code != null && code.ToString() == expectedValue)
                 {
                     return true;
                 }
 
-                // Check system property
+                // Check simple system property
                 var system = obj["system"];
                 if (system != null && system.ToString() == expectedValue)
                 {
@@ -322,6 +346,32 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path
                     {
                         return true;
                     }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Check if a token matches a nested path selector (like "code.coding[0].code")
+        /// Used for QuestionCode filters: component[QuestionCode:SQ-xxx]
+        /// </summary>
+        private static bool MatchesNestedPath(JToken token, string path, string expectedValue)
+        {
+            if (token == null || string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+
+            // Resolve the nested path
+            var values = Resolve(token, path);
+            
+            // Check if any resolved value matches
+            foreach (var value in values)
+            {
+                if (value != null && value.ToString() == expectedValue)
+                {
+                    return true;
                 }
             }
 
@@ -359,6 +409,83 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path
             }
 
             return values;
+        }
+
+        /// <summary>
+        /// Check if a resource type exists in Bundle.entry[] array
+        /// Supports paths like: Bundle.entry[Patient], Bundle.entry[Observation:HS]
+        /// </summary>
+        /// <param name="bundleRoot">The Bundle JObject</param>
+        /// <param name="cps1Path">Path like "Bundle.entry[Patient]" or "Bundle.entry[Observation:HS]"</param>
+        /// <returns>True if at least one matching entry exists</returns>
+        public static bool ExistsResourceByType(JToken bundleRoot, string cps1Path)
+        {
+            if (bundleRoot == null || string.IsNullOrEmpty(cps1Path))
+            {
+                return false;
+            }
+
+            // Parse the path - expect format: Bundle.entry[ResourceType] or Bundle.entry[Observation:HS]
+            if (!cps1Path.StartsWith("Bundle.entry[") || !cps1Path.EndsWith("]"))
+            {
+                // Not a Bundle.entry[Type] selector - use regular resolution
+                return PathExists(bundleRoot, cps1Path);
+            }
+
+            // Extract resource type selector
+            var selectorStart = "Bundle.entry[".Length;
+            var selectorEnd = cps1Path.Length - 1;
+            var resourceSelector = cps1Path.Substring(selectorStart, selectorEnd - selectorStart);
+
+            // Get bundle entries
+            var entries = bundleRoot["entry"] as JArray;
+            if (entries == null || entries.Count == 0)
+            {
+                return false;
+            }
+
+            // Check if selector contains screening type (Observation:HS format)
+            string targetResourceType = null;
+            string targetScreeningCode = null;
+
+            if (resourceSelector.Contains(":"))
+            {
+                var parts = resourceSelector.Split(':');
+                targetResourceType = parts[0];
+                targetScreeningCode = parts.Length > 1 ? parts[1] : null;
+            }
+            else
+            {
+                targetResourceType = resourceSelector;
+            }
+
+            // Search for matching resource
+            foreach (var entry in entries)
+            {
+                var entryResource = entry["resource"] as JObject;
+                if (entryResource == null) continue;
+
+                var resourceType = entryResource["resourceType"]?.ToString();
+                if (resourceType != targetResourceType) continue;
+
+                // If no screening code specified, we found a match
+                if (string.IsNullOrEmpty(targetScreeningCode))
+                {
+                    return true;
+                }
+
+                // Check if screening code matches (for Observation:HS format)
+                if (resourceType == "Observation")
+                {
+                    var screeningCode = GetValueAsString(entryResource, "code.coding[0].code");
+                    if (screeningCode == targetScreeningCode)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }
