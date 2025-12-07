@@ -86,10 +86,10 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 
                 if (!exists)
                 {
-                    logger?.Verbose($"      ✗ Resource type not found in bundle");
-                    var detailedMessage = rule.Message ?? $"Required resource not found in bundle";
-                    detailedMessage += $" | Path '{rule.Path}'";
-                    result.AddError(rule.ErrorCode ?? "MANDATORY_MISSING", rule.Path, detailedMessage, scope);
+                logger?.Verbose($"      ✗ Resource type not found in bundle");
+                var detailedMessage = rule.Message ?? $"Required resource not found in bundle";
+                detailedMessage += $" | Path '{rule.Path}'";
+                result.AddError(rule.ErrorCode ?? "MANDATORY_MISSING", rule.Path, detailedMessage, scope, rule);
                 }
                 else
                 {
@@ -111,7 +111,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 logger?.Verbose($"      Resource JSON: {preview}");
                 
                 var detailedMessage = $"{rule.Message} | Path '{rule.Path}' not found in {scope} resource. Checked path: {rule.Path}";
-                result.AddError(rule.ErrorCode ?? "MANDATORY_MISSING", rule.Path, detailedMessage, scope);
+                result.AddError(rule.ErrorCode ?? "MANDATORY_MISSING", rule.Path, detailedMessage, scope, rule);
                 return;
             }
 
@@ -139,7 +139,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 logger?.Verbose($"      ✗ Path found but all values are empty or null");
                 var actualValues = string.Join(", ", values.Select(v => $"'{v}'"));
                 var detailedMessage = $"{rule.Message} | Path '{rule.Path}' found but value is empty or null. Actual values: [{actualValues}]";
-                result.AddError(rule.ErrorCode ?? "MANDATORY_MISSING", rule.Path, detailedMessage, scope);
+                result.AddError(rule.ErrorCode ?? "MANDATORY_MISSING", rule.Path, detailedMessage, scope, rule);
             }
             else
             {
@@ -162,7 +162,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ Path not found");
                 var detailedMessage = $"{rule.Message} | Path '{rule.Path}' not found. Expected value: '{rule.ExpectedValue}'";
-                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope);
+                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope, rule);
                 return;
             }
 
@@ -188,7 +188,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 var actualValues = string.Join(", ", values.Select(v => $"'{v}'"));
                 var detailedMessage = (rule.Message ?? $"Value mismatch at path '{rule.Path}'") + 
                     $" | Expected: '{rule.ExpectedValue}', Actual: [{actualValues}]";
-                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope);
+                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope, rule);
             }
             else
             {
@@ -211,7 +211,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ Path not found");
                 var detailedMessage = $"{rule.Message} | Path '{rule.Path}' not found. Expected coding: system='{rule.ExpectedSystem}', code='{rule.ExpectedCode}'";
-                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope);
+                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope, rule);
                 return;
             }
 
@@ -247,7 +247,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     : "none";
                 var detailedMessage = (rule.Message ?? $"Coding mismatch at path '{rule.Path}'") + 
                     $" | Expected: system='{rule.ExpectedSystem}', code='{rule.ExpectedCode}' | Actual: [{actualCodingsStr}]";
-                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope);
+                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope, rule);
             }
             else
             {
@@ -268,7 +268,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ CodesMaster metadata not available");
                 result.AddError(rule.ErrorCode, rule.Path, 
-                    "CodesMaster metadata not available", scope);
+                    "CodesMaster metadata not available", scope, rule);
                 return;
             }
 
@@ -286,7 +286,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ Question code is missing in rule");
                 result.AddError(rule.ErrorCode, rule.Path, 
-                    "CodesMaster rule missing question code", scope);
+                    "CodesMaster rule missing question code", scope, rule);
                 return;
             }
 
@@ -298,7 +298,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ Question '{questionCode}' not found in CodesMaster");
                 result.AddError(rule.ErrorCode, rule.Path, 
-                    $"Question code '{questionCode}' not found in CodesMaster", scope);
+                    $"Question code '{questionCode}' not found in CodesMaster", scope, rule);
                 return;
             }
 
@@ -312,7 +312,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ No answer found");
                 result.AddError(rule.ErrorCode, rule.Path, 
-                    rule.Message ?? $"No answer found for question '{questionCode}'", scope);
+                    rule.Message ?? $"No answer found for question '{questionCode}'", scope, rule);
                 return;
             }
 
@@ -324,7 +324,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     logger?.Verbose($"      ✗ '{answer}' is NOT allowed");
                     var allowedStr = string.Join(", ", question.AllowedAnswers.Select(a => $"'{a}'"));
                     result.AddError(rule.ErrorCode, rule.Path, 
-                        $"Invalid answer '{answer}' for question '{questionCode}' | Allowed: [{allowedStr}]", scope);
+                        $"Invalid answer '{answer}' for question '{questionCode}' | Allowed: [{allowedStr}]", scope, rule);
                 }
                 else
                 {
@@ -337,7 +337,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ Multiple answers not allowed");
                 result.AddError(rule.ErrorCode, rule.Path, 
-                    $"Question '{questionCode}' does not allow multiple answers", scope);
+                    $"Question '{questionCode}' does not allow multiple answers", scope, rule);
             }
         }
 
@@ -511,7 +511,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ ExpectedType is missing in rule");
                 result.AddError(rule.ErrorCode ?? "TYPE_VALIDATION_ERROR", rule.Path,
-                    "Type rule missing ExpectedType", scope);
+                    "Type rule missing ExpectedType", scope, rule);
                 return;
             }
 
@@ -540,7 +540,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 logger?.Verbose($"      ✗ Type validation failed");
                 var detailedMessage = (rule.Message ?? $"Type mismatch at path '{rule.Path}'") +
                     $" | Expected type: '{rule.ExpectedType}' | Actual value: '{strValue}'";
-                result.AddError(rule.ErrorCode ?? "TYPE_MISMATCH", rule.Path, detailedMessage, scope);
+                result.AddError(rule.ErrorCode ?? "TYPE_MISMATCH", rule.Path, detailedMessage, scope, rule);
             }
             else
             {
@@ -558,7 +558,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ Pattern is missing in rule");
                 result.AddError(rule.ErrorCode ?? "REGEX_VALIDATION_ERROR", rule.Path,
-                    "Regex rule missing Pattern", scope);
+                    "Regex rule missing Pattern", scope, rule);
                 return;
             }
 
@@ -589,7 +589,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     logger?.Verbose($"      ✗ Regex validation failed");
                     var detailedMessage = (rule.Message ?? $"Regex mismatch at path '{rule.Path}'") +
                         $" | Pattern: '{rule.Pattern}' | Actual value: '{strValue}'";
-                    result.AddError(rule.ErrorCode ?? "REGEX_MISMATCH", rule.Path, detailedMessage, scope);
+                    result.AddError(rule.ErrorCode ?? "REGEX_MISMATCH", rule.Path, detailedMessage, scope, rule);
                 }
                 else
                 {
@@ -600,7 +600,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ Invalid regex pattern: {ex.Message}");
                 result.AddError(rule.ErrorCode ?? "REGEX_PATTERN_ERROR", rule.Path,
-                    $"Invalid regex pattern '{rule.Pattern}': {ex.Message}", scope);
+                    $"Invalid regex pattern '{rule.Pattern}': {ex.Message}", scope, rule);
             }
         }
 
@@ -616,7 +616,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ TargetTypes is missing in rule");
                 result.AddError("REFERENCE_VALIDATION_ERROR", rule.Path,
-                    "Reference rule missing TargetTypes", scope);
+                    "Reference rule missing TargetTypes", scope, rule);
                 return;
             }
 
@@ -631,7 +631,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 // Reference property is missing entirely - return MANDATORY_MISSING
                 logger?.Verbose($"      ✗ Reference property '{rule.Path}' not found (missing)");
                 result.AddError("MANDATORY_MISSING", rule.Path,
-                    $"Required reference field '{rule.Path}' is missing", scope);
+                    $"Required reference field '{rule.Path}' is missing", scope, rule);
                 return;
             }
 
@@ -642,7 +642,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 // Reference property exists but is empty - return MANDATORY_MISSING
                 logger?.Verbose($"      ✗ Reference property '{rule.Path}' is empty");
                 result.AddError("MANDATORY_MISSING", rule.Path,
-                    $"Required reference field '{rule.Path}' is empty", scope);
+                    $"Required reference field '{rule.Path}' is empty", scope, rule);
                 return;
             }
 
@@ -672,7 +672,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 {
                     logger?.Verbose($"      ✗ Invalid reference format");
                     result.AddError(rule.ErrorCode ?? "INVALID_REFERENCE_FORMAT", rule.Path,
-                        $"{rule.Message ?? "Invalid reference format"} | Value: '{refValue}'", scope);
+                        $"{rule.Message ?? "Invalid reference format"} | Value: '{refValue}'", scope, rule);
                     return;
                 }
             }
@@ -680,7 +680,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ Unsupported reference format");
                 result.AddError(rule.ErrorCode ?? "INVALID_REFERENCE_FORMAT", rule.Path,
-                    $"{rule.Message ?? "Reference must be 'ResourceType/id' or 'urn:uuid:guid'"} | Value: '{refValue}'", scope);
+                    $"{rule.Message ?? "Reference must be 'ResourceType/id' or 'urn:uuid:guid'"} | Value: '{refValue}'", scope, rule);
                 return;
             }
 
@@ -689,7 +689,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ Bundle root not available for reference validation");
                 result.AddError("REFERENCE_VALIDATION_ERROR", rule.Path,
-                    "Bundle root not available for reference validation", scope);
+                    "Bundle root not available for reference validation", scope, rule);
                 return;
             }
 
@@ -698,7 +698,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ No entries found in bundle");
                 result.AddError(rule.ErrorCode ?? "REFERENCE_NOT_FOUND", rule.Path,
-                    $"{rule.Message ?? "Referenced resource not found"} | Reference: '{refValue}' | Expected types: {string.Join(", ", rule.TargetTypes)}", scope);
+                    $"{rule.Message ?? "Referenced resource not found"} | Reference: '{refValue}' | Expected types: {string.Join(", ", rule.TargetTypes)}", scope, rule);
                 return;
             }
 
@@ -743,7 +743,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     {
                         logger?.Verbose($"      ✗ Resource type mismatch");
                         result.AddError(rule.ErrorCode ?? "REFERENCE_TYPE_MISMATCH", rule.Path,
-                            $"{rule.Message ?? "Referenced resource has wrong type"} | Reference: '{refValue}' | Expected types: {string.Join(", ", rule.TargetTypes)} | Found: {resourceType}", scope);
+                            $"{rule.Message ?? "Referenced resource has wrong type"} | Reference: '{refValue}' | Expected types: {string.Join(", ", rule.TargetTypes)} | Found: {resourceType}", scope, rule);
                         return;
                     }
 
@@ -757,7 +757,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ Referenced resource not found in bundle");
                 result.AddError(rule.ErrorCode ?? "REFERENCE_NOT_FOUND", rule.Path,
-                    $"{rule.Message ?? "Referenced resource not found"} | Reference: '{refValue}' | Expected types: {string.Join(", ", rule.TargetTypes)}", scope);
+                    $"{rule.Message ?? "Referenced resource not found"} | Reference: '{refValue}' | Expected types: {string.Join(", ", rule.TargetTypes)}", scope, rule);
             }
         }
 
@@ -799,7 +799,8 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     rule.ErrorCode ?? "ID_FULLURL_MISMATCH",
                     "",
                     $"{rule.Message ?? "Resource.id must match GUID portion of entry.fullUrl"} (id: {resourceId}, fullUrl: {entryFullUrl})",
-                    scope);
+                    scope,
+                    rule);
                 return;
             }
 
@@ -817,7 +818,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ System is missing in CodeSystem rule");
                 result.AddError("CODESYSTEM_VALIDATION_ERROR", rule.Path,
-                    "CodeSystem rule missing System property", scope);
+                    "CodeSystem rule missing System property", scope, rule);
                 return;
             }
 
@@ -825,7 +826,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ CodesMaster or CodeSystems not available");
                 result.AddError("CODESYSTEM_VALIDATION_ERROR", rule.Path,
-                    "CodesMaster metadata not available for CodeSystem validation", scope);
+                    "CodesMaster metadata not available for CodeSystem validation", scope, rule);
                 return;
             }
 
@@ -848,7 +849,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ CodeSystem '{rule.System}' not found in metadata");
                 result.AddError("CODESYSTEM_NOT_FOUND", rule.Path,
-                    $"CodeSystem '{rule.System}' not found in metadata", scope);
+                    $"CodeSystem '{rule.System}' not found in metadata", scope, rule);
                 return;
             }
 

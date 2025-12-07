@@ -33,6 +33,12 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
             RuleDefinition rule = null,
             Bundle bundle = null)
         {
+            _logger?.Debug($"EnrichError called: errorCode={errorCode}, fieldPath={fieldPath}, scope={scope}, rule={(rule == null ? "null" : "provided")}");
+            if (rule != null)
+            {
+                _logger?.Debug($"  Provided rule: Path={rule.Path}, ExpectedValue={rule.ExpectedValue}, System={rule.System}");
+            }
+            
             var error = new ValidationError
             {
                 Code = errorCode,
@@ -44,13 +50,23 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
             // If rule is not provided, try to find it
             if (rule == null)
             {
+                _logger?.Debug($"  Rule is null, attempting FindRule lookup...");
                 rule = FindRule(scope, errorCode, fieldPath);
+                if (rule != null)
+                {
+                    _logger?.Debug($"  Found rule via lookup: Path={rule.Path}, ExpectedValue={rule.ExpectedValue}");
+                }
+                else
+                {
+                    _logger?.Debug($"  No rule found via lookup");
+                }
             }
 
             if (rule != null)
             {
                 error.RuleType = rule.RuleType;
                 error.Rule = ExtractRuleMetadata(rule);
+                _logger?.Debug($"  Extracted metadata: Path={error.Rule?.Path}, ExpectedValue={error.Rule?.ExpectedValue}, System={error.Rule?.System}");
             }
 
             // Enrich with context

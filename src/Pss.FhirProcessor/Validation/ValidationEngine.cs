@@ -398,16 +398,40 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
             
             var pathToResolve = StripResourcePrefix(rule.Path, scope);
             var value = PathResolver.ResolvePath(resource, pathToResolve);
-
+            _logger?.Info("xxx");
             if (value != null && value.ToString() != rule.FixedValue)
             {
-                result.Errors.Add(new ValidationError
-                {
-                    Code = "FIXED_VALUE_MISMATCH",
-                    FieldPath = rule.Path,
-                    Message = $"Expected '{rule.FixedValue}' but found '{value}'",
-                    Scope = scope
-                });
+                _logger?.Info($"    FixedValue mismatch detected:");
+                _logger?.Info($"      Rule.Path: {rule.Path}");
+                _logger?.Info($"      Rule.FixedValue: {rule.FixedValue}");
+                _logger?.Info($"      Actual value: {value}");
+                _logger?.Info($"      Scope: {scope}");
+                
+                var ruleDefinition = ConvertToRuleDefinition(rule);
+                
+                _logger?.Info($"    Converted RuleDefinition:");
+                _logger?.Info($"      Path: {ruleDefinition.Path}");
+                _logger?.Info($"      ExpectedValue: {ruleDefinition.ExpectedValue}");
+                _logger?.Info($"      System: {ruleDefinition.System}");
+                _logger?.Info($"      ErrorCode: {ruleDefinition.ErrorCode}");
+                
+                var error = EmitValidationError(
+                    "FIXED_VALUE_MISMATCH",
+                    rule.Path,
+                    $"Expected '{rule.FixedValue}' but found '{value}'",
+                    scope,
+                    ruleDefinition
+                );
+                
+                _logger?.Info($"    Emitted error:");
+                _logger?.Info($"      Code: {error.Code}");
+                _logger?.Info($"      FieldPath: {error.FieldPath}");
+                _logger?.Info($"      Message: {error.Message}");
+                _logger?.Info($"      Rule.ExpectedValue: {error.Rule?.ExpectedValue}");
+                _logger?.Info($"      Rule.System: {error.Rule?.System}");
+                _logger?.Info($"      Rule.Path: {error.Rule?.Path}");
+                
+                result.Errors.Add(error);
             }
         }
 
@@ -450,24 +474,31 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
             {
                 if (!string.IsNullOrEmpty(rule.FixedSystem) && coding.System != rule.FixedSystem)
                 {
-                    result.Errors.Add(new ValidationError
-                    {
-                        Code = "FIXED_CODING_MISMATCH",
-                        FieldPath = rule.Path + ".system",
-                        Message = $"Expected system '{rule.FixedSystem}' but found '{coding.System}'",
-                        Scope = scope
-                    });
+                    var ruleForSystem = ConvertToRuleDefinition(rule);
+                    ruleForSystem.Path = rule.Path + ".system";
+                    ruleForSystem.ExpectedValue = rule.FixedSystem;
+                    ruleForSystem.System = rule.FixedSystem;
+                    result.Errors.Add(EmitValidationError(
+                        "FIXED_CODING_MISMATCH",
+                        rule.Path + ".system",
+                        $"Expected system '{rule.FixedSystem}' but found '{coding.System}'",
+                        scope,
+                        ruleForSystem
+                    ));
                 }
 
                 if (!string.IsNullOrEmpty(rule.FixedCode) && coding.Code != rule.FixedCode)
                 {
-                    result.Errors.Add(new ValidationError
-                    {
-                        Code = "FIXED_CODING_MISMATCH",
-                        FieldPath = rule.Path + ".code",
-                        Message = $"Expected code '{rule.FixedCode}' but found '{coding.Code}'",
-                        Scope = scope
-                    });
+                    var ruleForCode = ConvertToRuleDefinition(rule);
+                    ruleForCode.Path = rule.Path + ".code";
+                    ruleForCode.ExpectedValue = rule.FixedCode;
+                    result.Errors.Add(EmitValidationError(
+                        "FIXED_CODING_MISMATCH",
+                        rule.Path + ".code",
+                        $"Expected code '{rule.FixedCode}' but found '{coding.Code}'",
+                        scope,
+                        ruleForCode
+                    ));
                 }
             }
         }
@@ -901,6 +932,28 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
                 Message = message,
                 Scope = scope,
                 RuleType = rule?.RuleType
+            };
+        }
+
+        /// <summary>
+        /// Convert ValidationRule to RuleDefinition for enrichment
+        /// </summary>
+        private RuleDefinition ConvertToRuleDefinition(ValidationRule rule)
+        {
+            if (rule == null) return null;
+
+            return new RuleDefinition
+            {
+                RuleType = rule.RuleType ?? "FixedValue",
+                Path = rule.Path,
+                ExpectedValue = rule.FixedValue,
+                ExpectedSystem = rule.FixedSystem,
+                ExpectedCode = rule.FixedCode,
+                ExpectedType = rule.ExpectedType,
+                Pattern = rule.Pattern,
+                AllowedValues = rule.AllowedValues,
+                System = rule.FixedSystem,  // For CodeSystem validation context
+                ErrorCode = "FIXED_CODING_MISMATCH"  // Ensure error code is set
             };
         }
     }
