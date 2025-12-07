@@ -6,6 +6,7 @@ import { useMetadata } from '../contexts/MetadataContext';
 import MetadataEditor from './MetadataEditor';
 import ValidationHelper from './ValidationHelper';
 import JsonEditorModal from './JsonEditorModal';
+import LogsPanel from './LogsPanel';
 import { generateSampleBundle } from '../utils/sampleDataGenerator';
 
 const { Option } = Select;
@@ -509,17 +510,9 @@ function Playground() {
                       },
                       {
                         key: 'logs',
-                        label: 'Logs',
+                        label: `Logs (${result?.logs?.length || 0})`,
                         children: (
-                          <div className="bg-gray-900 text-green-400 p-4 rounded font-mono text-sm overflow-auto max-h-96">
-                            {result?.logs && result.logs.length > 0 ? (
-                              result.logs.map((log, idx) => (
-                                <div key={idx}>{log}</div>
-                              ))
-                            ) : (
-                              <div>No logs available</div>
-                            )}
-                          </div>
+                          <LogsPanel logs={result?.logs || []} />
                         )
                       }
                     ]}
