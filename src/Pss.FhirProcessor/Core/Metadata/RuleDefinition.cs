@@ -17,6 +17,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata
         public string ExpectedType { get; set; }       // Type validation: string, integer, decimal, boolean, guid, guid-uri, date, datetime, pipestring[], array, object
         public string Pattern { get; set; }            // Regex validation: regex pattern
         public List<string> TargetTypes { get; set; }  // Reference validation: allowed resource types
+        public List<string> AllowedValues { get; set; } // AllowedValues validation: list of permitted values
         public string System { get; set; }             // CodeSystem validation: code system URL
         public string ErrorCode { get; set; }
         public string Message { get; set; }

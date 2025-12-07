@@ -1,0 +1,33 @@
+.splitter {
+  width: 6px;
+  cursor: col-resize;
+  background: #e8e8e8;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.splitter:hover {
+  background: #bfbfbf;
+}
+
+.splitter:active {
+  background: #8c8c8c;
+}
+
+.splitter-handle {
+  width: 3px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* Prevent text selection during drag */
+body.dragging {
+  user-select: none;
+  cursor: col-resize !important;
+}

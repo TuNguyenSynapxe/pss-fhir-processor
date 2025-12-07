@@ -1,0 +1,536 @@
+/**
+ * Validation Helper System
+ * Generic, metadata-driven error helper for FHIR validation
+ */
+
+/**
+ * Rule type to template mapping
+ */
+const helperTemplates = {
+  Required: renderRequired,
+  Regex: renderRegex,
+  Type: renderType,
+  FixedValue: renderFixedValue,
+  FullUrlIdMatch: renderFullUrlMatch,
+  Reference: renderReference,
+  CodeSystem: renderCodeSystem,
+  CodesMaster: renderCodesMaster,
+  AllowedValues: renderAllowedValues,
+};
+
+/**
+ * Main helper generator - called from UI components
+ * @param {Object} error - Validation error with metadata
+ * @returns {Object} Helper message with structured content
+ */
+export function generateHelper(error) {
+  if (!error || !error.ruleType) {
+    return createBasicHelper(error);
+  }
+
+  const template = helperTemplates[error.ruleType];
+  if (!template) {
+    return createBasicHelper(error);
+  }
+
+  return template(error, error.rule || {}, error.context || {}, error.resourcePointer || {});
+}
+
+/**
+ * Fallback for errors without ruleType
+ */
+function createBasicHelper(error) {
+  return {
+    title: `Error: ${error?.code || 'Unknown'}`,
+    description: error?.message || 'Validation failed',
+    location: humanizePath(error?.fieldPath, error?.context),
+    howToFix: ['Review and correct the field value'],
+  };
+}
+
+/**
+ * Template: Required field missing
+ */
+function renderRequired(error, rule, context, resourcePointer) {
+  const fieldName = extractFieldName(error.fieldPath);
+  const humanPath = humanizePath(error.scope, error.fieldPath, context);
+  const breadcrumb = generateBreadcrumb(error.fieldPath, context);
+
+  return {
+    title: `Missing required field: ${humanPath}`,
+    whatThisMeans: generateWhatThisMeans('Required', humanPath, context, resourcePointer),
+    description: rule.message || error.message || `${humanPath} is mandatory.`,
+    location: error.fieldPath,
+    breadcrumb: breadcrumb,
+    resourceType: resourcePointer.resourceType || context.resourceType,
+    expected: 'A value must be provided',
+    howToFix: generateHowToFix('Required', humanPath, context, resourcePointer, rule),
+    resourcePointer: resourcePointer,
+  };
+}
+
+/**
+ * Template: Regex pattern validation
+ */
+function renderRegex(error, rule, context, resourcePointer) {
+  const humanPath = humanizePath(error.scope, error.fieldPath, context);
+  const breadcrumb = generateBreadcrumb(error.fieldPath, context);
+  const pattern = rule.pattern || '';
+  const example = generateRegexExample(pattern, error.fieldPath);
+
+  return {
+    title: `Invalid format: ${humanPath}`,
+    whatThisMeans: generateWhatThisMeans('Regex', humanPath, context, resourcePointer),
+    description: error.message || `Value does not match the required pattern.`,
+    location: error.fieldPath,
+    breadcrumb: breadcrumb,
+    resourceType: resourcePointer.resourceType || context.resourceType,
+    expected: `Pattern: ${pattern}`,
+    example: example,
+    howToFix: generateHowToFix('Regex', humanPath, context, resourcePointer, rule),
+    resourcePointer: resourcePointer,
+  };
+}
+
+/**
+ * Template: Type mismatch
+ */
+function renderType(error, rule, context, resourcePointer) {
+  const humanPath = humanizePath(error.scope, error.fieldPath, context);
+  const breadcrumb = generateBreadcrumb(error.fieldPath, context);
+  const expectedType = rule.expectedType || 'correct type';
+
+  return {
+    title: `Wrong data type: ${humanPath}`,
+    whatThisMeans: generateWhatThisMeans('Type', humanPath, context, resourcePointer),
+    description: error.message || `Expected type: ${expectedType}`,
+    location: error.fieldPath,
+    breadcrumb: breadcrumb,
+    resourceType: resourcePointer.resourceType || context.resourceType,
+    expected: `Type: ${expectedType}`,
+    howToFix: generateHowToFix('Type', humanPath, context, resourcePointer, rule),
+    resourcePointer: resourcePointer,
+  };
+}
+
+/**
+ * Template: Fixed value mismatch
+ */
+function renderFixedValue(error, rule, context, resourcePointer) {
+  const humanPath = humanizePath(error.scope, error.fieldPath, context);
+  const breadcrumb = generateBreadcrumb(error.fieldPath, context);
+  const expectedValue = rule.expectedValue;
+
+  return {
+    title: `Incorrect value: ${humanPath}`,
+    whatThisMeans: generateWhatThisMeans('FixedValue', humanPath, context, resourcePointer),
+    description: error.message || 'Value must match the specified fixed value.',
+    location: error.fieldPath,
+    breadcrumb: breadcrumb,
+    resourceType: resourcePointer.resourceType || context.resourceType,
+    expected: expectedValue,
+    actual: extractActualValue(error.message),
+    howToFix: generateHowToFix('FixedValue', humanPath, context, resourcePointer, rule),
+    resourcePointer: resourcePointer,
+  };
+}
+
+/**
+ * Template: FullUrl/ID mismatch
+ */
+function renderFullUrlMatch(error, rule, context, resourcePointer) {
+  return {
+    title: 'ID and fullUrl mismatch',
+    whatThisMeans: generateWhatThisMeans('FullUrlIdMatch', 'ID', context, resourcePointer),
+    description: error.message || 'Resource.id must match the GUID portion of entry.fullUrl',
+    location: error.fieldPath,
+    breadcrumb: ['entry', 'fullUrl vs resource.id'],
+    resourceType: resourcePointer.resourceType || context.resourceType,
+    expected: 'entry.fullUrl = "urn:uuid:<GUID>" and resource.id = "<GUID>"',
+    howToFix: generateHowToFix('FullUrlIdMatch', 'ID', context, resourcePointer, rule),
+    resourcePointer: resourcePointer,
+  };
+}
+
+/**
+ * Template: Reference validation
+ */
+function renderReference(error, rule, context, resourcePointer) {
+  const humanPath = humanizePath(error.scope, error.fieldPath, context);
+  const breadcrumb = generateBreadcrumb(error.fieldPath, context);
+  const targetTypes = rule.targetTypes || [];
+
+  return {
+    title: `Invalid reference: ${humanPath}`,
+    whatThisMeans: generateWhatThisMeans('Reference', humanPath, context, resourcePointer),
+    description: error.message || 'Reference must point to an allowed resource type.',
+    location: error.fieldPath,
+    breadcrumb: breadcrumb,
+    resourceType: resourcePointer.resourceType || context.resourceType,
+    allowedTypes: targetTypes,
+    howToFix: generateHowToFix('Reference', humanPath, context, resourcePointer, rule),
+    resourcePointer: resourcePointer,
+  };
+}
+
+/**
+ * Template: CodeSystem validation
+ */
+function renderCodeSystem(error, rule, context, resourcePointer) {
+  const humanPath = humanizePath(error.scope, error.fieldPath, context);
+  const breadcrumb = generateBreadcrumb(error.fieldPath, context);
+  const concepts = context.codeSystemConcepts || [];
+
+  return {
+    title: `Invalid code: ${humanPath}`,
+    whatThisMeans: generateWhatThisMeans('CodeSystem', humanPath, context, resourcePointer),
+    description: error.message || 'Code must be from the specified CodeSystem.',
+    location: error.fieldPath,
+    breadcrumb: breadcrumb,
+    resourceType: resourcePointer.resourceType || context.resourceType,
+    expected: rule.system,
+    allowedCodes: concepts.map((c) => ({
+      code: c.code,
+      display: c.display,
+    })),
+    howToFix: generateHowToFix('CodeSystem', humanPath, context, resourcePointer, rule),
+    resourcePointer: resourcePointer,
+  };
+}
+
+/**
+ * Template: CodesMaster validation (PSS question answers)
+ */
+function renderCodesMaster(error, rule, context, resourcePointer) {
+  const questionDisplay = context.questionDisplay || 'Question';
+  const breadcrumb = generateBreadcrumb(error.fieldPath, context);
+  const allowedAnswers = context.allowedAnswers || [];
+  const actual = extractActualValue(error.message);
+
+  const isMultiValue = allowedAnswers.some((a) => a.includes('|'));
+
+  return {
+    title: `Invalid answer: ${questionDisplay}`,
+    whatThisMeans: generateWhatThisMeans('CodesMaster', questionDisplay, context, resourcePointer),
+    description: error.message || 'Answer is not in the allowed list.',
+    location: humanizePath(error.scope, error.fieldPath, context),
+    breadcrumb: breadcrumb,
+    resourceType: resourcePointer.resourceType || context.resourceType || 'Observation',
+    questionCode: context.questionCode,
+    questionDisplay: questionDisplay,
+    expected: allowedAnswers.length > 0 ? 'One of the allowed answers' : null,
+    actual: actual,
+    allowedAnswers: allowedAnswers,
+    isMultiValue: isMultiValue,
+    howToFix: generateHowToFix('CodesMaster', questionDisplay, context, resourcePointer, rule),
+    resourcePointer: resourcePointer,
+  };
+}
+
+/**
+ * Template: AllowedValues validation
+ */
+function renderAllowedValues(error, rule, context, resourcePointer) {
+  const humanPath = humanizePath(error.scope, error.fieldPath, context);
+  const breadcrumb = generateBreadcrumb(error.fieldPath, context);
+  const allowedValues = rule.allowedValues || [];
+
+  return {
+    title: `Invalid value: ${humanPath}`,
+    whatThisMeans: `The ${humanPath} must be one of the approved values. The value provided is not in the allowed list.`,
+    description: error.message || 'Value must be one of the allowed values.',
+    location: error.fieldPath,
+    breadcrumb: breadcrumb,
+    resourceType: resourcePointer.resourceType || context.resourceType,
+    allowedAnswers: allowedValues,
+    howToFix: [
+      `Choose one of the allowed values from the list below.`,
+      `Check for exact spelling and case sensitivity.`,
+      `Verify your source data matches one of these approved values.`,
+    ],
+    resourcePointer: resourcePointer,
+  };
+}
+
+/**
+ * Humanize CPS1 path to user-friendly display
+ */
+export function humanizePath(scope, fieldPath, context) {
+  if (!fieldPath) return 'Unknown field';
+
+  // If we have a question display, use it
+  if (context?.questionDisplay) {
+    return context.questionDisplay;
+  }
+
+  // Handle NRIC identifier specifically
+  if (fieldPath.includes('identifier[system:') && fieldPath.includes('/nric')) {
+    return 'NRIC';
+  }
+  
+  // Handle other common identifiers
+  if (fieldPath.includes('identifier') && fieldPath.includes('value')) {
+    if (fieldPath.includes('/fin')) return 'FIN';
+    if (fieldPath.includes('/passport')) return 'Passport Number';
+  }
+
+  // Extract last meaningful segment
+  let path = fieldPath;
+
+  // Remove array indices and system filters
+  path = path.replace(/\[system:[^\]]+\]/g, '');
+  path = path.replace(/\[code:[^\]]+\]/g, '');
+  path = path.replace(/\[url:[^\]]+\]/g, '');
+  path = path.replace(/\[\d+\]/g, '');
+  path = path.replace(/^entry\.resource\./, '');
+
+  // Get the last segment
+  const segments = path.split('.');
+  let lastSegment = segments[segments.length - 1];
+
+  // Prettify camelCase to Title Case
+  lastSegment = lastSegment
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, (str) => str.toUpperCase())
+    .trim();
+
+  return lastSegment;
+}
+
+/**
+ * Generate breadcrumb path for navigation
+ */
+function generateBreadcrumb(fieldPath, context) {
+  if (!fieldPath) return [];
+
+  // If we have a question display, use simplified breadcrumb
+  if (context?.questionDisplay) {
+    return [
+      context.resourceType || 'Observation',
+      'component',
+      context.questionDisplay,
+      'value'
+    ];
+  }
+
+  let path = fieldPath;
+  
+  // Remove entry prefix
+  path = path.replace(/^entry\[\d+\]\.resource\./, '');
+  
+  // Split and clean
+  const segments = path.split('.');
+  const breadcrumb = [];
+
+  for (const segment of segments) {
+    let clean = segment;
+    
+    // Handle NRIC specially
+    if (clean.includes('identifier[system:') && clean.includes('/nric')) {
+      breadcrumb.push('identifier (NRIC)');
+      continue;
+    }
+    
+    // Remove filters but keep meaningful info
+    clean = clean.replace(/\[system:[^\]]+\]/g, '');
+    clean = clean.replace(/\[code:[^\]]+\]/g, '');
+    clean = clean.replace(/\[url:[^\]]+\]/g, '');
+    clean = clean.replace(/\[\d+\]/g, '');
+    
+    if (clean) {
+      // Prettify
+      clean = clean.replace(/([A-Z])/g, ' $1').trim();
+      clean = clean.charAt(0).toUpperCase() + clean.slice(1);
+      breadcrumb.push(clean);
+    }
+  }
+
+  return breadcrumb;
+}
+
+/**
+ * Generate "What this means" explanation
+ */
+function generateWhatThisMeans(ruleType, humanPath, context, resourcePointer) {
+  const resourceName = resourcePointer.resourceType || context.resourceType || 'record';
+  
+  switch (ruleType) {
+    case 'Required':
+      if (humanPath === 'NRIC') {
+        return `This patient record is missing the NRIC value. We could not find the NRIC field in the Patient details.`;
+      }
+      return `This ${resourceName.toLowerCase()} is missing the ${humanPath} field. This information is required but was not provided.`;
+      
+    case 'Regex':
+      return `The ${humanPath} value doesn't match the required format. The system expects a specific pattern for this field.`;
+      
+    case 'Type':
+      return `The ${humanPath} has the wrong data type. The system expects a different type of value (e.g., number instead of text).`;
+      
+    case 'FixedValue':
+      return `The ${humanPath} must have a specific fixed value, but a different value was provided.`;
+      
+    case 'FullUrlIdMatch':
+      return `The resource ID doesn't match the identifier in the fullUrl. These two values must be identical for the system to process the record correctly.`;
+      
+    case 'Reference':
+      return `The ${humanPath} reference points to an invalid or missing resource. References must link to resources that exist in this bundle.`;
+      
+    case 'CodeSystem':
+      return `The ${humanPath} contains an invalid code. The code must be from the approved list of codes for this field.`;
+      
+    case 'CodesMaster':
+      const question = context.questionDisplay || humanPath;
+      return `The answer provided for "${question}" is not one of the allowed values. Please select from the approved answer options.`;
+      
+    default:
+      return `The ${humanPath} field has a validation error. Please review and correct the value.`;
+  }
+}
+
+/**
+ * Generate "How to fix" steps
+ */
+function generateHowToFix(ruleType, humanPath, context, resourcePointer, rule) {
+  const resourceName = resourcePointer.resourceType || context.resourceType || 'resource';
+  const entryIndex = resourcePointer.entryIndex;
+  const steps = [];
+
+  // Step 1: Navigate to resource
+  if (entryIndex !== null && entryIndex !== undefined) {
+    steps.push(`Open the ${resourceName} resource (entry #${entryIndex}) in your bundle.`);
+  } else {
+    steps.push(`Open the ${resourceName} resource in your bundle.`);
+  }
+
+  // Step 2: Specific fix based on rule type
+  switch (ruleType) {
+    case 'Required':
+      if (humanPath === 'NRIC') {
+        steps.push(`In the "identifier" section, add an entry with system: https://fhir.synapxe.sg/NamingSystem/nric`);
+        steps.push(`Add the NRIC value in the format: S1234567A (or T/F/G followed by 7 digits and a letter)`);
+      } else {
+        steps.push(`Add the ${humanPath} field with an appropriate value.`);
+        steps.push(`Ensure the field is not empty or null.`);
+      }
+      break;
+      
+    case 'Regex':
+      if (rule.pattern) {
+        const example = generateRegexExample(rule.pattern, humanPath);
+        steps.push(`Update the ${humanPath} to match the required format.`);
+        if (example) {
+          steps.push(`Example format: ${example}`);
+        } else {
+          steps.push(`Pattern: ${rule.pattern}`);
+        }
+      }
+      break;
+      
+    case 'Type':
+      if (rule.expectedType) {
+        steps.push(`Change the ${humanPath} to the correct type: ${rule.expectedType}`);
+        const example = getTypeExample(rule.expectedType);
+        if (example) steps.push(example);
+      }
+      break;
+      
+    case 'FixedValue':
+      if (rule.expectedValue) {
+        steps.push(`Set the ${humanPath} to exactly: "${rule.expectedValue}"`);
+        steps.push(`This field must have this exact value - no variations allowed.`);
+      }
+      break;
+      
+    case 'CodesMaster':
+      if (context.allowedAnswers && context.allowedAnswers.length > 0) {
+        steps.push(`Change the answer to one of the allowed values (see list below).`);
+        if (context.allowedAnswers.some(a => a.includes('|'))) {
+          steps.push(`For multiple answers, separate them with a pipe character (|), e.g., "500Hz – R|1000Hz – R"`);
+        }
+      }
+      break;
+      
+    case 'CodeSystem':
+      steps.push(`Select a valid code from the approved code list (see below).`);
+      if (rule.system) {
+        steps.push(`The code must be from: ${rule.system.split('/').pop()}`);
+      }
+      break;
+  }
+
+  // Step 3: Verify
+  steps.push(`Save your changes and validate again to confirm the error is resolved.`);
+
+  return steps;
+}
+
+/**
+ * Extract field name from path
+ */
+function extractFieldName(fieldPath) {
+  if (!fieldPath) return 'field';
+  const segments = fieldPath.split('.');
+  return segments[segments.length - 1].replace(/\[.*?\]/g, '');
+}
+
+/**
+ * Extract actual value from error message
+ */
+function extractActualValue(message) {
+  if (!message) return null;
+
+  // Try to extract from patterns like "found 'value'" or "got value"
+  const patterns = [
+    /found ['"](.+?)['"]/i,
+    /got ['"](.+?)['"]/i,
+    /actual[:\s]+['"](.+?)['"]/i,
+    /is ['"](.+?)['"]/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = message.match(pattern);
+    if (match) return match[1];
+  }
+
+  return null;
+}
+
+/**
+ * Generate example for regex pattern
+ */
+function generateRegexExample(pattern, fieldPath) {
+  // NRIC pattern
+  if (pattern.includes('[STFG]') && pattern.includes('\\d{7}')) {
+    return 'S1234567A';
+  }
+
+  // UUID pattern
+  if (pattern.includes('uuid') || pattern.includes('[0-9a-fA-F]{8}')) {
+    return 'urn:uuid:550e8400-e29b-41d4-a716-446655440000';
+  }
+
+  // Date pattern YYYY-MM-DD
+  if (pattern.includes('\\d{4}') && pattern.includes('\\d{2}')) {
+    return '2024-01-15';
+  }
+
+  return null;
+}
+
+/**
+ * Get example for data type
+ */
+function getTypeExample(expectedType) {
+  const examples = {
+    string: 'Example: "text value"',
+    integer: 'Example: 42',
+    decimal: 'Example: 3.14',
+    boolean: 'Example: true or false',
+    date: 'Example: 2024-01-15 (YYYY-MM-DD)',
+    datetime: 'Example: 2024-01-15T10:30:00Z',
+    guid: 'Example: 550e8400-e29b-41d4-a716-446655440000',
+  };
+
+  return examples[expectedType?.toLowerCase()] || null;
+}

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Fhir;
@@ -8,6 +9,9 @@ using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Extraction;
 using V5ValidationEngine = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationEngine;
 using V5ValidationResult = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationResult;
 using V5ValidationError = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationError;
+using V5RuleMetadata = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationRuleMetadata;
+using V5ErrorContext = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationErrorContext;
+using V5CodeSystemConcept = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.CodeSystemConcept;
 
 namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Services
 {
@@ -42,7 +46,39 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Services
                     Code = error.Code,
                     FieldPath = error.FieldPath,
                     Message = error.Message,
-                    Scope = error.Scope
+                    Scope = error.Scope,
+                    RuleType = error.RuleType,
+                    Rule = error.Rule != null ? new ValidationRuleMetadata
+                    {
+                        Path = error.Rule.Path,
+                        ExpectedType = error.Rule.ExpectedType,
+                        ExpectedValue = error.Rule.ExpectedValue,
+                        Pattern = error.Rule.Pattern,
+                        TargetTypes = error.Rule.TargetTypes,
+                        System = error.Rule.System,
+                        AllowedValues = error.Rule.AllowedValues
+                    } : null,
+                    Context = error.Context != null ? new ValidationErrorContext
+                    {
+                        ResourceType = error.Context.ResourceType,
+                        ScreeningType = error.Context.ScreeningType,
+                        QuestionCode = error.Context.QuestionCode,
+                        QuestionDisplay = error.Context.QuestionDisplay,
+                        AllowedAnswers = error.Context.AllowedAnswers,
+                        CodeSystemConcepts = error.Context.CodeSystemConcepts?.Select(c => 
+                            new CodeSystemConcept
+                            {
+                                Code = c.Code,
+                                Display = c.Display
+                            }).ToList()
+                    } : null,
+                    ResourcePointer = error.ResourcePointer != null ? new ResourcePointer
+                    {
+                        EntryIndex = error.ResourcePointer.EntryIndex,
+                        FullUrl = error.ResourcePointer.FullUrl,
+                        ResourceType = error.ResourcePointer.ResourceType,
+                        ResourceId = error.ResourcePointer.ResourceId
+                    } : null
                 });
             }
 

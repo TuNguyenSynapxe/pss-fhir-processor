@@ -1,3 +1,133 @@
 .App {
   text-align: center;
 }
+
+/* Resizable Split Layout */
+.playground-wrapper {
+  height: 100%;
+}
+
+.split-container {
+  display: flex;
+  height: 75vh;
+  min-height: 600px;
+  overflow: hidden;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  background: white;
+}
+
+/* Left panel with processing results */
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-width: 30%;
+  max-width: 80%;
+  border-right: 1px solid #e8e8e8;
+  background: #fafafa;
+  padding: 12px;
+}
+
+.left-panel .processing-results {
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  padding: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Resizable vertical splitter */
+.splitter {
+  width: 6px;
+  cursor: col-resize;
+  background: #e8e8e8;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.splitter:hover {
+  background: #bfbfbf;
+}
+
+.splitter:active {
+  background: #8c8c8c;
+}
+
+/* Visual indicator on splitter */
+.splitter::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 3px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+/* Right panel with tree view */
+.right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  background: white;
+}
+
+.sticky-header {
+  position: sticky;
+  top: 0;
+  padding: 10px 12px;
+  background: white;
+  font-weight: 600;
+  font-size: 13px;
+  color: #595959;
+  border-bottom: 1px solid #e8e8e8;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.tree-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  padding: 8px;
+}
+
+/* Flash highlight animation for tree nodes */
+.flash-highlight {
+  animation: flash 1.2s ease-out;
+}
+
+@keyframes flash {
+  0% {
+    background-color: #fff3cd;
+    box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.3);
+  }
+  50% {
+    background-color: #fff3cd;
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
+/* Prevent text selection during drag */
+body.dragging {
+  user-select: none;
+  cursor: col-resize !important;
+}
+
+/* Tree node styling for better visibility */
+.ant-tree-node-content-wrapper {
+  padding: 2px 4px;
+  border-radius: 2px;
+  transition: background-color 0.2s;
+}

@@ -1,0 +1,342 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Tree, Button, message } from 'antd';
+import { 
+  FolderOutlined, 
+  FileOutlined, 
+  EditOutlined,
+  ExpandOutlined,
+  ShrinkOutlined
+} from '@ant-design/icons';
+import type { DataNode } from 'antd/es/tree';
+
+interface TreeViewPanelProps {
+  fhirJson: string;
+  scrollTargetRef: React.MutableRefObject<number | null>;
+  scrollTrigger: number; // Added to force re-render
+  onOpenEditor: () => void;
+}
+
+// Virtualization threshold
+const VIRTUALIZATION_THRESHOLD = 500;
+
+export default function TreeViewPanel({ fhirJson, scrollTargetRef, scrollTrigger, onOpenEditor }: TreeViewPanelProps) {
+  const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
+  const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
+  const treeRef = useRef<any>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Convert JSON to tree data structure
+  const jsonToTreeData = (obj: any, parentKey = 'root'): DataNode[] => {
+    if (obj === null || obj === undefined) {
+      return [];
+    }
+
+    const buildNode = (value: any, key: string, path: string): DataNode => {
+      const nodeKey = `${path}.${key}`;
+      
+      if (Array.isArray(value)) {
+        return {
+          title: (
+            <span>
+              <strong>{key}</strong>: <span className="text-blue-600">[{value.length}]</span>
+            </span>
+          ),
+          key: nodeKey,
+          icon: <FolderOutlined />,
+          children: value.map((item, idx) => buildNode(item, `[${idx}]`, nodeKey))
+        };
+      } else if (typeof value === 'object' && value !== null) {
+        const keys = Object.keys(value);
+        return {
+          title: (
+            <span>
+              <strong>{key}</strong>: <span className="text-purple-600">{'{...}'}</span>
+            </span>
+          ),
+          key: nodeKey,
+          icon: <FolderOutlined />,
+          children: keys.map(k => buildNode(value[k], k, nodeKey))
+        };
+      } else {
+        const valueStr = String(value);
+        const displayValue = valueStr.length > 50 ? valueStr.substring(0, 50) + '...' : valueStr;
+        const valueColor = 
+          typeof value === 'string' ? 'text-green-600' : 
+          typeof value === 'number' ? 'text-orange-600' : 
+          typeof value === 'boolean' ? 'text-red-600' : 'text-gray-600';
+        
+        return {
+          title: (
+            <span>
+              <strong>{key}</strong>: <span className={valueColor}>"{displayValue}"</span>
+            </span>
+          ),
+          key: nodeKey,
+          icon: <FileOutlined />,
+          isLeaf: true
+        };
+      }
+    };
+
+    try {
+      const parsed = typeof obj === 'string' ? JSON.parse(obj) : obj;
+      const keys = Object.keys(parsed);
+      return keys.map(key => buildNode(parsed[key], key, parentKey));
+    } catch (error) {
+      return [{
+        title: <span className="text-red-600">Invalid JSON</span>,
+        key: 'error',
+        isLeaf: true,
+        icon: <FileOutlined />
+      }];
+    }
+  };
+
+  // Memoize tree data
+  const treeData = useMemo(() => {
+    if (!fhirJson.trim()) return [];
+    try {
+      return jsonToTreeData(fhirJson);
+    } catch {
+      return [];
+    }
+  }, [fhirJson]);
+
+  // Count total nodes for virtualization decision
+  const totalNodes = useMemo(() => {
+    let count = 0;
+    const countNodes = (nodes: DataNode[]) => {
+      nodes.forEach(node => {
+        count++;
+        if (node.children) {
+          countNodes(node.children);
+        }
+      });
+    };
+    countNodes(treeData);
+    return count;
+  }, [treeData]);
+
+  // Generate default expanded keys
+  const defaultExpandedKeys = useMemo(() => {
+    const keys: React.Key[] = [];
+    const collectKeys = (nodes: DataNode[]) => {
+      nodes.forEach(node => {
+        if (!node.isLeaf) {
+          const isRootLevel = String(node.key).split('.').length === 2;
+          const isUnderEntry = String(node.key).includes('.entry.');
+          
+          if (isRootLevel || isUnderEntry) {
+            keys.push(node.key);
+            if (node.children) {
+              collectKeys(node.children);
+            }
+          }
+        }
+      });
+    };
+    collectKeys(treeData);
+    return keys;
+  }, [treeData]);
+
+  // Collect all keys for expand all
+  const allTreeKeys = useMemo(() => {
+    const keys: React.Key[] = [];
+    const collectAllKeys = (nodes: DataNode[]) => {
+      nodes.forEach(node => {
+        if (!node.isLeaf) {
+          keys.push(node.key);
+          if (node.children) {
+            collectAllKeys(node.children);
+          }
+        }
+      });
+    };
+    collectAllKeys(treeData);
+    return keys;
+  }, [treeData]);
+
+  // Initialize expanded keys when tree data changes
+  useEffect(() => {
+    setExpandedKeys(defaultExpandedKeys);
+  }, [defaultExpandedKeys]);
+
+  // Handle expand/collapse
+  const handleExpandAll = () => {
+    setExpandedKeys(allTreeKeys);
+    message.success('All nodes expanded');
+  };
+
+  const handleCollapseAll = () => {
+    setExpandedKeys([]);
+    message.success('All nodes collapsed');
+  };
+
+  const handleTreeExpand = (keys: React.Key[]) => {
+    setExpandedKeys(keys);
+  };
+
+  // Handle navigation to specific entry
+  useEffect(() => {
+    console.log('🔄 useEffect triggered:', { 
+      hasTarget: scrollTargetRef.current !== null, 
+      targetValue: scrollTargetRef.current,
+      scrollTrigger,
+      treeDataLength: treeData.length 
+    });
+    
+    if (scrollTargetRef.current !== null && treeData.length > 0) {
+      const targetIndex = scrollTargetRef.current;
+      const targetKey = `root.entry.[${targetIndex}]`;
+      
+      console.log('🎯 Navigation triggered:', { targetIndex, targetKey });
+      
+      // First, collapse all nodes (like clicking collapse button)
+      console.log('📁 Collapsing all nodes first...');
+      setExpandedKeys([]);
+      
+      // Wait for collapse to take effect, then expand only the path to target
+      requestAnimationFrame(() => {
+        // Expand only the necessary nodes to show the target
+        const keysToExpand = ['root.entry', targetKey];
+        
+        console.log('📂 Expanding path to target:', keysToExpand);
+        setExpandedKeys(keysToExpand);
+        setSelectedKeys([targetKey]);
+        console.log('📂 Expanding path to target:', keysToExpand);
+        setExpandedKeys(keysToExpand);
+        setSelectedKeys([targetKey]);
+      
+        // Use requestAnimationFrame to wait for React to flush DOM updates
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            console.log('⏰ RAF fired, searching for node:', targetKey);
+          
+          // Find the tree node by its key using Ant Design's class structure
+          const treeNode = document.querySelector(`[data-key="${targetKey}"]`);
+          
+          console.log('🔍 Tree node search result:', treeNode ? 'FOUND' : 'NOT FOUND');
+        
+          if (treeNode) {
+              console.log('✅ Found tree node, scrolling...');
+          
+            // Scroll the tree container to make the node visible
+            if (scrollContainerRef.current) {
+            const container = scrollContainerRef.current;
+            const nodeRect = treeNode.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            
+            // Calculate scroll position to center the node
+            const nodeTop = nodeRect.top - containerRect.top + container.scrollTop;
+            const centerOffset = (container.clientHeight / 2) - (nodeRect.height / 2);
+            const targetScroll = nodeTop - centerOffset;
+            
+            console.log('📏 Scroll calculation:', {
+              nodeTop,
+              centerOffset,
+              targetScroll: Math.max(0, targetScroll),
+              containerHeight: container.clientHeight
+            });
+            
+            // Smooth scroll
+            container.scrollTo({
+              top: Math.max(0, targetScroll),
+              behavior: 'smooth'
+            });
+          } else {
+            console.warn('⚠️ scrollContainerRef.current is null');
+          }
+          
+          // Add highlight effect
+          const titleElement = treeNode.querySelector('.ant-tree-title');
+          if (titleElement) {
+            console.log('🎨 Adding highlight to title element');
+            titleElement.classList.add('bg-yellow-200', 'transition-colors', 'duration-500');
+            setTimeout(() => {
+              titleElement.classList.remove('bg-yellow-200');
+              setTimeout(() => {
+                titleElement.classList.remove('transition-colors', 'duration-500');
+              }, 500);
+            }, 2000);
+          } else {
+            console.warn('⚠️ Title element not found');
+          }
+        } else {
+          console.warn('❌ Tree node not found:', targetKey);
+          console.log('🔍 All tree nodes with "entry":', 
+            Array.from(document.querySelectorAll('[data-key*="entry"]')).map(n => n.getAttribute('data-key'))
+          );
+          console.log('🔍 First 20 tree nodes:', 
+            Array.from(document.querySelectorAll('[data-key]')).map(n => n.getAttribute('data-key')).slice(0, 20)
+          );
+        }
+          });
+        });
+      });
+      
+      // Clear the target
+      scrollTargetRef.current = null;
+    }
+  }, [scrollTrigger, treeData]);
+
+  if (!fhirJson.trim()) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="text-center text-gray-400">
+          <FolderOutlined style={{ fontSize: 48 }} />
+          <p className="mt-4">No FHIR data loaded</p>
+          <Button type="link" onClick={onOpenEditor}>
+            Open Editor to Add JSON
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 p-3">
+        <div className="flex gap-2">
+          <Button 
+            style={{ flex: 1 }}
+            icon={<EditOutlined />}
+            onClick={onOpenEditor}
+            title="Edit / Load Sample JSON"
+          >
+            Edit / Load Sample
+          </Button>
+          <Button 
+            icon={<ExpandOutlined />}
+            onClick={handleExpandAll}
+            title="Expand All"
+          />
+          <Button 
+            icon={<ShrinkOutlined />}
+            onClick={handleCollapseAll}
+            title="Collapse All"
+          />
+        </div>
+      </div>
+
+      {/* Tree Container */}
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 overflow-auto p-4 bg-gray-50"
+      >
+        <Tree
+          ref={treeRef}
+          showIcon
+          showLine
+          expandedKeys={expandedKeys}
+          selectedKeys={selectedKeys}
+          onExpand={handleTreeExpand}
+          onSelect={(keys) => setSelectedKeys(keys)}
+          treeData={treeData}
+          virtual={totalNodes > VIRTUALIZATION_THRESHOLD}
+          height={totalNodes > VIRTUALIZATION_THRESHOLD ? 600 : undefined}
+        />
+      </div>
+    </div>
+  );
+}

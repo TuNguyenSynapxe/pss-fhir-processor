@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Codes;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Fhir;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation;
@@ -13,25 +14,28 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
     /// </summary>
     public class ValidationEngine
     {
-        private Dictionary<string, RuleSet> _ruleSets;
+        private Dictionary<string, Models.Validation.RuleSet> _ruleSets;
         private CodesMasterMetadata _codesMaster;
         private ValidationOptions _options;
         private Logger _logger;
+        private ValidationMetadata _validationMetadata;
+        private ValidationErrorEnricher _enricher;
+        private Bundle _currentBundle; // Store current bundle for enrichment
 
         public ValidationEngine()
         {
-            _ruleSets = new Dictionary<string, RuleSet>();
+            _ruleSets = new Dictionary<string, Models.Validation.RuleSet>();
             _options = new ValidationOptions();
         }
 
         public void LoadRuleSets(Dictionary<string, string> jsonByScope)
         {
-            _ruleSets = new Dictionary<string, RuleSet>();
+            _ruleSets = new Dictionary<string, Models.Validation.RuleSet>();
             _logger?.Info($"Loading {jsonByScope.Count} RuleSets");
 
             foreach (var kvp in jsonByScope)
             {
-                var ruleSet = JsonHelper.Deserialize<RuleSet>(kvp.Value);
+                var ruleSet = JsonHelper.Deserialize<Models.Validation.RuleSet>(kvp.Value);
                 if (ruleSet != null)
                 {
                     _ruleSets[kvp.Key] = ruleSet;
@@ -41,6 +45,29 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
                 {
                     _logger?.Info($"Failed to deserialize RuleSet '{kvp.Key}'");
                 }
+            }
+        }
+        
+        /// <summary>
+        /// Load ValidationMetadata from v11 format (preferred)
+        /// </summary>
+        public void LoadValidationMetadata(string json)
+        {
+            try
+            {
+                _validationMetadata = JsonHelper.Deserialize<ValidationMetadata>(json);
+                _logger?.Info($"Loaded ValidationMetadata v{_validationMetadata?.Version}");
+                
+                // Initialize enricher with metadata
+                if (_validationMetadata != null)
+                {
+                    _enricher = new ValidationErrorEnricher(_validationMetadata, _logger);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.Error($"Failed to load ValidationMetadata: {ex.Message}");
+                _validationMetadata = null;
             }
         }
 
@@ -75,6 +102,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
         public ValidationResult Validate(Bundle bundle)
         {
             _logger?.Info("Validation started");
+            _currentBundle = bundle; // Store for enrichment
 
             var result = new ValidationResult { IsValid = true };
 
@@ -82,13 +110,13 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
             if (bundle == null || bundle.Entry == null)
             {
                 result.IsValid = false;
-                result.Errors.Add(new ValidationError
-                {
-                    Code = "INVALID_BUNDLE_STRUCTURE",
-                    FieldPath = "Bundle",
-                    Message = "Bundle or Entry is null",
-                    Scope = "Bundle"
-                });
+                result.Errors.Add(EmitValidationError(
+                    "INVALID_BUNDLE_STRUCTURE",
+                    "Bundle",
+                    "Bundle or Entry is null",
+                    "Bundle",
+                    null
+                ));
                 return result;
             }
 
@@ -847,6 +875,33 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
                 return string.Empty;
 
             return text.ToLower().Trim();
+        }
+
+        /// <summary>
+        /// Emit an enriched validation error with metadata
+        /// </summary>
+        private ValidationError EmitValidationError(
+            string errorCode,
+            string fieldPath,
+            string message,
+            string scope,
+            RuleDefinition rule)
+        {
+            // If enricher is available, use it to create enriched error
+            if (_enricher != null && _validationMetadata != null)
+            {
+                return _enricher.EnrichError(errorCode, fieldPath, message, scope, rule, _currentBundle);
+            }
+
+            // Fallback: create basic error without enrichment
+            return new ValidationError
+            {
+                Code = errorCode,
+                FieldPath = fieldPath,
+                Message = message,
+                Scope = scope,
+                RuleType = rule?.RuleType
+            };
         }
     }
 }

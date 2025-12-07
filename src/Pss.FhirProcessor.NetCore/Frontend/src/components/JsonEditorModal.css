@@ -1,0 +1,80 @@
+.json-editor-modal .ant-modal-body {
+  height: 90vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.json-editor-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding-right: 40px;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.json-editor-modal-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.validation-alert {
+  margin: 12px 12px 0 12px;
+  border-radius: 4px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.editor-container {
+  flex: 1;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  margin: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.json-editor-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Monaco editor enhancements */
+.monaco-editor .margin {
+  background-color: #f5f5f5;
+}
+
+.monaco-editor .line-numbers {
+  color: #8c8c8c;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .json-editor-modal-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .json-editor-modal .ant-modal-body {
+    height: 80vh;
+  }
+}

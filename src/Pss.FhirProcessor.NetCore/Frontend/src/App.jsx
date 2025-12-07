@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Layout, Menu } from 'antd';
 import { ExperimentOutlined, FileTextOutlined } from '@ant-design/icons';
-import Playground from './components/Playground';
+import Playground from './components/playground-v2';
 import ValidationRules from './components/ValidationRules';
 import { MetadataProvider } from './contexts/MetadataContext';
 import './App.css';
@@ -51,10 +51,14 @@ function App() {
             className="flex-1 bg-blue-600"
           />
         </Header>
-        <Content className="p-6 bg-gray-100">
-          <div className="max-w-7xl mx-auto">
-            {renderContent()}
-          </div>
+        <Content className={currentPage === 'playground' ? '' : 'p-6 bg-gray-100'}>
+          {currentPage === 'playground' ? (
+            renderContent()
+          ) : (
+            <div className="max-w-7xl mx-auto">
+              {renderContent()}
+            </div>
+          )}
         </Content>
         <Footer className="text-center bg-gray-200">
           PSS FHIR Processor ©2025 - MOH HealthierSG
