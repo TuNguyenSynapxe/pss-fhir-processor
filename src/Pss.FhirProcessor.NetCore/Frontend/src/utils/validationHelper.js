@@ -318,28 +318,59 @@ function generateBreadcrumb(fieldPath, context) {
   // Remove entry prefix
   path = path.replace(/^entry\[\d+\]\.resource\./, '');
   
-  // Split and clean
-  const segments = path.split('.');
+  // For paths with filters, we need to NOT split by dots inside the filter brackets
+  // Example: identifier[system:https://fhir.synapxe.sg/NamingSystem/nric].value
+  // Should become: ["identifier[system:https://fhir.synapxe.sg/NamingSystem/nric]", "value"]
+  
+  const segments = [];
+  let currentSegment = '';
+  let insideBracket = false;
+  
+  for (let i = 0; i < path.length; i++) {
+    const char = path[i];
+    
+    if (char === '[') {
+      insideBracket = true;
+      currentSegment += char;
+    } else if (char === ']') {
+      insideBracket = false;
+      currentSegment += char;
+    } else if (char === '.' && !insideBracket) {
+      if (currentSegment) {
+        segments.push(currentSegment);
+        currentSegment = '';
+      }
+    } else {
+      currentSegment += char;
+    }
+  }
+  
+  if (currentSegment) {
+    segments.push(currentSegment);
+  }
+  
   const breadcrumb = [];
 
   for (const segment of segments) {
     let clean = segment;
     
-    // Handle NRIC specially
-    if (clean.includes('identifier[system:') && clean.includes('/nric')) {
-      breadcrumb.push('identifier (NRIC)');
+    // Handle filters with system/code/url - keep them as-is
+    if (clean.includes('[system:') || clean.includes('[code:') || clean.includes('[url:')) {
+      breadcrumb.push(clean);
       continue;
     }
     
-    // Remove filters but keep meaningful info
-    clean = clean.replace(/\[system:[^\]]+\]/g, '');
-    clean = clean.replace(/\[code:[^\]]+\]/g, '');
-    clean = clean.replace(/\[url:[^\]]+\]/g, '');
+    // Handle numeric array indices
+    if (clean.includes('[') && /\[\d+\]/.test(clean)) {
+      breadcrumb.push(clean); // Keep as-is with index
+      continue;
+    }
+    
+    // Remove only numeric indices that are standalone
     clean = clean.replace(/\[\d+\]/g, '');
     
     if (clean) {
-      // Prettify
-      clean = clean.replace(/([A-Z])/g, ' $1').trim();
+      // Capitalize first letter for simple field names
       clean = clean.charAt(0).toUpperCase() + clean.slice(1);
       breadcrumb.push(clean);
     }

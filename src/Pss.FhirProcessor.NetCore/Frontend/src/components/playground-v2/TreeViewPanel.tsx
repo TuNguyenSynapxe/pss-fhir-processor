@@ -11,7 +11,7 @@ import type { DataNode } from 'antd/es/tree';
 
 interface TreeViewPanelProps {
   fhirJson: string;
-  scrollTargetRef: React.MutableRefObject<number | null>;
+  scrollTargetRef: React.MutableRefObject<{ entryIndex: number; fieldPath?: string } | null>;
   scrollTrigger: number; // Added to force re-render
   onOpenEditor: () => void;
 }
@@ -186,10 +186,56 @@ export default function TreeViewPanel({ fhirJson, scrollTargetRef, scrollTrigger
     });
     
     if (scrollTargetRef.current !== null && treeData.length > 0) {
-      const targetIndex = scrollTargetRef.current;
-      const targetKey = `root.entry.[${targetIndex}]`;
+      const targetIndex = scrollTargetRef.current.entryIndex;
+      const fieldPath = scrollTargetRef.current.fieldPath;
+      const baseKey = `root.entry.[${targetIndex}]`;
       
-      console.log('🎯 Navigation triggered:', { targetIndex, targetKey });
+      console.log('🎯 Navigation triggered:', { targetIndex, fieldPath, baseKey });
+      
+      // Build the full path to the target field
+      let targetKey = baseKey;
+      const keysToExpand = ['root.entry', baseKey];
+      
+      if (fieldPath) {
+        // Parse fieldPath to build tree keys
+        // Handle FHIR filter syntax like: identifier[system:https://fhir.synapxe.sg/NamingSystem/nric].value
+        // We need to find the actual array element, not use the filter
+        const pathParts = fieldPath.split('.');
+        let currentPath = `${baseKey}.resource`;
+        keysToExpand.push(currentPath);
+        
+        for (const part of pathParts) {
+          // Handle array notation with filters like "identifier[system:...]" or simple "identifier[0]"
+          if (part.includes('[')) {
+            const match = part.match(/^(.+?)\[(.+?)\]$/);
+            if (match) {
+              const [, fieldName, filter] = match;
+              currentPath += `.${fieldName}`;
+              keysToExpand.push(currentPath);
+              
+              // If it's a numeric index like [0], use it directly
+              // Otherwise (like [system:...]), we'll expand all array elements (or just the array)
+              if (/^\d+$/.test(filter)) {
+                currentPath += `.[${filter}]`;
+                keysToExpand.push(currentPath);
+              } else {
+                // For filters like [system:...], we can't determine the exact index
+                // So we just expand the array and let the user see all elements
+                // The selection will be on the array itself
+                console.log('⚠️ Filter notation detected, expanding array:', filter);
+              }
+            }
+          } else {
+            currentPath += `.${part}`;
+            keysToExpand.push(currentPath);
+          }
+        }
+        
+        targetKey = currentPath;
+      }
+      
+      console.log('🎯 Target key:', targetKey);
+      console.log('📂 Path to expand:', keysToExpand);
       
       // First, collapse all nodes (like clicking collapse button)
       console.log('📁 Collapsing all nodes first...');
@@ -197,12 +243,6 @@ export default function TreeViewPanel({ fhirJson, scrollTargetRef, scrollTrigger
       
       // Wait for collapse to take effect, then expand only the path to target
       requestAnimationFrame(() => {
-        // Expand only the necessary nodes to show the target
-        const keysToExpand = ['root.entry', targetKey];
-        
-        console.log('📂 Expanding path to target:', keysToExpand);
-        setExpandedKeys(keysToExpand);
-        setSelectedKeys([targetKey]);
         console.log('📂 Expanding path to target:', keysToExpand);
         setExpandedKeys(keysToExpand);
         setSelectedKeys([targetKey]);
@@ -212,8 +252,11 @@ export default function TreeViewPanel({ fhirJson, scrollTargetRef, scrollTrigger
           requestAnimationFrame(() => {
             console.log('⏰ RAF fired, searching for node:', targetKey);
           
-          // Find the tree node by its key using Ant Design's class structure
-          const treeNode = document.querySelector(`[data-key="${targetKey}"]`);
+          // Find the selected node using Ant Design's selected class
+          // The selected class is on the parent treenode, we need the content wrapper
+          const selectedTreeNode = document.querySelector('.ant-tree-treenode-selected');
+          const treeNode = selectedTreeNode?.querySelector('.ant-tree-node-content-wrapper') || 
+                          document.querySelector('.ant-tree-node-selected .ant-tree-node-content-wrapper');
           
           console.log('🔍 Tree node search result:', treeNode ? 'FOUND' : 'NOT FOUND');
         
@@ -251,25 +294,15 @@ export default function TreeViewPanel({ fhirJson, scrollTargetRef, scrollTrigger
           const titleElement = treeNode.querySelector('.ant-tree-title');
           if (titleElement) {
             console.log('🎨 Adding highlight to title element');
-            titleElement.classList.add('bg-yellow-200', 'transition-colors', 'duration-500');
-            setTimeout(() => {
-              titleElement.classList.remove('bg-yellow-200');
+              titleElement.classList.add('bg-yellow-200', 'transition-colors', 'duration-500');
               setTimeout(() => {
-                titleElement.classList.remove('transition-colors', 'duration-500');
-              }, 500);
-            }, 2000);
-          } else {
-            console.warn('⚠️ Title element not found');
+                titleElement.classList.remove('bg-yellow-200');
+                setTimeout(() => {
+                  titleElement.classList.remove('transition-colors', 'duration-500');
+                }, 500);
+              }, 2000);
+            }
           }
-        } else {
-          console.warn('❌ Tree node not found:', targetKey);
-          console.log('🔍 All tree nodes with "entry":', 
-            Array.from(document.querySelectorAll('[data-key*="entry"]')).map(n => n.getAttribute('data-key'))
-          );
-          console.log('🔍 First 20 tree nodes:', 
-            Array.from(document.querySelectorAll('[data-key]')).map(n => n.getAttribute('data-key')).slice(0, 20)
-          );
-        }
           });
         });
       });

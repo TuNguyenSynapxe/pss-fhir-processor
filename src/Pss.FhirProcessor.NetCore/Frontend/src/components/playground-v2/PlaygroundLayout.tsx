@@ -56,7 +56,7 @@ export default function PlaygroundLayout() {
   });
 
   // Refs for navigation
-  const treeScrollTargetRef = useRef<number | null>(null);
+  const treeScrollTargetRef = useRef<{ entryIndex: number; fieldPath?: string } | null>(null);
 
   // Persist width to localStorage
   useEffect(() => {
@@ -170,18 +170,10 @@ export default function PlaygroundLayout() {
 
   // Go to resource (triggered from validation error card)
   const handleGoToResource = useCallback((resourcePointer: any) => {
-    console.log('🔗 handleGoToResource called:', resourcePointer);
     if (resourcePointer?.entryIndex !== undefined) {
-      console.log('✅ Setting scroll target to:', resourcePointer.entryIndex);
-      treeScrollTargetRef.current = resourcePointer.entryIndex;
-      setScrollTrigger(prev => {
-        const next = prev + 1;
-        console.log('🎯 Scroll trigger updated:', prev, '->', next);
-        return next;
-      }); // Trigger re-render in TreeViewPanel
-      message.info(`Navigating to entry #${resourcePointer.entryIndex}`);
-    } else {
-      console.warn('⚠️ No entryIndex in resourcePointer:', resourcePointer);
+      treeScrollTargetRef.current = resourcePointer;
+      setScrollTrigger(prev => prev + 1);
+      message.info(`Navigating to entry #${resourcePointer.entryIndex}${resourcePointer.fieldPath ? ` → ${resourcePointer.fieldPath}` : ''}`);
     }
   }, []);
 

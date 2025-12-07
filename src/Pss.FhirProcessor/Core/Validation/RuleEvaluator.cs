@@ -374,18 +374,35 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
 
                 var componentObj = (JObject)component;
 
-                // Extract question code from code.coding[0].code
-                var questionCode = CpsPathResolver.GetValueAsString(componentObj, "code.coding[0].code");
+                // Extract question code from code.coding array - find the first non-empty code
+                var codingArray = componentObj.SelectToken("code.coding") as JArray;
+                string questionCode = null;
+                int codingIndex = -1;
+                
+                if (codingArray != null)
+                {
+                    for (int i = 0; i < codingArray.Count; i++)
+                    {
+                        var coding = codingArray[i] as JObject;
+                        var code = CpsPathResolver.GetValueAsString(coding, "code");
+                        if (!string.IsNullOrEmpty(code))
+                        {
+                            questionCode = code;
+                            codingIndex = i;
+                            break;
+                        }
+                    }
+                }
                 
                 if (string.IsNullOrEmpty(questionCode))
                 {
                     logger?.Verbose($"      Component #{componentIndex}: ✗ No question code found");
-                    result.AddError(rule.ErrorCode, $"component[{componentIndex - 1}].code.coding.code", 
+                    result.AddError(rule.ErrorCode, $"component[{componentIndex - 1}].code.coding[0].code", 
                         "Component missing question code", scope);
                     continue;
                 }
 
-                logger?.Verbose($"      Component #{componentIndex}: Question '{questionCode}'");
+                logger?.Verbose($"      Component #{componentIndex}: Question '{questionCode}' (coding[{codingIndex}])");
 
                 // Find question in CodesMaster
                 var question = codesMaster.Questions.FirstOrDefault(q => q.QuestionCode == questionCode);
@@ -394,7 +411,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 {
                     logger?.Info($"    ✗ Component #{componentIndex}: Question '{questionCode}' NOT FOUND in CodesMaster");
                     logger?.Verbose($"        ✗ Question '{questionCode}' not found in CodesMaster");
-                    result.AddError(rule.ErrorCode, $"component[{componentIndex - 1}].code.coding.code", 
+                    result.AddError(rule.ErrorCode, $"component[{componentIndex - 1}].code.coding[{codingIndex}].code", 
                         $"Unknown question code '{questionCode}'", scope);
                     continue;
                 }
@@ -404,7 +421,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 logger?.Verbose($"        Multi-value: {question.IsMultiValue}");
 
                 // Validate display field matches expected QuestionDisplay
-                var actualDisplay = CpsPathResolver.GetValueAsString(componentObj, "code.coding[0].display");
+                var actualDisplay = CpsPathResolver.GetValueAsString(codingArray[codingIndex] as JObject, "display");
                 
                 if (!string.IsNullOrEmpty(actualDisplay))
                 {
@@ -414,7 +431,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     {
                         logger?.Info($"    ✗ Component #{componentIndex}: Display mismatch - Expected: '{question.QuestionDisplay}', Actual: '{actualDisplay}'");
                         logger?.Verbose($"        ✗ Display text mismatch");
-                        result.AddError(rule.ErrorCode, $"component[{componentIndex - 1}].code.coding.display",
+                        result.AddError(rule.ErrorCode, $"component[{componentIndex - 1}].code.coding[{codingIndex}].display",
                             $"Question display mismatch for '{questionCode}' | Expected: '{question.QuestionDisplay}' | Actual: '{actualDisplay}'", scope);
                     }
                     else

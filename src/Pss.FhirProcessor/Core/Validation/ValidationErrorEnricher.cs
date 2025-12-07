@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata;
+using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path;
 
 namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
 {
@@ -29,6 +30,23 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         {
             if (error == null)
                 return;
+
+            // Resolve filter notation to indices in fieldPath for frontend tree navigation
+            // Example: "extension[url:https://...].valueCodeableConcept.coding[0].system"
+            //       → "extension[1].valueCodeableConcept.coding[0].system"
+            if (bundleRoot != null && !string.IsNullOrEmpty(error.FieldPath) && error.ResourcePointer?.EntryIndex != null)
+            {
+                var entries = bundleRoot["entry"] as JArray;
+                if (entries != null && error.ResourcePointer.EntryIndex < entries.Count)
+                {
+                    var entry = entries[error.ResourcePointer.EntryIndex.Value];
+                    var resource = entry["resource"] as JObject;
+                    if (resource != null)
+                    {
+                        error.FieldPath = CpsPathResolver.ResolveFiltersToIndices(resource, error.FieldPath);
+                    }
+                }
+            }
 
             // Set rule type
             if (rule != null)

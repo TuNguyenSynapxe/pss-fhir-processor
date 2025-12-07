@@ -499,5 +499,105 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path
 
             return false;
         }
+
+        /// <summary>
+        /// Convert a CPS path with filters to a path with numeric indices
+        /// Example: "extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].system"
+        /// Returns: "extension[1].valueCodeableConcept.coding[0].system" (if the url filter matches index 1)
+        /// </summary>
+        public static string ResolveFiltersToIndices(JToken resource, string cpsPath)
+        {
+            if (resource == null || string.IsNullOrEmpty(cpsPath))
+            {
+                return cpsPath;
+            }
+
+            var segments = ParsePath(cpsPath);
+            var resolvedSegments = new List<string>();
+            var currentContext = resource;
+
+            foreach (var segment in segments)
+            {
+                var fieldName = segment.Name;
+
+                if (segment.Filter != null)
+                {
+                    if (segment.Filter.Type == FilterType.Index)
+                    {
+                        // Already numeric index, keep as-is
+                        resolvedSegments.Add($"{fieldName}[{segment.Filter.Index}]");
+                        
+                        // Navigate to this element
+                        if (currentContext != null && currentContext[fieldName] is JArray array)
+                        {
+                            if (segment.Filter.Index < array.Count)
+                            {
+                                currentContext = array[segment.Filter.Index];
+                            }
+                            else
+                            {
+                                currentContext = null;
+                            }
+                        }
+                        else
+                        {
+                            currentContext = null;
+                        }
+                    }
+                    else if (segment.Filter.Type == FilterType.KeyValue)
+                    {
+                        // Filter notation - need to find matching index
+                        if (currentContext != null && currentContext[fieldName] is JArray array)
+                        {
+                            int matchingIndex = -1;
+                            for (int i = 0; i < array.Count; i++)
+                            {
+                                var element = array[i];
+                                var filterValue = element[segment.Filter.Key]?.ToString();
+                                
+                                if (filterValue == segment.Filter.Value)
+                                {
+                                    matchingIndex = i;
+                                    currentContext = element;
+                                    break;
+                                }
+                            }
+
+                            if (matchingIndex >= 0)
+                            {
+                                resolvedSegments.Add($"{fieldName}[{matchingIndex}]");
+                            }
+                            else
+                            {
+                                // No match found, keep filter notation (frontend will handle)
+                                resolvedSegments.Add($"{fieldName}[{segment.Filter.Key}:{segment.Filter.Value}]");
+                                currentContext = null;
+                            }
+                        }
+                        else
+                        {
+                            // Not an array or context lost, keep filter notation
+                            resolvedSegments.Add($"{fieldName}[{segment.Filter.Key}:{segment.Filter.Value}]");
+                            currentContext = null;
+                        }
+                    }
+                    else
+                    {
+                        // Wildcard or other - keep as-is
+                        resolvedSegments.Add(fieldName);
+                        currentContext = currentContext?[fieldName];
+                    }
+                }
+                else
+                {
+                    // No filter
+                    resolvedSegments.Add(fieldName);
+                    currentContext = currentContext?[fieldName];
+                }
+            }
+
+            return string.Join(".", resolvedSegments);
+        }
     }
 }
+

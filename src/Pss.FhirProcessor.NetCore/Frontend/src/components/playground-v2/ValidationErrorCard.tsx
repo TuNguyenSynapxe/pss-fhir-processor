@@ -30,13 +30,11 @@ export default function ValidationErrorCard({ error, onGoToResource }: Validatio
 
   // Handler for navigating to resource in bundle
   const handleNavigateToResource = () => {
-    console.log('🖱️ Go to Resource clicked');
-    console.log('📍 Helper resourcePointer:', helper.resourcePointer);
     if (helper.resourcePointer && helper.resourcePointer.entryIndex !== undefined) {
-      console.log('✅ Calling onGoToResource with:', helper.resourcePointer);
-      onGoToResource(helper.resourcePointer);
-    } else {
-      console.warn('⚠️ No valid resourcePointer:', helper);
+      onGoToResource({ 
+        ...helper.resourcePointer, 
+        fieldPath: error.fieldPath 
+      });
     }
   };
 
@@ -101,7 +99,15 @@ export default function ValidationErrorCard({ error, onGoToResource }: Validatio
                   <Breadcrumb separator={<RightOutlined style={{ fontSize: '10px' }} />}>
                     {helper.breadcrumb.map((crumb: string, idx: number) => (
                       <Breadcrumb.Item key={idx}>
-                        <span className="font-mono text-sm">{crumb}</span>
+                        <span 
+                          className="font-mono text-sm break-all"
+                          style={{ 
+                            wordBreak: 'break-word',
+                            overflowWrap: 'break-word'
+                          }}
+                        >
+                          {crumb}
+                        </span>
                       </Breadcrumb.Item>
                     ))}
                   </Breadcrumb>
