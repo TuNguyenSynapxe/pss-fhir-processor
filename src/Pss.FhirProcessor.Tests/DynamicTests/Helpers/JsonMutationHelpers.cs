@@ -91,6 +91,30 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Helpers
         }
 
         /// <summary>
+        /// Replace any value at the specified JSON path
+        /// </summary>
+        public static JObject ReplaceValue(JObject obj, string jsonPath, JToken newValue)
+        {
+            var clone = (JObject)obj.DeepClone();
+            var token = clone.SelectToken(jsonPath);
+            
+            if (token != null)
+            {
+                token.Replace(newValue);
+            }
+
+            return clone;
+        }
+
+        /// <summary>
+        /// Remove a resource by its resource type
+        /// </summary>
+        public static JObject RemoveResource(JObject bundle, string resourceType)
+        {
+            return RemoveEntryByResourceType(bundle, resourceType);
+        }
+
+        /// <summary>
         /// Replace a GUID with an invalid value
         /// </summary>
         public static JObject BreakGuid(JObject obj, string jsonPath)
@@ -213,6 +237,55 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Helpers
             }
 
             return clone;
+        }
+
+        /// <summary>
+        /// Remove field/element at CPS path
+        /// Returns unchanged bundle if path doesn't exist
+        /// </summary>
+        public static JObject RemoveAtCps(JObject bundle, string cpsPath)
+        {
+            var clone = (JObject)bundle.DeepClone();
+            
+            // Check if path exists
+            var tokens = CpsPathNavigator.SelectTokens(clone, cpsPath);
+            if (tokens.Count == 0)
+            {
+                // Path doesn't exist - return unchanged (mutation is a no-op)
+                return clone;
+            }
+            
+            CpsPathNavigator.RemoveAt(clone, cpsPath);
+            return clone;
+        }
+
+        /// <summary>
+        /// Replace value at CPS path
+        /// Returns unchanged bundle if path doesn't exist
+        /// </summary>
+        public static JObject ReplaceValueCps(JObject bundle, string cpsPath, JToken newValue)
+        {
+            var clone = (JObject)bundle.DeepClone();
+            
+            // Check if path exists
+            var tokens = CpsPathNavigator.SelectTokens(clone, cpsPath);
+            if (tokens.Count == 0)
+            {
+                // Path doesn't exist - return unchanged (mutation is a no-op)
+                return clone;
+            }
+            
+            CpsPathNavigator.ReplaceValue(clone, cpsPath, newValue);
+            return clone;
+        }
+
+        /// <summary>
+        /// Check if a CPS path exists and has values
+        /// </summary>
+        public static bool ExistsCpsPath(JObject bundle, string cpsPath)
+        {
+            var tokens = CpsPathNavigator.SelectTokens(bundle, cpsPath);
+            return tokens.Any();
         }
     }
 }
