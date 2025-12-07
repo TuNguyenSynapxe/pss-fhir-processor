@@ -212,6 +212,14 @@
           "Message": "Ethnicity code is mandatory."
         },
         {
+          "RuleType": "CodeSystem",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-ethnicity].valueCodeableConcept.coding[0]",
+          "System": "https://fhir.synapxe.sg/CodeSystem/ethnicity",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Ethnicity code must be a valid value from the ethnicity CodeSystem."
+        },
+        {
           "RuleType": "Required",
           "PathType": "CPS1",
           "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-residential-status].valueCodeableConcept.coding[0].system",
@@ -234,6 +242,14 @@
           "Message": "Residential status code is mandatory."
         },
         {
+          "RuleType": "CodeSystem",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-residential-status].valueCodeableConcept.coding[0]",
+          "System": "https://fhir.synapxe.sg/CodeSystem/residential-status",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Residential status code must be a valid value from the residential-status CodeSystem."
+        },
+        {
           "RuleType": "Required",
           "PathType": "CPS1",
           "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-subsidy].valueCodeableConcept.coding[0].system",
@@ -254,6 +270,14 @@
           "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-subsidy].valueCodeableConcept.coding[0].code",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Subsidy code is mandatory."
+        },
+        {
+          "RuleType": "CodeSystem",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-subsidy].valueCodeableConcept.coding[0]",
+          "System": "https://fhir.synapxe.sg/CodeSystem/subsidy",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Subsidy code must be a valid value from the subsidy CodeSystem."
         },
         {
           "RuleType": "Required",
@@ -656,6 +680,14 @@
           "Message": "Provider Organization type.coding.code must be PROVIDER."
         },
         {
+          "RuleType": "CodeSystem",
+          "PathType": "CPS1",
+          "Path": "Organization.type.coding",
+          "System": "https://fhir.synapxe.sg/CodeSystem/organization-type",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Organization type code must be a valid value from the organization-type CodeSystem."
+        },
+        {
           "RuleType": "Required",
           "PathType": "CPS1",
           "Path": "Organization.name",
@@ -740,6 +772,14 @@
           "ExpectedValue": "CLUSTER",
           "ErrorCode": "FIXED_VALUE_MISMATCH",
           "Message": "Cluster Organization type.coding.code must be CLUSTER."
+        },
+        {
+          "RuleType": "CodeSystem",
+          "PathType": "CPS1",
+          "Path": "Organization.type.coding",
+          "System": "https://fhir.synapxe.sg/CodeSystem/organization-type",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Organization type code must be a valid value from the organization-type CodeSystem."
         },
         {
           "RuleType": "Required",

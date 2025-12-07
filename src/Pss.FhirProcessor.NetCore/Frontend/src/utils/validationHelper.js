@@ -181,6 +181,14 @@ function renderCodeSystem(error, rule, context, resourcePointer) {
   const breadcrumb = generateBreadcrumb(error.fieldPath, context);
   const concepts = context.codeSystemConcepts || [];
 
+  // Generate expected value from concepts list
+  let expectedValue = rule.system;
+  if (concepts && concepts.length > 0) {
+    const codeList = concepts.map(c => `'${c.code}'`).slice(0, 5).join(', ');
+    const remaining = concepts.length > 5 ? ` (and ${concepts.length - 5} more)` : '';
+    expectedValue = `One of: ${codeList}${remaining}`;
+  }
+
   return {
     title: `Invalid code: ${humanPath}`,
     whatThisMeans: generateWhatThisMeans('CodeSystem', humanPath, context, resourcePointer),
@@ -188,7 +196,7 @@ function renderCodeSystem(error, rule, context, resourcePointer) {
     location: error.fieldPath,
     breadcrumb: breadcrumb,
     resourceType: resourcePointer.resourceType || context.resourceType,
-    expected: rule.system,
+    expected: expectedValue,
     allowedCodes: concepts.map((c) => ({
       code: c.code,
       display: c.display,
@@ -263,6 +271,15 @@ export function humanizePath(scope, fieldPath, context) {
     return context.questionDisplay;
   }
 
+  // Handle extension-based coded fields
+  if (fieldPath.includes('extension[url:')) {
+    if (fieldPath.includes('/ext-grc]')) return 'GRC Code';
+    if (fieldPath.includes('/ext-constituency]')) return 'Constituency Code';
+    if (fieldPath.includes('/ext-ethnicity]')) return 'Ethnicity Code';
+    if (fieldPath.includes('/ext-residential-status]')) return 'Residential Status Code';
+    if (fieldPath.includes('/ext-subsidy]')) return 'Subsidy Code';
+  }
+
   // Handle NRIC identifier specifically
   if (fieldPath.includes('identifier[system:') && fieldPath.includes('/nric')) {
     return 'NRIC';
@@ -272,6 +289,16 @@ export function humanizePath(scope, fieldPath, context) {
   if (fieldPath.includes('identifier') && fieldPath.includes('value')) {
     if (fieldPath.includes('/fin')) return 'FIN';
     if (fieldPath.includes('/passport')) return 'Passport Number';
+  }
+
+  // Handle Organization type
+  if (fieldPath.includes('Organization.type.coding')) {
+    return 'Organization Type Code';
+  }
+
+  // Handle Observation screening type
+  if (fieldPath.includes('Observation.code.coding') && fieldPath.includes('/screening-type')) {
+    return 'Screening Type Code';
   }
 
   // Extract last meaningful segment

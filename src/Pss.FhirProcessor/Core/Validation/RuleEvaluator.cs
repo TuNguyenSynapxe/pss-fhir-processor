@@ -895,7 +895,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                         availableCodes += $" (and {codeSystem.Concepts.Count - 10} more)";
                     }
                     result.AddError(rule.ErrorCode ?? "INVALID_CODE", rule.Path,
-                        $"{rule.Message ?? $"Invalid code in CodeSystem '{rule.System}'"} | Code: '{code}' | Available codes: [{availableCodes}]", scope);
+                        $"{rule.Message ?? $"Invalid code in CodeSystem '{rule.System}'"} | Code: '{code}' | Available codes: [{availableCodes}]", scope, rule);
                 }
                 else
                 {
