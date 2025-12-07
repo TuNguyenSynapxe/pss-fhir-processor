@@ -100,7 +100,30 @@
         "actualPeriod": {
           "start": "2024-12-01T10:00:00+08:00",
           "end": "2024-12-01T11:30:00+08:00"
-        }
+        },
+        "subject": {
+          "reference": "urn:uuid:a3f9c2d1-2b40-4ab9-8133-5b1f2d4e9f91"
+        },
+        "serviceProvider": {
+          "reference": "urn:uuid:f91b0cd8-3fc2-4d12-a1e9-6e85c2124b22"
+        },
+        "serviceType": [
+          {
+            "coding": [
+              {
+                "system": "https://fhir.synapxe.sg/CodeSystem/screening-type",
+                "code": "HS"
+              }
+            ]
+          }
+        ],
+        "location": [
+          {
+            "location": {
+              "reference": "urn:uuid:d12b174f-6598-4f2f-b4cb-48df5113458c"
+            }
+          }
+        ]
       }
     },
     {
@@ -115,7 +138,10 @@
             "value": "SC-2024-01"
           }
         ],
-        "name": "Silver Screening Campaign 2024"
+        "name": "Silver Screening Campaign 2024",
+        "providedBy": {
+          "reference": "urn:uuid:e0a3f4c1-32a1-4df2-8f36-9b164ea7db04"
+        }
       }
     },
     {
@@ -123,6 +149,12 @@
       "resource": {
         "resourceType": "Location",
         "id": "d12b174f-6598-4f2f-b4cb-48df5113458c",
+        "identifier": [
+          {
+            "system": "https://fhir.synapxe.sg/NamingSystem/hci-code",
+            "value": "HCI001"
+          }
+        ],
         "address": {
           "line": [
             "Jurong West Ave 5 Community Centre"
@@ -136,7 +168,7 @@
               "coding": [
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/grc",
-                  "code": "01"
+                  "code": "AMK"
                 }
               ]
             }
@@ -147,7 +179,7 @@
               "coding": [
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/constituency",
-                  "code": "A"
+                  "code": "AMK-HL"
                 }
               ]
             }
@@ -387,6 +419,13 @@
             }
           ]
         },
+        "status": "final",
+        "subject": {
+          "reference": "urn:uuid:a3f9c2d1-2b40-4ab9-8133-5b1f2d4e9f91"
+        },
+        "encounter": {
+          "reference": "urn:uuid:bb7c8a63-0c49-40cf-9b0c-66e8b64d9254"
+        },
         "performer": {
           "reference": "urn:uuid:e0a3f4c1-32a1-4df2-8f36-9b164ea7db04",
           "display":"ABC Polyclinic"
@@ -528,6 +567,13 @@
               "code": "VS"
             }
           ]
+        },
+        "status": "final",
+        "subject": {
+          "reference": "urn:uuid:a3f9c2d1-2b40-4ab9-8133-5b1f2d4e9f91"
+        },
+        "encounter": {
+          "reference": "urn:uuid:bb7c8a63-0c49-40cf-9b0c-66e8b64d9254"
         },
         "performer": {
           "reference": "urn:uuid:e0a3f4c1-32a1-4df2-8f36-9b164ea7db04",

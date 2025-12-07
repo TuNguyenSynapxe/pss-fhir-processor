@@ -413,10 +413,10 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path
 
         /// <summary>
         /// Check if a resource type exists in Bundle.entry[] array
-        /// Supports paths like: Bundle.entry[Patient], Bundle.entry[Observation:HS]
+        /// Supports paths like: Bundle.entry[Patient], Bundle.entry[Observation:HS], Bundle.entry[Organization:PROVIDER]
         /// </summary>
         /// <param name="bundleRoot">The Bundle JObject</param>
-        /// <param name="cps1Path">Path like "Bundle.entry[Patient]" or "Bundle.entry[Observation:HS]"</param>
+        /// <param name="cps1Path">Path like "Bundle.entry[Patient]", "Bundle.entry[Observation:HS]", or "Bundle.entry[Organization:PROVIDER]"</param>
         /// <returns>True if at least one matching entry exists</returns>
         public static bool ExistsResourceByType(JToken bundleRoot, string cps1Path)
         {
@@ -468,17 +468,29 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path
                 var resourceType = entryResource["resourceType"]?.ToString();
                 if (resourceType != targetResourceType) continue;
 
-                // If no screening code specified, we found a match
+                // If no type code specified, we found a match
                 if (string.IsNullOrEmpty(targetScreeningCode))
                 {
                     return true;
                 }
 
-                // Check if screening code matches (for Observation:HS format)
+                // Check if type code matches based on resource type
                 if (resourceType == "Observation")
                 {
+                    // For Observation:HS, Observation:OS, Observation:VS
+                    // Check code.coding[0].code
                     var screeningCode = GetValueAsString(entryResource, "code.coding[0].code");
                     if (screeningCode == targetScreeningCode)
+                    {
+                        return true;
+                    }
+                }
+                else if (resourceType == "Organization")
+                {
+                    // For Organization:PROVIDER, Organization:CLUSTER
+                    // Check type.coding[0].code
+                    var orgTypeCode = GetValueAsString(entryResource, "type.coding[0].code");
+                    if (orgTypeCode == targetScreeningCode)
                     {
                         return true;
                     }
