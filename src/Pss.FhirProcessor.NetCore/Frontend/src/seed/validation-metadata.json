@@ -127,7 +127,7 @@
         {
           "RuleType": "Required",
           "PathType": "CPS1",
-          "Path": "Patient.name",
+          "Path": "Patient.name.text",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Patient name is mandatory."
         },
@@ -156,28 +156,28 @@
         {
           "RuleType": "Required",
           "PathType": "CPS1",
-          "Path": "Patient.address.line",
+          "Path": "Patient.address[*].line",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "At least one address line is mandatory."
         },
         {
           "RuleType": "Required",
           "PathType": "CPS1",
-          "Path": "Patient.address.postalCode",
+          "Path": "Patient.address[*].postalCode",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Postal code is mandatory."
         },
         {
           "RuleType": "Required",
           "PathType": "CPS1",
-          "Path": "Patient.communication.language.coding.system",
+          "Path": "Patient.communication[0].language.coding[0].system",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Language coding system is mandatory."
         },
         {
           "RuleType": "FixedValue",
           "PathType": "CPS1",
-          "Path": "Patient.communication.language.coding.system",
+          "Path": "Patient.communication[0].language.coding[0].system",
           "ExpectedValue": "urn:ietf:bcp:47",
           "ErrorCode": "FIXED_VALUE_MISMATCH",
           "Message": "Language coding system must be urn:ietf:bcp:47."
@@ -185,7 +185,7 @@
         {
           "RuleType": "Required",
           "PathType": "CPS1",
-          "Path": "Patient.communication.language.coding.code",
+          "Path": "Patient.communication[0].language.coding[0].code",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Preferred language code is mandatory."
         },
