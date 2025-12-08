@@ -51,7 +51,7 @@
               "coding": [
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/ethnicity",
-                  "code": "1"
+                  "code": "CN"
                 }
               ]
             }
