@@ -24,11 +24,21 @@
         ],
         "gender": "male",
         "birthDate": "1960-05-15",
+        "telecom": [
+          {
+            "system": "phone",
+            "use": "mobile",
+            "value": "91234567"
+          },
+          {
+            "system": "phone",
+            "use": "home",
+            "value": "63112233"
+          }
+        ],
         "address": [
           {
-            "line": [
-              "123 Clementi Ave 3"
-            ],
+            "line": ["888", "Serangoon Street 81", "7", "#11-98", "The Trilliant"],
             "postalCode": "120123"
           }
         ],
@@ -41,7 +51,39 @@
                   "code": "en"
                 }
               ]
-            }
+            },
+            "preferred": true
+          }
+        ],
+        "contact": [
+          {
+            "name": {
+              "text": "Madam Tan Bee Hua"
+            },
+            "relationship": [
+              {
+                "coding": [
+                  {
+                    "system": "https://fhir.synapxe.sg/CodeSystem/relationship-type",
+                    "code": "SPS",
+                    "display": "Spouse"
+                  }
+                ],
+                "text": "Wife"
+              }
+            ],
+            "telecom": [
+              {
+                "system": "phone",
+                "use": "home",
+                "value": "61234567"
+              },
+              {
+                "system": "phone",
+                "use": "mobile",
+                "value": "98765432"
+              }
+            ]
           }
         ],
         "extension": [
@@ -156,9 +198,7 @@
           }
         ],
         "address": {
-          "line": [
-            "Jurong West Ave 5 Community Centre"
-          ],
+          "line": ["888", "Serangoon Street 81", "7", "#11-98", "The Trilliant"],
           "postalCode": "640123"
         },
         "extension": [

@@ -148,7 +148,8 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         }
 
         /// <summary>
-        /// FixedValue rule: Path must exist and equal expected value
+        /// FixedValue rule: Validates value equals expected when field exists
+        /// Skips validation if field is missing (use Required rule for mandatory fields)
         /// </summary>
         private static void EvaluateFixedValue(JObject resource, RuleDefinition rule, string scope, 
             ValidationResult result, Logger logger)
@@ -160,9 +161,15 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
 
             if (values.Count == 0)
             {
-                logger?.Verbose($"      ✗ Path not found");
-                var detailedMessage = $"{rule.Message} | Path '{rule.Path}' not found. Expected value: '{rule.ExpectedValue}'";
-                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope, rule);
+                logger?.Verbose($"      ⊘ Path not found - skipping FixedValue validation (use Required rule for mandatory fields)");
+                return;
+            }
+
+            // Check if any non-empty values exist
+            var nonEmptyValues = values.Where(v => !string.IsNullOrWhiteSpace(v?.ToString())).ToList();
+            if (nonEmptyValues.Count == 0)
+            {
+                logger?.Verbose($"      ⊘ All values are empty - skipping FixedValue validation");
                 return;
             }
 
@@ -197,7 +204,8 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         }
 
         /// <summary>
-        /// FixedCoding rule: Coding must match expected system and code
+        /// FixedCoding rule: Validates coding matches expected system/code when field exists
+        /// Skips validation if field is missing (use Required rule for mandatory fields)
         /// </summary>
         private static void EvaluateFixedCoding(JObject resource, RuleDefinition rule, string scope, 
             ValidationResult result, Logger logger)
@@ -209,17 +217,23 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
 
             if (values.Count == 0)
             {
-                logger?.Verbose($"      ✗ Path not found");
-                var detailedMessage = $"{rule.Message} | Path '{rule.Path}' not found. Expected coding: system='{rule.ExpectedSystem}', code='{rule.ExpectedCode}'";
-                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope, rule);
+                logger?.Verbose($"      ⊘ Path not found - skipping FixedCoding validation (use Required rule for mandatory fields)");
+                return;
+            }
+
+            // Check if any actual coding objects exist
+            var actualCodings = values.Where(v => v.Type == JTokenType.Object).ToList();
+            if (actualCodings.Count == 0)
+            {
+                logger?.Verbose($"      ⊘ No coding objects found - skipping FixedCoding validation");
                 return;
             }
 
             // Check if any coding matches the expected system and code
             bool matchFound = false;
-            var actualCodings = new System.Collections.Generic.List<string>();
+            var actualCodingsInfo = new System.Collections.Generic.List<string>();
             
-            foreach (var value in values)
+            foreach (var value in actualCodings)
             {
                 if (value.Type == JTokenType.Object)
                 {
@@ -227,7 +241,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     var system = coding["system"]?.ToString();
                     var code = coding["code"]?.ToString();
                     
-                    actualCodings.Add($"system='{system}', code='{code}'");
+                    actualCodingsInfo.Add($"system='{system}', code='{code}'");
                     logger?.Verbose($"      → Checking coding: system='{system}', code='{code}'");
 
                     if (system == rule.ExpectedSystem && code == rule.ExpectedCode)
@@ -242,8 +256,8 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             if (!matchFound)
             {
                 logger?.Verbose($"      ✗ No matching coding found");
-                var actualCodingsStr = actualCodings.Count > 0 
-                    ? string.Join("; ", actualCodings) 
+                var actualCodingsStr = actualCodingsInfo.Count > 0 
+                    ? string.Join("; ", actualCodingsInfo) 
                     : "none";
                 var detailedMessage = (rule.Message ?? $"Coding mismatch at path '{rule.Path}'") + 
                     $" | Expected: system='{rule.ExpectedSystem}', code='{rule.ExpectedCode}' | Actual: [{actualCodingsStr}]";
@@ -310,9 +324,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
 
             if (answerValues.Count == 0)
             {
-                logger?.Verbose($"      ✗ No answer found");
-                result.AddError(rule.ErrorCode, rule.Path, 
-                    rule.Message ?? $"No answer found for question '{questionCode}'", scope, rule);
+                logger?.Verbose($"      ⊘ No answer found - skipping CodesMaster validation (use Required rule for mandatory fields)");
                 return;
             }
 
@@ -449,9 +461,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 
                 if (string.IsNullOrEmpty(answerValue))
                 {
-                    logger?.Verbose($"        ✗ No answer (valueString) found");
-                    result.AddError(rule.ErrorCode, $"component[{componentIndex - 1}].valueString", 
-                        $"Component with question '{questionCode}' missing answer", scope);
+                    logger?.Verbose($"        ⊘ No answer (valueString) found - skipping validation for this component");
                     continue;
                 }
 

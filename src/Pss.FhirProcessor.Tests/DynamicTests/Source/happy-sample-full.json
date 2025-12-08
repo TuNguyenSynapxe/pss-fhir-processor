@@ -156,9 +156,8 @@
           }
         ],
         "address": {
-          "line": [
-            "Jurong West Ave 5 Community Centre"
-          ],
+          "line": ["888", "Serangoon Street 81", "7", "#11-98", "The Trilliant"],
+          
           "postalCode": "640123"
         },
         "extension": [
