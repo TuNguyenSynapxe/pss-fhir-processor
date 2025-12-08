@@ -128,16 +128,10 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
                 _logger?.Info($"  {kvp.Key}: {kvp.Value.Count} resource(s)");
             }
 
-            // 3. Validate required resources
-            ValidateRequiredResources(resourceIndex, result);
-
-            // 4. Validate screening types (HS/OS/VS)
-            ValidateScreeningTypes(resourceIndex, result);
-
-            // 5. Apply RuleSets
+            // 3. Apply RuleSets (metadata-driven validation)
             ApplyRuleSets(bundle, resourceIndex, result);
 
-            // 6. Validate CodesMaster
+            // 4. Validate CodesMaster
             ValidateCodesMaster(resourceIndex, result);
 
             result.IsValid = result.Errors.Count == 0;
@@ -188,47 +182,6 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
             }
 
             return index;
-        }
-
-        private void ValidateRequiredResources(Dictionary<string, List<Resource>> index, ValidationResult result)
-        {
-            _logger?.Info("  → Validating required resources...");
-            var requiredTypes = new[] { "Patient", "Encounter", "Location", "HealthcareService", "Organization" };
-
-            foreach (var required in requiredTypes)
-            {
-                if (!index.ContainsKey(required) || index[required].Count == 0)
-                {
-                    result.Errors.Add(new ValidationError
-                    {
-                        Code = "RESOURCE_MISSING",
-                        FieldPath = "Bundle",
-                        Message = $"Required resource '{required}' is missing",
-                        Scope = "Bundle"
-                    });
-                }
-            }
-        }
-
-        private void ValidateScreeningTypes(Dictionary<string, List<Resource>> index, ValidationResult result)
-        {
-            _logger?.Info("  → Validating screening types (HS, OS, VS)...");
-            var screeningTypes = new[] { "HS", "OS", "VS" };
-
-            foreach (var screeningType in screeningTypes)
-            {
-                var key = $"Observation:{screeningType}";
-                if (!index.ContainsKey(key) || index[key].Count == 0)
-                {
-                    result.Errors.Add(new ValidationError
-                    {
-                        Code = "MISSING_SCREENING_TYPE",
-                        FieldPath = "Bundle",
-                        Message = $"Missing screening type: {screeningType}",
-                        Scope = "Bundle"
-                    });
-                }
-            }
         }
 
         private void ApplyRuleSets(Bundle bundle, Dictionary<string, List<Resource>> index, ValidationResult result)
