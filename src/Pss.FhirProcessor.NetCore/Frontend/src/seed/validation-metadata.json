@@ -390,14 +390,14 @@
         {
           "RuleType": "Required",
           "PathType": "CPS1",
-          "Path": "Encounter.serviceType.reference",
+          "Path": "Encounter.serviceType[*].reference",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Encounter.serviceType.reference is mandatory."
         },
         {
           "RuleType": "Reference",
           "PathType": "CPS1",
-          "Path": "Encounter.serviceType.reference",
+          "Path": "Encounter.serviceType[*].reference",
           "TargetTypes": [
             "HealthcareService"
           ],
@@ -602,6 +602,13 @@
           "ExpectedType": "guid",
           "ErrorCode": "TYPE_MISMATCH",
           "Message": "Location.id must be GUID."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Location.name",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Location name is mandatory."
         },
         {
           "RuleType": "Required",

@@ -109,12 +109,7 @@
         },
         "serviceType": [
           {
-            "coding": [
-              {
-                "system": "https://fhir.synapxe.sg/CodeSystem/screening-type",
-                "code": "HS"
-              }
-            ]
+            "reference": "urn:uuid:c4e5a0b2-9d87-4c0a-a3f3-05869125bc11"
           }
         ],
         "location": [

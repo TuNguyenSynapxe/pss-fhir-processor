@@ -152,10 +152,11 @@
         "serviceProvider": {
           "reference": "urn:uuid:f91b0cd8-3fc2-4d12-a1e9-6e85c2124b22"
         },
-        "serviceType": {
-          "reference": "urn:uuid:c4e5a0b2-9d87-4c0a-a3f3-05869125bc11"
-        }
-        ,
+        "serviceType": [
+          {
+            "reference": "urn:uuid:c4e5a0b2-9d87-4c0a-a3f3-05869125bc11"
+          }
+        ],
         "location": [
           {
             "location": {
@@ -197,6 +198,7 @@
       "resource": {
         "resourceType": "Location",
         "id": "d12b174f-6598-4f2f-b4cb-48df5113458c",
+        "name": "ABC Polyclinic - Serangoon",
         "identifier": [
           {
             "system": "https://fhir.synapxe.sg/NamingSystem/hci-code",
