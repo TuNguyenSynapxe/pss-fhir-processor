@@ -19,33 +19,43 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Utilities
             if (root == null || string.IsNullOrEmpty(path))
                 return null;
 
-            var parts = ParsePath(path);
-            object current = root;
-
-            for (int i = 0; i < parts.Count; i++)
+            try
             {
-                var part = parts[i];
-                if (current == null)
+                var parts = ParsePath(path);
+                object current = root;
+
+                for (int i = 0; i < parts.Count; i++)
                 {
-                    // Console.WriteLine($"[PathResolver] Part {i} '{part.Name}': current is null, stopping");
-                    return null;
+                    var part = parts[i];
+                    if (current == null)
+                    {
+                        // Console.WriteLine($"[PathResolver] Part {i} '{part.Name}': current is null, stopping");
+                        return null;
+                    }
+
+                    // Console.WriteLine($"[PathResolver] Part {i} '{part.Name}': current type = {current.GetType().Name}");
+                    
+                    if (part.IsIndexed)
+                    {
+                        current = ResolveIndexedProperty(current, part.Name, part.Index);
+                    }
+                    else
+                    {
+                        current = ResolveProperty(current, part.Name);
+                    }
+                    
+                    // Console.WriteLine($"[PathResolver] Part {i} '{part.Name}': resolved to {(current == null ? "null" : current.GetType().Name)}");
                 }
 
-                // Console.WriteLine($"[PathResolver] Part {i} '{part.Name}': current type = {current.GetType().Name}");
-                
-                if (part.IsIndexed)
-                {
-                    current = ResolveIndexedProperty(current, part.Name, part.Index);
-                }
-                else
-                {
-                    current = ResolveProperty(current, part.Name);
-                }
-                
-                // Console.WriteLine($"[PathResolver] Part {i} '{part.Name}': resolved to {(current == null ? "null" : current.GetType().Name)}");
+                return current;
             }
-
-            return current;
+            catch (Exception ex)
+            {
+                // Log the error and return null to indicate the path couldn't be resolved
+                // This handles cases like accessing JArray with string keys
+                Console.WriteLine($"[PathResolver] Error resolving path '{path}': {ex.Message}");
+                return null;
+            }
         }
 
         /// <summary>
@@ -56,41 +66,50 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Utilities
             if (root == null || string.IsNullOrEmpty(path))
                 return new List<object>();
 
-            var parts = ParsePath(path);
-            var results = new List<object> { root };
-
-            foreach (var part in parts)
+            try
             {
-                var nextResults = new List<object>();
+                var parts = ParsePath(path);
+                var results = new List<object> { root };
 
-                foreach (var current in results)
+                foreach (var part in parts)
                 {
-                    if (current == null)
-                        continue;
+                    var nextResults = new List<object>();
 
-                    if (part.IsWildcard)
+                    foreach (var current in results)
                     {
-                        var items = ResolveWildcard(current, part.Name);
-                        nextResults.AddRange(items);
+                        if (current == null)
+                            continue;
+
+                        if (part.IsWildcard)
+                        {
+                            var items = ResolveWildcard(current, part.Name);
+                            nextResults.AddRange(items);
+                        }
+                        else if (part.IsIndexed)
+                        {
+                            var item = ResolveIndexedProperty(current, part.Name, part.Index);
+                            if (item != null)
+                                nextResults.Add(item);
+                        }
+                        else
+                        {
+                            var item = ResolveProperty(current, part.Name);
+                            if (item != null)
+                                nextResults.Add(item);
+                        }
                     }
-                    else if (part.IsIndexed)
-                    {
-                        var item = ResolveIndexedProperty(current, part.Name, part.Index);
-                        if (item != null)
-                            nextResults.Add(item);
-                    }
-                    else
-                    {
-                        var item = ResolveProperty(current, part.Name);
-                        if (item != null)
-                            nextResults.Add(item);
-                    }
+
+                    results = nextResults;
                 }
 
-                results = nextResults;
+                return results;
             }
-
-            return results;
+            catch (Exception ex)
+            {
+                // Log the error and return empty list
+                Console.WriteLine($"[PathResolver] Error resolving wildcard path '{path}': {ex.Message}");
+                return new List<object>();
+            }
         }
 
         private static List<PathPart> ParsePath(string path)
