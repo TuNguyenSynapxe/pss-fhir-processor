@@ -60,22 +60,6 @@
           "Path": "Bundle.entry[Observation:VS]",
           "ErrorCode": "MISSING_SCREENING_TYPE",
           "Message": "Bundle must contain a Vision Screening (VS) Observation."
-        },
-        {
-          "RuleType": "Regex",
-          "PathType": "CPS1",
-          "Path": "Bundle.entry[*].fullUrl",
-          "Pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "ErrorCode": "TYPE_INVALID_FULLURL",
-          "Message": "Bundle.entry.fullUrl must be urn:uuid:<GUID>."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Bundle.entry[*].id",
-          "ExpectedType": "guid",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Resource id must be GUID."
         }
       ]
     },

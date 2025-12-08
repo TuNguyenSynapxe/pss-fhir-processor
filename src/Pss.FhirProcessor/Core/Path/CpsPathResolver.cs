@@ -485,16 +485,6 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path
                         return true;
                     }
                 }
-                else if (resourceType == "Organization")
-                {
-                    // For Organization:PROVIDER, Organization:CLUSTER
-                    // Check type.coding[0].code
-                    var orgTypeCode = GetValueAsString(entryResource, "type.coding[0].code");
-                    if (orgTypeCode == targetScreeningCode)
-                    {
-                        return true;
-                    }
-                }
             }
 
             return false;
