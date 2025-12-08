@@ -5,6 +5,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Flattened
     /// </summary>
     public class EventData
     {
+        public string EventId { get; set; }
         public string Start { get; set; }
         public string End { get; set; }
         public string VenueName { get; set; }

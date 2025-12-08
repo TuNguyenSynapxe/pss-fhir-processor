@@ -123,6 +123,12 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Extraction
                     var encounter = Newtonsoft.Json.JsonConvert.DeserializeObject<Encounter>(json, JsonSettings);
                     if (encounter != null)
                     {
+                        // Extract Event ID from identifier
+                        var eventIdIdentifier = encounter.Identifier?.FirstOrDefault(id => 
+                            id.System?.Contains("event-id") == true);
+                        if (eventIdIdentifier != null)
+                            eventData.EventId = eventIdIdentifier.Value;
+                        
                         eventData.Start = encounter.ActualPeriod?.Start;
                         eventData.End = encounter.ActualPeriod?.End;
                     }
@@ -230,20 +236,96 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Extraction
                         // BirthDate
                         participantData.BirthDate = patient.BirthDate;
 
-                        // Address
+                        // Citizenship (Residential Status Extension)
+                        var citizenshipExt = patient.Extension?.FirstOrDefault(e => 
+                            e.Url?.Contains("residential-status") == true);
+                        if (citizenshipExt != null)
+                        {
+                            participantData.Citizenship = citizenshipExt.ValueCodeableConcept?.Coding?.FirstOrDefault()?.Code;
+                        }
+
+                        // Ethnicity Extension
+                        var ethnicityExt = patient.Extension?.FirstOrDefault(e => 
+                            e.Url?.Contains("ethnicity") == true);
+                        if (ethnicityExt != null)
+                        {
+                            participantData.Ethnicity = ethnicityExt.ValueCodeableConcept?.Coding?.FirstOrDefault()?.Code;
+                        }
+
+                        // Subsidy Extension (PG/MG/CHAS)
+                        var subsidyExt = patient.Extension?.FirstOrDefault(e => 
+                            e.Url?.Contains("subsidy") == true);
+                        if (subsidyExt != null)
+                        {
+                            participantData.Subsidy = subsidyExt.ValueCodeableConcept?.Coding?.FirstOrDefault()?.Code;
+                        }
+
+                        // Consent for Sharing Data Extension
+                        var consentExt = patient.Extension?.FirstOrDefault(e => 
+                            e.Url?.Contains("consent-for-sharing") == true);
+                        if (consentExt != null)
+                        {
+                            participantData.ConsentForSharingData = consentExt.ValueBoolean;
+                        }
+
+                        // Address (structured)
                         if (patient.Address != null && patient.Address.Count > 0)
                         {
                             var address = patient.Address.FirstOrDefault();
                             if (address?.Line != null && address.Line.Count > 0)
                             {
-                                participantData.Address = string.Join(", ", address.Line);
+                                // Extract structured address fields
+                                if (address.Line.Count > 0) participantData.AddressBlockNumber = address.Line[0];
+                                if (address.Line.Count > 1) participantData.AddressStreet = address.Line[1];
+                                if (address.Line.Count > 2) participantData.AddressFloor = address.Line[2];
+                                if (address.Line.Count > 3) participantData.AddressUnitNumber = address.Line[3];
                             }
-                            if (!string.IsNullOrEmpty(address?.PostalCode))
+                            participantData.AddressPostalCode = address?.PostalCode;
+                        }
+
+                        // Telecom - Mobile Number
+                        var mobileTelecom = patient.Telecom?.FirstOrDefault(t => 
+                            t.System?.ToLower() == "phone" && t.Use?.ToLower() == "mobile");
+                        if (mobileTelecom != null)
+                            participantData.MobileNumber = mobileTelecom.Value;
+
+                        // Telecom - Home/Office Number
+                        var homeTelecom = patient.Telecom?.FirstOrDefault(t => 
+                            t.System?.ToLower() == "phone" && t.Use?.ToLower() == "home");
+                        if (homeTelecom != null)
+                            participantData.HomeOfficeNumber = homeTelecom.Value;
+
+                        // Preferred Language
+                        var preferredComm = patient.Communication?.FirstOrDefault(c => c.Preferred == true);
+                        if (preferredComm != null)
+                        {
+                            participantData.PreferredLanguage = preferredComm.Language?.Coding?.FirstOrDefault()?.Code;
+                        }
+
+                        // Caregiver (Contact)
+                        var caregiver = patient.Contact?.FirstOrDefault();
+                        if (caregiver != null)
+                        {
+                            participantData.CaregiverName = caregiver.Name?.Text;
+                            
+                            // Get relationship display from CodeableConcept
+                            var relationship = caregiver.Relationship?.FirstOrDefault();
+                            if (relationship != null)
                             {
-                                participantData.Address = string.IsNullOrEmpty(participantData.Address)
-                                    ? address.PostalCode
-                                    : $"{participantData.Address}, {address.PostalCode}";
+                                participantData.CaregiverRelationship = relationship.Coding?.FirstOrDefault()?.Display;
                             }
+
+                            // Caregiver Home Contact
+                            var caregiverHomeTelecom = caregiver.Telecom?.FirstOrDefault(t => 
+                                t.System?.ToLower() == "phone" && t.Use?.ToLower() == "home");
+                            if (caregiverHomeTelecom != null)
+                                participantData.CaregiverContactHome = caregiverHomeTelecom.Value;
+
+                            // Caregiver Mobile Contact
+                            var caregiverMobileTelecom = caregiver.Telecom?.FirstOrDefault(t => 
+                                t.System?.ToLower() == "phone" && t.Use?.ToLower() == "mobile");
+                            if (caregiverMobileTelecom != null)
+                                participantData.CaregiverContactMobile = caregiverMobileTelecom.Value;
                         }
                     }
                 }

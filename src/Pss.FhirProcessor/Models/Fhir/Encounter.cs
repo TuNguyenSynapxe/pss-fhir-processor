@@ -8,6 +8,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Fhir
     /// </summary>
     public class Encounter : Resource
     {
+        public List<Identifier> Identifier { get; set; }
         public string Status { get; set; }
         public Period ActualPeriod { get; set; }
         public List<EncounterLocation> Location { get; set; }
