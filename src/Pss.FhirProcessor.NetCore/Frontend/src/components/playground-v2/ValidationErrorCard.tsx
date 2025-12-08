@@ -168,15 +168,37 @@ export default function ValidationErrorCard({ error, onGoToResource }: Validatio
 
             {/* How to Fix */}
             {helper.howToFix && helper.howToFix.length > 0 && (
-              <div className="bg-green-50 border-l-4 border-green-500 p-3 rounded">
+              <div className={`border-l-4 p-3 rounded ${
+                helper.fixScenario === 'parentMissing' || helper.fixScenario === 'discriminatorParentMissing'
+                  ? 'bg-orange-50 border-orange-500' 
+                  : 'bg-green-50 border-green-500'
+              }`}>
                 <div className="flex items-start gap-2">
-                  <ToolOutlined className="text-green-600 text-lg mt-0.5" />
+                  <ToolOutlined className={`text-lg mt-0.5 ${
+                    helper.fixScenario === 'parentMissing' || helper.fixScenario === 'discriminatorParentMissing'
+                      ? 'text-orange-600' 
+                      : 'text-green-600'
+                  }`} />
                   <div className="flex-1">
-                    <Text strong className="text-green-800">How to fix this:</Text>
+                    <Text strong className={
+                      helper.fixScenario === 'parentMissing' || helper.fixScenario === 'discriminatorParentMissing'
+                        ? 'text-orange-800' 
+                        : 'text-green-800'
+                    }>
+                      {helper.fixScenario === 'discriminatorParentMissing'
+                        ? 'How to fix this (array discriminator issue):'
+                        : helper.fixScenario === 'parentMissing' 
+                        ? 'How to fix this (requires structural changes):' 
+                        : 'How to fix this:'}
+                    </Text>
                     <ol className="mt-2 ml-4 space-y-2 list-decimal">
                       {helper.howToFix.map((step: string, idx: number) => (
                         step && (
-                          <li key={idx} className="text-sm text-gray-800">
+                          <li key={idx} className={`text-sm ${
+                            step.startsWith('⚠️') 
+                              ? 'font-bold text-orange-800' 
+                              : 'text-gray-800'
+                          }`}>
                             {step}
                           </li>
                         )

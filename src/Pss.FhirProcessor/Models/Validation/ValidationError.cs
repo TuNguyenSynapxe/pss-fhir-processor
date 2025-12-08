@@ -17,12 +17,14 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation
         public ValidationRuleMetadata Rule { get; set; }
         public ValidationErrorContext Context { get; set; }
         public ResourcePointer ResourcePointer { get; set; }
+        public PathAnalysis PathAnalysis { get; set; }
         
         public ValidationError()
         {
             Rule = new ValidationRuleMetadata();
             Context = new ValidationErrorContext();
             ResourcePointer = new ResourcePointer();
+            PathAnalysis = new PathAnalysis();
         }
     }
     
@@ -71,5 +73,26 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation
         public string FullUrl { get; set; }
         public string ResourceType { get; set; }
         public string ResourceId { get; set; }
+    }
+    
+    /// <summary>
+    /// Path analysis for determining fix scenarios
+    /// </summary>
+    public class PathAnalysis
+    {
+        /// <summary>
+        /// Whether all parent path segments exist in the resource
+        /// </summary>
+        public bool ParentPathExists { get; set; } = true;
+        
+        /// <summary>
+        /// The path segment that couldn't be found (if any)
+        /// </summary>
+        public string PathMismatchSegment { get; set; }
+        
+        /// <summary>
+        /// The depth at which the mismatch occurred (0-based)
+        /// </summary>
+        public int? MismatchDepth { get; set; }
     }
 }

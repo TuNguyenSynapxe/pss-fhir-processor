@@ -19,6 +19,55 @@ const helperTemplates = {
 };
 
 /**
+ * Parse discriminator from fieldPath segment like identifier[system:https://...]
+ * @param {string} segment - Path segment potentially containing discriminator
+ * @returns {Object|null} - { field, value, arrayName } or null
+ */
+function parseDiscriminator(segment) {
+  // Match patterns like: identifier[system:value] or extension[url:value]
+  const match = segment.match(/^([^\[]+)\[([^:]+):(.+)\]$/);
+  if (match) {
+    return {
+      arrayName: match[1],
+      field: match[2],
+      value: match[3]
+    };
+  }
+  return null;
+}
+
+/**
+ * Detect discriminator parent mismatch scenario
+ * @param {string} fieldPath - Full field path
+ * @returns {Object|null} - Discriminator info and scenario type
+ */
+function detectDiscriminatorScenario(fieldPath) {
+  if (!fieldPath) return null;
+  
+  // Split path and look for discriminator patterns
+  const segments = fieldPath.split('.');
+  
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i];
+    const discriminator = parseDiscriminator(segment);
+    
+    if (discriminator) {
+      // Found discriminator - check if there are child segments after it
+      const hasChildSegments = i < segments.length - 1;
+      
+      return {
+        discriminator,
+        segmentIndex: i,
+        hasChildSegments,
+        childSegments: hasChildSegments ? segments.slice(i + 1) : []
+      };
+    }
+  }
+  
+  return null;
+}
+
+/**
  * Main helper generator - called from UI components
  * @param {Object} error - Validation error with metadata
  * @returns {Object} Helper message with structured content
@@ -55,17 +104,43 @@ function renderRequired(error, rule, context, resourcePointer) {
   const fieldName = extractFieldName(error.fieldPath);
   const humanPath = humanizePath(error.scope, error.fieldPath, context);
   const breadcrumb = generateBreadcrumb(error.fieldPath, context);
+  
+  // Detect discriminator scenario first
+  const discriminatorInfo = detectDiscriminatorScenario(error.fieldPath);
+  
+  // Determine fix scenario
+  const pathAnalysis = error.pathAnalysis || {};
+  let fixScenario;
+  let discriminator = null;
+  
+  if (discriminatorInfo && discriminatorInfo.hasChildSegments) {
+    // This is a missing child field inside a discriminated array element
+    fixScenario = 'discriminatorParentMissing';
+    discriminator = {
+      field: discriminatorInfo.discriminator.field,
+      value: discriminatorInfo.discriminator.value,
+      arrayName: discriminatorInfo.discriminator.arrayName,
+      childPath: discriminatorInfo.childSegments.join('.')
+    };
+  } else if (pathAnalysis.parentPathExists === false) {
+    fixScenario = 'parentMissing';
+  } else {
+    fixScenario = 'childMissing';
+  }
 
   return {
     title: `Missing required field: ${humanPath}`,
-    whatThisMeans: generateWhatThisMeans('Required', humanPath, context, resourcePointer),
+    whatThisMeans: generateWhatThisMeans('Required', humanPath, context, resourcePointer, discriminator),
     description: rule.message || error.message || `${humanPath} is mandatory.`,
     location: error.fieldPath,
     breadcrumb: breadcrumb,
     resourceType: resourcePointer.resourceType || context.resourceType,
     expected: 'A value must be provided',
-    howToFix: generateHowToFix('Required', humanPath, context, resourcePointer, rule),
+    howToFix: generateHowToFix('Required', humanPath, context, resourcePointer, rule, pathAnalysis, fixScenario, discriminator),
     resourcePointer: resourcePointer,
+    fixScenario: fixScenario,
+    pathAnalysis: pathAnalysis,
+    discriminator: discriminator,
   };
 }
 
@@ -409,11 +484,14 @@ function generateBreadcrumb(fieldPath, context) {
 /**
  * Generate "What this means" explanation
  */
-function generateWhatThisMeans(ruleType, humanPath, context, resourcePointer) {
+function generateWhatThisMeans(ruleType, humanPath, context, resourcePointer, discriminator) {
   const resourceName = resourcePointer.resourceType || context.resourceType || 'record';
   
   switch (ruleType) {
     case 'Required':
+      if (discriminator) {
+        return `This ${resourceName.toLowerCase()} is missing the ${humanPath} field within a specific ${discriminator.arrayName} entry. The system could not find an ${discriminator.arrayName} element with ${discriminator.field}="${discriminator.value}", or found it but the ${discriminator.childPath} is missing.`;
+      }
       if (humanPath === 'NRIC') {
         return `This patient record is missing the NRIC value. We could not find the NRIC field in the Patient details.`;
       }
@@ -449,7 +527,7 @@ function generateWhatThisMeans(ruleType, humanPath, context, resourcePointer) {
 /**
  * Generate "How to fix" steps
  */
-function generateHowToFix(ruleType, humanPath, context, resourcePointer, rule) {
+function generateHowToFix(ruleType, humanPath, context, resourcePointer, rule, pathAnalysis = {}, fixScenario = 'childMissing') {
   const resourceName = resourcePointer.resourceType || context.resourceType || 'resource';
   const entryIndex = resourcePointer.entryIndex;
   const steps = [];
@@ -461,13 +539,32 @@ function generateHowToFix(ruleType, humanPath, context, resourcePointer, rule) {
     steps.push(`Open the ${resourceName} resource in your bundle.`);
   }
 
-  // Step 2: Specific fix based on rule type
+  // Handle parent-missing scenario for Required rule
+  if (ruleType === 'Required' && fixScenario === 'parentMissing') {
+    steps.push(`⚠️ WARNING: One or more parent segments in the path could not be found.`);
+    
+    if (pathAnalysis.pathMismatchSegment) {
+      steps.push(`The segment "${pathAnalysis.pathMismatchSegment}" appears to be missing or misspelled.`);
+    }
+    
+    steps.push(`Before adding the ${humanPath} field, you must first:`);
+    steps.push(`  • Check that all parent objects in the path exist`);
+    steps.push(`  • Verify correct spelling of all path segments`);
+    steps.push(`  • Ensure the parent structure matches FHIR specification`);
+    steps.push(`  • Fix any structural issues in the JSON`);
+    steps.push(`After correcting the parent structure, add the ${humanPath} field with an appropriate value.`);
+    steps.push(`Save your changes and validate again to confirm the error is resolved.`);
+    return steps;
+  }
+
+  // Step 2: Specific fix based on rule type (child-missing scenario)
   switch (ruleType) {
     case 'Required':
       if (humanPath === 'NRIC') {
         steps.push(`In the "identifier" section, add an entry with system: https://fhir.synapxe.sg/NamingSystem/nric`);
         steps.push(`Add the NRIC value in the format: S1234567A (or T/F/G followed by 7 digits and a letter)`);
       } else {
+        steps.push(`Navigate through the structure: ${context.resourceType || resourceName} → ${humanPath}`);
         steps.push(`Add the ${humanPath} field with an appropriate value.`);
         steps.push(`Ensure the field is not empty or null.`);
       }

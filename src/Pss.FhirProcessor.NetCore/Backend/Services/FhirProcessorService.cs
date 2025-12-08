@@ -12,6 +12,7 @@ using V5ValidationError = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validat
 using V5RuleMetadata = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationRuleMetadata;
 using V5ErrorContext = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationErrorContext;
 using V5CodeSystemConcept = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.CodeSystemConcept;
+using V5PathAnalysis = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.PathAnalysis;
 
 namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Services
 {
@@ -78,6 +79,12 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Services
                         FullUrl = error.ResourcePointer.FullUrl,
                         ResourceType = error.ResourcePointer.ResourceType,
                         ResourceId = error.ResourcePointer.ResourceId
+                    } : null,
+                    PathAnalysis = error.PathAnalysis != null ? new PathAnalysis
+                    {
+                        ParentPathExists = error.PathAnalysis.ParentPathExists,
+                        PathMismatchSegment = error.PathAnalysis.PathMismatchSegment,
+                        MismatchDepth = error.PathAnalysis.MismatchDepth
                     } : null
                 });
             }

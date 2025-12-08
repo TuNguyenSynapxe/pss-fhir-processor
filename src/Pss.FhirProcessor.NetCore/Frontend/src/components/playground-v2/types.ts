@@ -9,6 +9,7 @@ export interface ValidationError {
   rule?: any;
   context?: any;
   resourcePointer?: ResourcePointer;
+  pathAnalysis?: PathAnalysis;
 }
 
 export interface ResourcePointer {
@@ -16,6 +17,12 @@ export interface ResourcePointer {
   resourceType: string;
   resourceId?: string;
   fullUrl?: string;
+}
+
+export interface PathAnalysis {
+  parentPathExists: boolean;
+  pathMismatchSegment?: string;
+  mismatchDepth?: number;
 }
 
 export interface Helper {
@@ -37,6 +44,12 @@ export interface Helper {
   isMultiValue?: boolean;
   howToFix?: string[];
   screeningType?: string;
+  fixScenario?: 'childMissing' | 'parentMissing' | 'discriminatorParentMissing';
+  pathAnalysis?: PathAnalysis;
+  discriminator?: {
+    field: string;
+    value: string;
+  };
 }
 
 declare module '../../utils/validationHelper' {

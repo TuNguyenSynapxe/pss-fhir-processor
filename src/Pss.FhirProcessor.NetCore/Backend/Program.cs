@@ -38,12 +38,25 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseCors("AllowFrontend");
+}
+else
+{
+    // Production: Serve static files and enable SPA fallback
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
 }
 
-app.UseCors("AllowFrontend");
+app.UseRouting();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+// SPA fallback route - serve index.html for non-API routes
+if (!app.Environment.IsDevelopment())
+{
+    app.MapFallbackToFile("index.html");
+}
 
 app.Run();
