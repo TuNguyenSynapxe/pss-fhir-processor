@@ -26,9 +26,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Helpers
         public const string INVALID_ANSWER_VALUE = "INVALID_ANSWER_VALUE";
 
         // Reference validation errors
-        public const string REF_OBS_SUBJECT_INVALID = "REF_OBS_SUBJECT_INVALID";
-        public const string REF_OBS_ENCOUNTER_INVALID = "REF_OBS_ENCOUNTER_INVALID";
-        public const string REF_OBS_PERFORMER_INVALID = "REF_OBS_PERFORMER_INVALID";
+        public const string REFERENCE_INVALID = "REFERENCE_INVALID";
 
         // Required field errors
         public const string MANDATORY_MISSING = "MANDATORY_MISSING";

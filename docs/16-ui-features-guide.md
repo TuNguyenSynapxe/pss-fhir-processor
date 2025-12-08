@@ -776,7 +776,7 @@ All changes have been implemented and successfully compiled.
 |-----------|-----------|---------|
 | Reference property missing | `MANDATORY_MISSING` | Required reference field is missing |
 | Reference property empty | `MANDATORY_MISSING` | Required reference field is empty |
-| Reference exists but target not found | `REF_OBS_*_INVALID` or custom | Referenced resource not found |
+| Reference exists but target not found | `REFERENCE_INVALID_INVALID` or custom | Referenced resource not found |
 | Reference exists but wrong type | `REFERENCE_TYPE_MISMATCH` | Referenced resource has wrong type |
 
 **Before v11**:
@@ -1064,7 +1064,7 @@ if (resourceType == "Bundle") {
 | Validation Type | Missing Property | Invalid Value |
 |----------------|------------------|---------------|
 | Required | MANDATORY_MISSING | MANDATORY_MISSING |
-| Reference | MANDATORY_MISSING | REF_OBS_*_INVALID |
+| Reference | MANDATORY_MISSING | REFERENCE_INVALID_INVALID |
 | Type | (Skip) | TYPE_MISMATCH |
 | CodeSystem | (Skip) | INVALID_CODE |
 | FullUrlIdMatch | (Skip) | ID_FULLURL_MISMATCH |

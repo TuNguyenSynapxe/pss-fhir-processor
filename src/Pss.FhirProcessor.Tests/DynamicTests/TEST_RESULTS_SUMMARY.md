@@ -23,8 +23,8 @@
 9. **InvalidPureToneValue_HS** - Detects invalid pure tone value with INVALID_ANSWER_VALUE
 
 ### Reference Validation (2 tests)
-10. **BrokenSubjectReference_HS** - Detects broken subject reference with REF_OBS_SUBJECT_INVALID
-11. **BrokenPerformerReference_VS** - Detects broken performer reference with REF_OBS_PERFORMER_INVALID
+10. **BrokenSubjectReference_HS** - Detects broken subject reference with REFERENCE_INVALID
+11. **BrokenPerformerReference_VS** - Detects broken performer reference with REFERENCE_INVALID
 
 ### Test Generation Validation
 12. **VerifyTestCaseGeneration** - Confirms at least 20 test cases are generated
@@ -38,12 +38,12 @@ These tests expect `MISSING_*` error codes, but the validation engine's Bundle s
 
 1. **MissingPatient** 
    - Expected: `MISSING_PATIENT`
-   - Actual: `REF_OBS_SUBJECT_INVALID` (broken reference from Observation to Patient)
+   - Actual: `REFERENCE_INVALID` (broken reference from Observation to Patient)
    - Root cause: Bundle Required rules don't check if Patient exists
 
 2. **MissingEncounter**
    - Expected: `MISSING_ENCOUNTER`
-   - Actual: `REF_OBS_ENCOUNTER_INVALID` (broken reference from Observation to Encounter)
+   - Actual: `REFERENCE_INVALID` (broken reference from Observation to Encounter)
    - Root cause: Bundle Required rules don't check if Encounter exists
 
 3. **MissingLocation**
@@ -58,7 +58,7 @@ These tests expect `MISSING_*` error codes, but the validation engine's Bundle s
 
 5. **MissingProviderOrganization**
    - Expected: `MISSING_PROVIDER_ORG`
-   - Actual: `REF_OBS_PERFORMER_INVALID` (3 times - one per screening Observation)
+   - Actual: `REFERENCE_INVALID` (3 times - one per screening Observation)
    - Root cause: Bundle Required rules don't check if Organization.Provider exists
 
 6. **MissingClusterOrganization**
@@ -97,7 +97,7 @@ These tests expect `MISSING_*` error codes, but the validation engine's Bundle s
 
 ### Reference Validation (1 test) - **METADATA GAP**
 12. **BrokenEncounterReference_OS**
-    - Expected: `REF_OBS_ENCOUNTER_INVALID`
+    - Expected: `REFERENCE_INVALID`
     - Actual: Validation passes (no errors)
     - Root cause: Encounter reference validation may only apply to specific scopes (HS, VS) but not OS
     - Note: Lines 856 (HS) and 1086 (VS) have encounter reference rules, but line 961 (OS scope) may not
@@ -137,13 +137,13 @@ Remove the 14 failing mutation templates from `MutationTemplates.cs`:
 For the "Missing*" tests that trigger reference errors, update expected codes:
 ```csharp
 // MissingPatient - now expects broken reference instead
-ExpectedErrorCodes = new List<string> { ErrorCodes.REF_OBS_SUBJECT_INVALID }
+ExpectedErrorCodes = new List<string> { ErrorCodes.REFERENCE_INVALID }
 
 // MissingEncounter - now expects broken reference instead
-ExpectedErrorCodes = new List<string> { ErrorCodes.REF_OBS_ENCOUNTER_INVALID }
+ExpectedErrorCodes = new List<string> { ErrorCodes.REFERENCE_INVALID }
 
 // MissingProviderOrganization - now expects broken reference instead
-ExpectedErrorCodes = new List<string> { ErrorCodes.REF_OBS_PERFORMER_INVALID }
+ExpectedErrorCodes = new List<string> { ErrorCodes.REFERENCE_INVALID }
 ```
 
 Still remove: MissingLocation, MissingHealthcareService, MissingClusterOrganization, Missing*Screening (these don't trigger any errors).

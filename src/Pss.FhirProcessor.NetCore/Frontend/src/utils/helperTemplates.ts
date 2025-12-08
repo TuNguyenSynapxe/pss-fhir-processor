@@ -116,43 +116,15 @@ export const ERROR_CODE_TEMPLATES: Record<string, ErrorCodeTemplate> = {
     ],
   },
 
-  REF_SUBJECT_INVALID: {
+  REFERENCE_INVALID: {
     whatThisMeans:
-      'The reference must point to a valid Patient resource that exists in the Bundle.',
+      'A reference field must point to a valid resource that exists in the Bundle and has the correct resource type.',
     commonCauses: [
-      'Referenced Patient resource not in Bundle',
-      'Wrong resource ID in reference',
-      'Reference format incorrect (should be Patient/<id> or urn:uuid:<guid>)',
-    ],
-  },
-
-  REF_OBS_SUBJECT_INVALID: {
-    whatThisMeans:
-      'Observation.subject.reference must point to a valid Patient resource in the Bundle.',
-    commonCauses: [
-      'Referenced Patient not in Bundle',
-      'Wrong patient ID',
-      'Reference format incorrect',
-    ],
-  },
-
-  REF_OBS_ENCOUNTER_INVALID: {
-    whatThisMeans:
-      'Observation.encounter.reference must point to a valid Encounter resource in the Bundle.',
-    commonCauses: [
-      'Referenced Encounter not in Bundle',
-      'Wrong encounter ID',
-      'Reference format incorrect',
-    ],
-  },
-
-  REF_OBS_PERFORMER_INVALID: {
-    whatThisMeans:
-      'Observation.performer.reference must point to a valid Organization resource in the Bundle.',
-    commonCauses: [
-      'Referenced Organization not in Bundle',
-      'Wrong organization ID',
-      'Reference format incorrect',
+      'Referenced resource not included in Bundle.entry',
+      'Wrong resource ID in the reference',
+      'Reference format incorrect (should be ResourceType/id or urn:uuid:guid)',
+      'Referenced resource has wrong resourceType',
+      'Typo in the resource ID or reference path',
     ],
   },
 

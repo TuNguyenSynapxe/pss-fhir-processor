@@ -52,7 +52,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             // Assert - Should fail with reference error
             result.IsValid.Should().BeFalse("Bundle contains invalid patient reference");
             result.Errors.Should().Contain(e => 
-                (e.Code == "REF_OBS_SUBJECT_INVALID" || e.Code == "INVALID_PATIENT_REFERENCE") && 
+                (e.Code == "REFERENCE_INVALID" || e.Code == "INVALID_PATIENT_REFERENCE") && 
                 e.Message.Contains("WRONG-PATIENT-ID-DOES-NOT-EXIST"),
                 "Should catch invalid patient reference"
             );

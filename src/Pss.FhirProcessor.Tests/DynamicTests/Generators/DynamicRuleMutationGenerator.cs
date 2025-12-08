@@ -378,7 +378,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Generator
                             "urn:uuid:deadbeef-dead-dead-dead-deaddeaddead");
                     }
                 },
-                ExpectedErrorCodes = new List<string> { rule.ErrorCode ?? "REF_INVALID" }
+                ExpectedErrorCodes = new List<string> { rule.ErrorCode ?? "REFERENCE_INVALID" }
             };
         }
 

@@ -93,7 +93,8 @@
               "coding": [
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/ethnicity",
-                  "code": "CN"
+                  "code": "CN",
+                  "display": "Chinese"
                 }
               ]
             }
@@ -104,7 +105,8 @@
               "coding": [
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/residential-status",
-                  "code": "C"
+                  "code": "C",
+                  "display": "Singaporean"
                 }
               ]
             }
@@ -115,7 +117,8 @@
               "coding": [
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/subsidy",
-                  "code": "PG"
+                  "code": "PG",
+                  "display": "Pioneer Generation"
                 }
               ]
             }
@@ -149,16 +152,10 @@
         "serviceProvider": {
           "reference": "urn:uuid:f91b0cd8-3fc2-4d12-a1e9-6e85c2124b22"
         },
-        "serviceType": [
-          {
-            "coding": [
-              {
-                "system": "https://fhir.synapxe.sg/CodeSystem/screening-type",
-                "code": "HS"
-              }
-            ]
-          }
-        ],
+        "serviceType": {
+          "reference": "urn:uuid:c4e5a0b2-9d87-4c0a-a3f3-05869125bc11"
+        }
+        ,
         "location": [
           {
             "location": {
@@ -183,7 +180,16 @@
         "name": "Silver Screening Campaign 2024",
         "providedBy": {
           "reference": "urn:uuid:e0a3f4c1-32a1-4df2-8f36-9b164ea7db04"
-        }
+        },
+        "category": [
+          {
+            "coding": {
+                "system": "https://fhir.synapxe.sg/CodeSystem/campaign-type",
+                "code": "silver-screening-assessment",
+                "display": "Silver Screening Assessment"
+            }
+          }
+        ]
       }
     },
     {

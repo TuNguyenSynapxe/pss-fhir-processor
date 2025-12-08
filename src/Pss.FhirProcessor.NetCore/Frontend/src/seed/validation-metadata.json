@@ -212,6 +212,13 @@
           "Message": "Ethnicity code is mandatory."
         },
         {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-ethnicity].valueCodeableConcept.coding[0].display",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Ethnicity display is mandatory."
+        },
+        {
           "RuleType": "CodeSystem",
           "PathType": "CPS1",
           "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-ethnicity].valueCodeableConcept.coding[0]",
@@ -240,6 +247,13 @@
           "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-residential-status].valueCodeableConcept.coding[0].code",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Residential status code is mandatory."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-residential-status].valueCodeableConcept.coding[0].display",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Residential status display is mandatory."
         },
         {
           "RuleType": "CodeSystem",
@@ -272,12 +286,18 @@
           "Message": "Subsidy code is mandatory."
         },
         {
-          "RuleType": "CodeSystem",
+          "RuleType": "Required",
           "PathType": "CPS1",
-          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-subsidy].valueCodeableConcept.coding[0]",
-          "System": "https://fhir.synapxe.sg/CodeSystem/subsidy",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Subsidy code must be a valid value from the subsidy CodeSystem."
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-subsidy].valueCodeableConcept.coding[0].display",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Display code is mandatory."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-subsidy].valueCodeableConcept.coding[0].code",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Subsidy code is mandatory."
         },
         {
           "RuleType": "Required",
@@ -370,11 +390,21 @@
         {
           "RuleType": "Reference",
           "PathType": "CPS1",
+          "Path": "Encounter.serviceType.reference",
+          "TargetTypes": [
+            "HealthcareService"
+          ],
+          "ErrorCode": "REFERENCE_INVALID",
+          "Message": "Encounter.serviceType.reference must reference a HealthcareService."
+        },
+        {
+          "RuleType": "Reference",
+          "PathType": "CPS1",
           "Path": "Encounter.serviceProvider.reference",
           "TargetTypes": [
             "Organization"
           ],
-          "ErrorCode": "REF_SERVICE_PROVIDER_INVALID",
+          "ErrorCode": "REFERENCE_INVALID",
           "Message": "Encounter.serviceProvider.reference must reference an Organization."
         },
         {
@@ -384,7 +414,7 @@
           "TargetTypes": [
             "Patient"
           ],
-          "ErrorCode": "REF_SUBJECT_INVALID",
+          "ErrorCode": "REFERENCE_INVALID",
           "Message": "Encounter.subject.reference must reference a Patient."
         },
         {
@@ -394,7 +424,7 @@
           "TargetTypes": [
             "Location"
           ],
-          "ErrorCode": "REF_LOCATION_INVALID",
+          "ErrorCode": "REFERENCE_INVALID",
           "Message": "Encounter.location.location.reference must reference a Location."
         }
       ],
@@ -477,8 +507,38 @@
           "TargetTypes": [
             "Organization"
           ],
-          "ErrorCode": "REF_PROVIDEDBY_INVALID",
+          "ErrorCode": "REFERENCE_INVALID",
           "Message": "HealthcareService.providedBy.reference must reference a Provider Organization."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.category.coding.system",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "HealthcareService.category.coding.system is mandatory."
+        },
+        {
+          "RuleType": "FixedValue",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.category.coding.system",
+          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/campaign-type",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "HealthcareService.category.coding.system must be the campaign-type CodeSystem."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.category.coding.code",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "HealthcareService.category.coding.code is mandatory."
+        },
+        {
+          "RuleType": "CodeSystem",
+          "PathType": "CPS1",
+          "Path": "HealthcareService.category.coding",
+          "System": "https://fhir.synapxe.sg/CodeSystem/campaign-type",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "HealthcareService.category.coding.code must be a valid value from the campaign-type CodeSystem."
         }
       ],
       "ScopeDefinition": {
@@ -905,7 +965,7 @@
           "TargetTypes": [
             "Patient"
           ],
-          "ErrorCode": "REF_OBS_SUBJECT_INVALID",
+          "ErrorCode": "REFERENCE_INVALID",
           "Message": "Observation.subject.reference must reference a Patient."
         },
         {
@@ -915,7 +975,7 @@
           "TargetTypes": [
             "Encounter"
           ],
-          "ErrorCode": "REF_OBS_ENCOUNTER_INVALID",
+          "ErrorCode": "REFERENCE_INVALID",
           "Message": "Observation.encounter.reference must reference an Encounter."
         },
         {
@@ -932,7 +992,7 @@
           "TargetTypes": [
             "Organization"
           ],
-          "ErrorCode": "REF_OBS_PERFORMER_INVALID",
+          "ErrorCode": "REFERENCE_INVALID",
           "Message": "Observation.performer.reference must reference an Organization."
         }
       ],
@@ -1020,7 +1080,7 @@
           "TargetTypes": [
             "Patient"
           ],
-          "ErrorCode": "REF_OBS_SUBJECT_INVALID",
+          "ErrorCode": "REFERENCE_INVALID",
           "Message": "Observation.subject.reference must reference a Patient."
         },
         {
@@ -1030,7 +1090,7 @@
           "TargetTypes": [
             "Encounter"
           ],
-          "ErrorCode": "REF_OBS_ENCOUNTER_INVALID",
+          "ErrorCode": "REFERENCE_INVALID",
           "Message": "Observation.encounter.reference must reference an Encounter."
         },
         {
@@ -1047,7 +1107,7 @@
           "TargetTypes": [
             "Organization"
           ],
-          "ErrorCode": "REF_OBS_PERFORMER_INVALID",
+          "ErrorCode": "REFERENCE_INVALID",
           "Message": "Observation.performer.reference must reference an Organization."
         }
       ],
@@ -1135,7 +1195,7 @@
           "TargetTypes": [
             "Patient"
           ],
-          "ErrorCode": "REF_OBS_SUBJECT_INVALID",
+          "ErrorCode": "REFERENCE_INVALID",
           "Message": "Observation.subject.reference must reference a Patient."
         },
         {
@@ -1145,7 +1205,7 @@
           "TargetTypes": [
             "Encounter"
           ],
-          "ErrorCode": "REF_OBS_ENCOUNTER_INVALID",
+          "ErrorCode": "REFERENCE_INVALID",
           "Message": "Observation.encounter.reference must reference an Encounter."
         },
         {
@@ -1162,7 +1222,7 @@
           "TargetTypes": [
             "Organization"
           ],
-          "ErrorCode": "REF_OBS_PERFORMER_INVALID",
+          "ErrorCode": "REFERENCE_INVALID",
           "Message": "Observation.performer.reference must reference an Organization."
         }
       ],
