@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Tree, Button, message } from 'antd';
+import { Tree, Button, message, Modal, Input, Select, Radio } from 'antd';
 import { 
   FolderOutlined, 
   FileOutlined, 
@@ -21,9 +21,37 @@ interface TreeViewPanelProps {
 // Virtualization threshold
 const VIRTUALIZATION_THRESHOLD = 500;
 
+// Type detection and conversion utilities
+const detectValueType = (value: any): 'string' | 'number' | 'boolean' => {
+  if (typeof value === 'boolean') return 'boolean';
+  if (typeof value === 'number') return 'number';
+  return 'string';
+};
+
+const convertValue = (value: string, type: 'string' | 'number' | 'boolean'): any => {
+  switch (type) {
+    case 'boolean':
+      return value.toLowerCase() === 'true';
+    case 'number':
+      const num = Number(value);
+      return isNaN(num) ? 0 : num;
+    case 'string':
+    default:
+      return value;
+  }
+};
+
 export default function TreeViewPanel({ fhirJson, setFhirJson, scrollTargetRef, scrollTrigger, onOpenEditor }: TreeViewPanelProps) {
   const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingNode, setEditingNode] = useState<{
+    path: string;
+    value: any;
+    type: 'string' | 'number' | 'boolean';
+  } | null>(null);
+  const [editValue, setEditValue] = useState<string>('');
+  const [editType, setEditType] = useState<'string' | 'number' | 'boolean'>('string');
   const treeRef = useRef<any>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -37,6 +65,69 @@ export default function TreeViewPanel({ fhirJson, setFhirJson, scrollTargetRef, 
       console.error('Failed to load sample data:', error);
       message.error('Failed to load sample data');
     }
+  };
+
+  // Handle edit icon click
+  const handleEditClick = (nodePath: string, currentValue: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const detectedType = detectValueType(currentValue);
+    setEditingNode({
+      path: nodePath,
+      value: currentValue,
+      type: detectedType
+    });
+    setEditValue(String(currentValue));
+    setEditType(detectedType);
+    setIsEditModalOpen(true);
+  };
+
+  // Handle save edited value
+  const handleSaveEdit = () => {
+    if (!editingNode) return;
+
+    try {
+      const parsedJson = JSON.parse(fhirJson);
+      const pathParts = editingNode.path.split('.').filter(p => p !== 'root');
+      
+      // Navigate to the parent object
+      let current = parsedJson;
+      for (let i = 0; i < pathParts.length - 1; i++) {
+        const part = pathParts[i];
+        const match = part.match(/^\[(\d+)\]$/);
+        if (match) {
+          current = current[parseInt(match[1])];
+        } else {
+          current = current[part];
+        }
+      }
+      
+      // Update the value
+      const lastPart = pathParts[pathParts.length - 1];
+      const lastMatch = lastPart.match(/^\[(\d+)\]$/);
+      const convertedValue = convertValue(editValue, editType);
+      
+      if (lastMatch) {
+        current[parseInt(lastMatch[1])] = convertedValue;
+      } else {
+        current[lastPart] = convertedValue;
+      }
+      
+      // Update the JSON
+      const updatedJson = JSON.stringify(parsedJson, null, 2);
+      setFhirJson(updatedJson);
+      setIsEditModalOpen(false);
+      setEditingNode(null);
+      message.success('Value updated successfully');
+    } catch (error) {
+      console.error('Failed to update value:', error);
+      message.error('Failed to update value');
+    }
+  };
+
+  // Handle modal cancel
+  const handleCancelEdit = () => {
+    setIsEditModalOpen(false);
+    setEditingNode(null);
   };
 
   // Convert JSON to tree data structure
@@ -81,8 +172,15 @@ export default function TreeViewPanel({ fhirJson, setFhirJson, scrollTargetRef, 
         
         return {
           title: (
-            <span>
-              <strong>{key}</strong>: <span className={valueColor}>"{displayValue}"</span>
+            <span className="flex items-center justify-between group">
+              <span>
+                <strong>{key}</strong>: <span className={valueColor}>"{displayValue}"</span>
+              </span>
+              <EditOutlined 
+                className="ml-2 text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                onClick={(e) => handleEditClick(nodeKey, value, e)}
+                title="Edit value"
+              />
             </span>
           ),
           key: nodeKey,
@@ -389,6 +487,82 @@ export default function TreeViewPanel({ fhirJson, setFhirJson, scrollTargetRef, 
           height={totalNodes > VIRTUALIZATION_THRESHOLD ? 600 : undefined}
         />
       </div>
+
+      {/* Edit Value Modal */}
+      <Modal
+        title="Edit Value"
+        open={isEditModalOpen}
+        onOk={handleSaveEdit}
+        onCancel={handleCancelEdit}
+        width={600}
+      >
+        <div className="space-y-4">
+          {/* Path Display */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Path
+            </label>
+            <Input 
+              value={editingNode?.path || ''} 
+              disabled 
+              className="bg-gray-50"
+            />
+          </div>
+
+          {/* Type Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Value Type
+            </label>
+            <Radio.Group 
+              value={editType} 
+              onChange={(e) => setEditType(e.target.value)}
+              className="w-full"
+            >
+              <Radio value="string">String</Radio>
+              <Radio value="number">Number</Radio>
+              <Radio value="boolean">Boolean</Radio>
+            </Radio.Group>
+          </div>
+
+          {/* Value Input */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Value
+            </label>
+            {editType === 'boolean' ? (
+              <Select
+                value={editValue}
+                onChange={setEditValue}
+                className="w-full"
+                options={[
+                  { label: 'True', value: 'true' },
+                  { label: 'False', value: 'false' }
+                ]}
+              />
+            ) : (
+              <Input
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                type={editType === 'number' ? 'number' : 'text'}
+                placeholder={`Enter ${editType} value`}
+              />
+            )}
+          </div>
+
+          {/* Current Value Display */}
+          {editingNode && (
+            <div className="p-3 bg-gray-50 rounded">
+              <div className="text-sm text-gray-600">
+                Current value: <span className="font-mono text-gray-900">{String(editingNode.value)}</span>
+              </div>
+              <div className="text-sm text-gray-600">
+                Current type: <span className="font-mono text-gray-900">{editingNode.type}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }
