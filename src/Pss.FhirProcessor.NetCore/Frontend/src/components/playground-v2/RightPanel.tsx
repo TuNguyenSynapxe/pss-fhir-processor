@@ -22,6 +22,7 @@ interface RightPanelProps {
   onStrictDisplayChange: (checked: boolean) => void;
   onGoToResource: (resourcePointer: any) => void;
   hasJson: boolean;
+  jsonTree?: any;
 }
 
 export default function RightPanel({
@@ -35,7 +36,8 @@ export default function RightPanel({
   onLogLevelChange,
   onStrictDisplayChange,
   onGoToResource,
-  hasJson
+  hasJson,
+  jsonTree
 }: RightPanelProps) {
   const [activeTab, setActiveTab] = useState('validation');
 
@@ -55,6 +57,7 @@ export default function RightPanel({
         <ValidationTab 
           validation={result?.validation}
           onGoToResource={onGoToResource}
+          jsonTree={jsonTree}
         />
       )
     },

@@ -50,6 +50,7 @@ export default function PlaygroundLayout() {
   const [result, setResult] = useState<ProcessResult | null>(null);
   const [isEditorModalOpen, setIsEditorModalOpen] = useState(false);
   const [scrollTrigger, setScrollTrigger] = useState(0); // Trigger for tree navigation
+  const [jsonTree, setJsonTree] = useState<any>(null); // Parsed JSON for error helper
   const [leftWidth, setLeftWidth] = useState(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? parseFloat(stored) : DEFAULT_LEFT_WIDTH;
@@ -78,6 +79,15 @@ export default function PlaygroundLayout() {
 
     try {
       setLoading(true);
+      
+      // Parse JSON for error helper
+      let parsedJson = null;
+      try {
+        parsedJson = JSON.parse(fhirJson);
+        setJsonTree(parsedJson);
+      } catch (e) {
+        console.warn('Failed to parse JSON for error helper:', e);
+      }
       
       console.log('=== PROCESSING V2 ===');
       console.log('FHIR JSON length:', fhirJson.length);
@@ -233,6 +243,7 @@ export default function PlaygroundLayout() {
             onStrictDisplayChange={setStrictDisplay}
             onGoToResource={handleGoToResource}
             hasJson={!!fhirJson.trim()}
+            jsonTree={jsonTree}
           />
         </div>
       </div>
