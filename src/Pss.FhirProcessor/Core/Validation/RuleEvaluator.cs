@@ -617,7 +617,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         /// <summary>
         /// Reference rule: Validate that a reference points to an existing resource in the bundle
         /// Supports formats: "ResourceType/id" and "urn:uuid:guid"
-        /// Updated for v11: Check if reference property exists first, return MANDATORY_MISSING if not
+        /// Skips validation if reference field is missing or empty (use Required rule for mandatory checking)
         /// </summary>
         private static void EvaluateReference(JObject resource, RuleDefinition rule, string scope,
             JObject bundleRoot, ValidationResult result, Logger logger)
@@ -638,10 +638,8 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             
             if (refValues.Count == 0)
             {
-                // Reference property is missing entirely - return MANDATORY_MISSING
-                logger?.Verbose($"      ✗ Reference property '{rule.Path}' not found (missing)");
-                result.AddError("MANDATORY_MISSING", rule.Path,
-                    $"Required reference field '{rule.Path}' is missing", scope, rule);
+                // Reference property is missing - skip validation (Required rule handles this)
+                logger?.Verbose($"      ⊘ Reference property '{rule.Path}' not found - skipping reference validation");
                 return;
             }
 
@@ -649,10 +647,8 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
 
             if (string.IsNullOrWhiteSpace(refValue))
             {
-                // Reference property exists but is empty - return MANDATORY_MISSING
-                logger?.Verbose($"      ✗ Reference property '{rule.Path}' is empty");
-                result.AddError("MANDATORY_MISSING", rule.Path,
-                    $"Required reference field '{rule.Path}' is empty", scope, rule);
+                // Reference property exists but is empty - skip validation (Required rule handles this)
+                logger?.Verbose($"      ⊘ Reference property '{rule.Path}' is empty - skipping reference validation");
                 return;
             }
 

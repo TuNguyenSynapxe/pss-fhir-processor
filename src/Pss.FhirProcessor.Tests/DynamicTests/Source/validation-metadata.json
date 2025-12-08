@@ -909,6 +909,13 @@
           "Message": "Observation.subject.reference must reference a Patient."
         },
         {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.encounter.reference",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation.encounter.reference is mandatory."
+        },
+        {
           "RuleType": "Reference",
           "PathType": "CPS1",
           "Path": "Observation.encounter.reference",
@@ -1014,6 +1021,13 @@
           "Message": "Observation components must use valid question codes, displays, and allowed answers."
         },
         {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.subject.reference",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation.subject.reference is mandatory."
+        },
+        {
           "RuleType": "Reference",
           "PathType": "CPS1",
           "Path": "Observation.subject.reference",
@@ -1022,6 +1036,13 @@
           ],
           "ErrorCode": "REFERENCE_INVALID",
           "Message": "Observation.subject.reference must reference a Patient."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.encounter.reference",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation.encounter.reference is mandatory."
         },
         {
           "RuleType": "Reference",
@@ -1129,6 +1150,13 @@
           "Message": "Observation components must use valid question codes, displays, and allowed answers."
         },
         {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.subject.reference",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation.subject.reference is mandatory."
+        },
+        {
           "RuleType": "Reference",
           "PathType": "CPS1",
           "Path": "Observation.subject.reference",
@@ -1137,6 +1165,13 @@
           ],
           "ErrorCode": "REFERENCE_INVALID",
           "Message": "Observation.subject.reference must reference a Patient."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Observation.encounter.reference",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation.encounter.reference is mandatory."
         },
         {
           "RuleType": "Reference",
