@@ -418,6 +418,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 ExpectedType = rule.ExpectedType,      // Type validation
                 Pattern = rule.Pattern,                 // Regex validation
                 TargetTypes = rule.TargetTypes,         // Reference validation
+                AllowedValues = rule.AllowedValues,     // AllowedValues validation
                 System = rule.System,                   // CodeSystem validation
                 ErrorCode = rule.ErrorCode,
                 Message = rule.Message

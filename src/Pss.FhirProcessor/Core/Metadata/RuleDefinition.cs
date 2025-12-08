@@ -4,11 +4,11 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata
 {
     /// <summary>
     /// Single validation rule definition
-    /// Supports: Required, FixedValue, FixedCoding, CodesMaster, Type, Regex rule types
+    /// Supports: Required, FixedValue, FixedCoding, AllowedValues, CodesMaster, Type, Regex, Reference, CodeSystem, FullUrlIdMatch rule types
     /// </summary>
     public class RuleDefinition
     {
-        public string RuleType { get; set; }           // Required, FixedValue, FixedCoding, CodesMaster, Type, Regex, Reference, CodeSystem
+        public string RuleType { get; set; }           // Required, FixedValue, FixedCoding, AllowedValues, CodesMaster, Type, Regex, Reference, CodeSystem, FullUrlIdMatch
         public string PathType { get; set; }           // "CPS1"
         public string Path { get; set; }               // Custom Path Syntax
         public string ExpectedValue { get; set; }

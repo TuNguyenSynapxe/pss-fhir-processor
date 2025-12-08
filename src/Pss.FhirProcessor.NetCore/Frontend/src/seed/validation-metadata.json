@@ -36,16 +36,9 @@
         {
           "RuleType": "Required",
           "PathType": "CPS1",
-          "Path": "Bundle.entry[Organization:PROVIDER]",
-          "ErrorCode": "MISSING_PROVIDER_ORG",
-          "Message": "Bundle must contain a Provider Organization."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Bundle.entry[Organization:CLUSTER]",
-          "ErrorCode": "MISSING_CLUSTER_ORG",
-          "Message": "Bundle must contain a Cluster Organization."
+          "Path": "Bundle.entry[Organization]",
+          "ErrorCode": "MISSING_ORGANIZATION",
+          "Message": "Bundle must contain at least one Organization resource."
         },
         {
           "RuleType": "Required",
@@ -137,6 +130,14 @@
           "Path": "Patient.gender",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Patient gender is mandatory."
+        },
+        {
+          "RuleType": "AllowedValues",
+          "PathType": "CPS1",
+          "Path": "Patient.gender",
+          "AllowedValues": ["male","female","other","unknown"],
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Patient gender must be male, female, other, or unknown."
         },
         {
           "RuleType": "Required",
@@ -390,19 +391,19 @@
         {
           "RuleType": "Required",
           "PathType": "CPS1",
-          "Path": "Encounter.serviceType[*].reference",
+          "Path": "Encounter.serviceType[*].reference.reference",
           "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Encounter.serviceType.reference is mandatory."
+          "Message": "Encounter.serviceType[*].reference.reference is mandatory."
         },
         {
           "RuleType": "Reference",
           "PathType": "CPS1",
-          "Path": "Encounter.serviceType[*].reference",
+          "Path": "Encounter.serviceType[*].reference.reference",
           "TargetTypes": [
             "HealthcareService"
           ],
           "ErrorCode": "REFERENCE_INVALID",
-          "Message": "Encounter.serviceType.reference must reference a HealthcareService."
+          "Message": "Encounter.serviceType[*].reference.reference must reference a HealthcareService."
         },
         {
           "RuleType": "Required",
@@ -714,7 +715,7 @@
       }
     },
     {
-      "Scope": "Organization.Provider",
+      "Scope": "Organization",
       "Rules": [
         {
           "RuleType": "FullUrlIdMatch",
@@ -726,7 +727,7 @@
           "PathType": "CPS1",
           "Path": "Organization.id",
           "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Provider Organization id is mandatory."
+          "Message": "Organization id is mandatory."
         },
         {
           "RuleType": "Type",
@@ -741,7 +742,7 @@
           "PathType": "CPS1",
           "Path": "Organization.identifier[system:https://fhir.synapxe.sg/NamingSystem/hci-code].value",
           "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Provider Organization HCI code is mandatory."
+          "Message": "Organization HCI code is mandatory."
         },
         {
           "RuleType": "FixedValue",
@@ -749,42 +750,34 @@
           "Path": "Organization.identifier[system:https://fhir.synapxe.sg/NamingSystem/hci-code].system",
           "ExpectedValue": "https://fhir.synapxe.sg/NamingSystem/hci-code",
           "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Provider Organization HCI identifier.system must be hci-code NamingSystem."
+          "Message": "Organization identifier.system must be hci-code NamingSystem."
         },
         {
           "RuleType": "Required",
           "PathType": "CPS1",
-          "Path": "Organization.type.coding.system",
+          "Path": "Organization.type[*].coding[*].system",
           "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Provider Organization type.coding.system is mandatory."
+          "Message": "Organization type.coding.system is mandatory."
         },
         {
           "RuleType": "FixedValue",
           "PathType": "CPS1",
-          "Path": "Organization.type.coding.system",
+          "Path": "Organization.type[*].coding[*].system",
           "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/organization-type",
           "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Provider Organization type must use organization-type CodeSystem."
+          "Message": "Organization type must use organization-type CodeSystem."
         },
         {
           "RuleType": "Required",
           "PathType": "CPS1",
-          "Path": "Organization.type.coding.code",
+          "Path": "Organization.type[*].coding[*].code",
           "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Provider Organization type.coding.code is mandatory."
-        },
-        {
-          "RuleType": "FixedValue",
-          "PathType": "CPS1",
-          "Path": "Organization.type.coding.code",
-          "ExpectedValue": "PROVIDER",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Provider Organization type.coding.code must be PROVIDER."
+          "Message": "Organization type.coding.code is mandatory."
         },
         {
           "RuleType": "CodeSystem",
           "PathType": "CPS1",
-          "Path": "Organization.type.coding",
+          "Path": "Organization.type[*].coding[*]",
           "System": "https://fhir.synapxe.sg/CodeSystem/organization-type",
           "ErrorCode": "FIXED_VALUE_MISMATCH",
           "Message": "Organization type code must be a valid value from the organization-type CodeSystem."
@@ -794,111 +787,11 @@
           "PathType": "CPS1",
           "Path": "Organization.name",
           "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Provider Organization name is mandatory."
+          "Message": "Organization name is mandatory."
         }
       ],
       "ScopeDefinition": {
-        "ResourceType": "Organization",
-        "Match": [
-          {
-            "Path": "type.coding[system:https://fhir.synapxe.sg/CodeSystem/organization-type].code",
-            "Expected": "PROVIDER"
-          }
-        ]
-      }
-    },
-    {
-      "Scope": "Organization.Cluster",
-      "Rules": [
-        {
-          "RuleType": "FullUrlIdMatch",
-          "ErrorCode": "ID_FULLURL_MISMATCH",
-          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Organization.id",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Cluster Organization id is mandatory."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Organization.id",
-          "ExpectedType": "guid",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Organization.id must be GUID."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Organization.identifier[system:https://fhir.synapxe.sg/NamingSystem/hci-code].value",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Cluster Organization HCI code is mandatory."
-        },
-        {
-          "RuleType": "FixedValue",
-          "PathType": "CPS1",
-          "Path": "Organization.identifier[system:https://fhir.synapxe.sg/NamingSystem/hci-code].system",
-          "ExpectedValue": "https://fhir.synapxe.sg/NamingSystem/hci-code",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Cluster Organization HCI identifier.system must be hci-code NamingSystem."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Organization.type.coding.system",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Cluster Organization type.coding.system is mandatory."
-        },
-        {
-          "RuleType": "FixedValue",
-          "PathType": "CPS1",
-          "Path": "Organization.type.coding.system",
-          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/organization-type",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Cluster Organization type must use organization-type CodeSystem."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Organization.type.coding.code",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Cluster Organization type.coding.code is mandatory."
-        },
-        {
-          "RuleType": "FixedValue",
-          "PathType": "CPS1",
-          "Path": "Organization.type.coding.code",
-          "ExpectedValue": "CLUSTER",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Cluster Organization type.coding.code must be CLUSTER."
-        },
-        {
-          "RuleType": "CodeSystem",
-          "PathType": "CPS1",
-          "Path": "Organization.type.coding",
-          "System": "https://fhir.synapxe.sg/CodeSystem/organization-type",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Organization type code must be a valid value from the organization-type CodeSystem."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Organization.name",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Cluster Organization name is mandatory."
-        }
-      ],
-      "ScopeDefinition": {
-        "ResourceType": "Organization",
-        "Match": [
-          {
-            "Path": "type.coding[system:https://fhir.synapxe.sg/CodeSystem/organization-type].code",
-            "Expected": "CLUSTER"
-          }
-        ]
+        "ResourceType": "Organization"
       }
     },
     {

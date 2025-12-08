@@ -35,6 +35,10 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     EvaluateFixedCoding(resource, rule, scope, result, logger);
                     break;
 
+                case "AllowedValues":
+                    EvaluateAllowedValues(resource, rule, scope, result, logger);
+                    break;
+
                 case "CodesMaster":
                     EvaluateCodesMaster(resource, rule, scope, codesMaster, result, logger);
                     break;
@@ -267,6 +271,63 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✓ Fixed coding validation passed");
             }
+        }
+
+        /// <summary>
+        /// AllowedValues rule: Validates that field value is one of the allowed values
+        /// Skips validation if field is missing (use Required rule for mandatory fields)
+        /// </summary>
+        private static void EvaluateAllowedValues(JObject resource, RuleDefinition rule, string scope,
+            ValidationResult result, Logger logger)
+        {
+            logger?.Verbose($"      → Resolving path: {rule.Path}");
+            logger?.Verbose($"      → Allowed values: [{string.Join(", ", rule.AllowedValues?.Select(v => $"'{v}'") ?? new string[0])}]");
+            
+            if (rule.AllowedValues == null || rule.AllowedValues.Count == 0)
+            {
+                logger?.Warn($"      ⚠ AllowedValues rule has no allowed values defined - skipping");
+                return;
+            }
+            
+            var values = CpsPathResolver.Resolve(resource, rule.Path);
+            logger?.Verbose($"      → Found {values.Count} value(s)");
+
+            if (values.Count == 0)
+            {
+                logger?.Verbose($"      ⊘ Path not found - skipping AllowedValues validation (use Required rule for mandatory fields)");
+                return;
+            }
+
+            // Check if any non-empty values exist
+            var nonEmptyValues = values.Where(v => !string.IsNullOrWhiteSpace(v?.ToString())).ToList();
+            if (nonEmptyValues.Count == 0)
+            {
+                logger?.Verbose($"      ⊘ All values are empty - skipping AllowedValues validation");
+                return;
+            }
+
+            // Check each non-empty value against allowed values
+            foreach (var value in nonEmptyValues)
+            {
+                var actualValue = value.ToString();
+                logger?.Verbose($"      → Checking value: '{actualValue}'");
+                
+                if (!rule.AllowedValues.Contains(actualValue))
+                {
+                    logger?.Verbose($"      ✗ Value not in allowed list");
+                    var allowedValuesStr = string.Join(", ", rule.AllowedValues.Select(v => $"'{v}'"));
+                    var detailedMessage = (rule.Message ?? $"Value not in allowed values at path '{rule.Path}'") + 
+                        $" | Actual: '{actualValue}' | Allowed values: [{allowedValuesStr}]";
+                    result.AddError(rule.ErrorCode ?? "INVALID_VALUE", rule.Path, detailedMessage, scope, rule);
+                    return; // Stop at first invalid value
+                }
+                else
+                {
+                    logger?.Verbose($"      ✓ Value is in allowed list");
+                }
+            }
+            
+            logger?.Verbose($"      ✓ All values are in allowed list - validation passed");
         }
 
         /// <summary>

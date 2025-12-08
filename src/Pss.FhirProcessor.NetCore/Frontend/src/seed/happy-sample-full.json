@@ -150,11 +150,13 @@
           "reference": "urn:uuid:a3f9c2d1-2b40-4ab9-8133-5b1f2d4e9f91"
         },
         "serviceProvider": {
-          "reference": "urn:uuid:f91b0cd8-3fc2-4d12-a1e9-6e85c2124b22"
+          "reference": "urn:uuid:e0a3f4c1-32a1-4df2-8f36-9b164ea7db04"
         },
         "serviceType": [
           {
-            "reference": "urn:uuid:c4e5a0b2-9d87-4c0a-a3f3-05869125bc11"
+            "reference":{
+              "reference": "urn:uuid:c4e5a0b2-9d87-4c0a-a3f3-05869125bc11"
+            }
           }
         ],
         "location": [
@@ -199,12 +201,6 @@
         "resourceType": "Location",
         "id": "d12b174f-6598-4f2f-b4cb-48df5113458c",
         "name": "ABC Polyclinic - Serangoon",
-        "identifier": [
-          {
-            "system": "https://fhir.synapxe.sg/NamingSystem/hci-code",
-            "value": "HCI001"
-          }
-        ],
         "address": {
           "line": ["888", "Serangoon Street 81", "7", "#11-98", "The Trilliant"],
           "postalCode": "640123"
@@ -257,30 +253,6 @@
           }
         ],
         "name": "ABC Polyclinic"
-      }
-    },
-    {
-      "fullUrl": "urn:uuid:f91b0cd8-3fc2-4d12-a1e9-6e85c2124b22",
-      "resource": {
-        "resourceType": "Organization",
-        "id": "f91b0cd8-3fc2-4d12-a1e9-6e85c2124b22",
-        "identifier": [
-          {
-            "system": "https://fhir.synapxe.sg/NamingSystem/hci-code",
-            "value": "CLUST01"
-          }
-        ],
-        "type": [
-          {
-            "coding": [
-              {
-                "system": "https://fhir.synapxe.sg/CodeSystem/organization-type",
-                "code": "CLUSTER"
-              }
-            ]
-          }
-        ],
-        "name": "Cluster West"
       }
     },
     {
