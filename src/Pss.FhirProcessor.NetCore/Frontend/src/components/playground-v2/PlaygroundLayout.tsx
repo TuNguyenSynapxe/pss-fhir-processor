@@ -18,7 +18,7 @@ interface ProcessResult {
     isValid: boolean;
     errors: ValidationError[];
   };
-  extraction?: any;
+  flatten?: any;  // Extraction result from backend
   logs?: any[];
   originalBundle?: any;
 }

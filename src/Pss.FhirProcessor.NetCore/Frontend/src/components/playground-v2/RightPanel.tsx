@@ -61,7 +61,7 @@ export default function RightPanel({
     {
       key: 'extraction',
       label: 'Extraction',
-      children: <ExtractionTab extraction={result?.extraction} />
+      children: <ExtractionTab extraction={result?.flatten} />
     },
     {
       key: 'bundle',
