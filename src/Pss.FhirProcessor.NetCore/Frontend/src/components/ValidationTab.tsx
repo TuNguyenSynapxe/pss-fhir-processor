@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, Empty, Button, Badge, Collapse, Space } from 'antd';
 import { CheckCircleOutlined, DownloadOutlined, ExpandOutlined, CompressOutlined } from '@ant-design/icons';
-import { ErrorHelperPanel } from '../../errorHelper';
+import { ErrorHelperPanel } from './ErrorHelperPanel';
 
 interface ValidationTabProps {
   validation: any;

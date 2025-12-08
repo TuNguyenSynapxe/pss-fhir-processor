@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Layout, Menu } from 'antd';
 import { ExperimentOutlined, FileTextOutlined } from '@ant-design/icons';
-import Playground from './components/playground-v2';
+import Playground from './components/PlaygroundLayout';
 import ValidationRules from './components/ValidationRules';
 import { MetadataProvider } from './contexts/MetadataContext';
 import './App.css';

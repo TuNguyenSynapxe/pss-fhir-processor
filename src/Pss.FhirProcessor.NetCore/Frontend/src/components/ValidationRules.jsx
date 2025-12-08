@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Card, Tabs, Table, Tag, Alert, Spin, Collapse } from 'antd';
 import { CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useMetadata } from '../contexts/MetadataContext';
-import MetadataEditor from './MetadataEditor';
 
 const { Panel } = Collapse;
 
@@ -121,7 +120,7 @@ function ValidationRules() {
         icon={<InfoCircleOutlined />}
       />
 
-      <Card title="📋 Validation Rule Sets" className="shadow-md" extra={<MetadataEditor />}>
+      <Card title="📋 Validation Rule Sets" className="shadow-md">
         <Tabs 
           defaultActiveKey={ruleSets[0]?.Scope || "Patient"}
           items={ruleSets.map((ruleSet) => {

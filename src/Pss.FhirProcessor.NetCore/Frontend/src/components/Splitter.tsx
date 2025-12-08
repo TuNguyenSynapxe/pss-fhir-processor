@@ -1,37 +1,56 @@
-import React from 'react';
-import { useSplitter } from '../hooks/useSplitter';
-import './Splitter.css';
+import React, { useRef, useState, useEffect } from 'react';
 
 interface SplitterProps {
-  onWidthChange: (width: number) => void;
-  minWidth?: number;
-  maxWidth?: number;
+  leftWidth: number;
+  onWidthChange: (newWidth: number) => void;
+  minWidth: number;
+  maxWidth: number;
 }
 
-/**
- * Draggable splitter component for resizing panels
- */
-export const Splitter: React.FC<SplitterProps> = ({
-  onWidthChange,
-  minWidth = 20,
-  maxWidth = 80,
-}) => {
-  const { startDragging } = useSplitter({
-    onWidthChange,
-    minWidth,
-    maxWidth,
-  });
+export default function Splitter({ leftWidth, onWidthChange, minWidth, maxWidth }: SplitterProps) {
+  const [isDragging, setIsDragging] = useState(false);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(0);
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - startXRef.current;
+      const containerWidth = window.innerWidth;
+      const deltaPercent = (deltaX / containerWidth) * 100;
+      const newWidth = startWidthRef.current + deltaPercent;
+      
+      onWidthChange(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, onWidthChange]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    startXRef.current = e.clientX;
+    startWidthRef.current = leftWidth;
+  };
 
   return (
     <div
-      className="splitter"
-      onMouseDown={startDragging}
-      role="separator"
-      aria-orientation="vertical"
-      aria-label="Resize panels"
-      title="Drag to resize"
-    >
-      <div className="splitter-handle" />
-    </div>
+      className={`w-1 bg-gray-300 hover:bg-blue-500 cursor-col-resize transition-colors ${
+        isDragging ? 'bg-blue-500' : ''
+      }`}
+      onMouseDown={handleMouseDown}
+      style={{ userSelect: 'none' }}
+    />
   );
-};
+}
