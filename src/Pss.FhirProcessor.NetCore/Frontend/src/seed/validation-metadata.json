@@ -68,6 +68,14 @@
           "Pattern": "^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "ErrorCode": "TYPE_INVALID_FULLURL",
           "Message": "Bundle.entry.fullUrl must be urn:uuid:<GUID>."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Bundle.entry[*].id",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Resource id must be GUID."
         }
       ]
     },
@@ -707,22 +715,6 @@
       }
     },
     {
-      "Scope": "Observation.ScreeningType",
-      "Rules": [
-        {
-          "RuleType": "CodeSystem",
-          "PathType": "CPS1",
-          "Path": "Observation.code.coding[system:https://fhir.synapxe.sg/CodeSystem/screening-type]",
-          "System": "https://fhir.synapxe.sg/CodeSystem/screening-type",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Observation.code.coding.code must be a valid screening-type code (HS/OS/VS)."
-        }
-      ],
-      "ScopeDefinition": {
-        "ResourceType": "Observation"
-      }
-    },
-    {
       "Scope": "Organization",
       "Rules": [
         {
@@ -803,7 +795,7 @@
       }
     },
     {
-      "Scope": "Observation.HearingScreening",
+      "Scope": "Observation",
       "Rules": [
         {
           "RuleType": "FullUrlIdMatch",
@@ -841,19 +833,19 @@
           "Message": "Observation.code.coding.system must be screening-type CodeSystem."
         },
         {
+          "RuleType": "CodeSystem",
+          "PathType": "CPS1",
+          "Path": "Observation.code.coding[*]",
+          "System": "https://fhir.synapxe.sg/CodeSystem/screening-type",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Observation.code.coding[*].code must be a valid screening-type code (HS/OS/VS)."
+        },
+        {
           "RuleType": "Required",
           "PathType": "CPS1",
           "Path": "Observation.code.coding.code",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Observation screening-type code is mandatory."
-        },
-        {
-          "RuleType": "FixedValue",
-          "PathType": "CPS1",
-          "Path": "Observation.code.coding.code",
-          "ExpectedValue": "HS",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Observation screening-type code must be HS."
         },
         {
           "RuleType": "Required",
@@ -954,271 +946,7 @@
         }
       ],
       "ScopeDefinition": {
-        "ResourceType": "Observation",
-        "Match": [
-          {
-            "Path": "code.coding[system:https://fhir.synapxe.sg/CodeSystem/screening-type].code",
-            "Expected": "HS"
-          }
-        ]
-      }
-    },
-    {
-      "Scope": "Observation.OralScreening",
-      "Rules": [
-        {
-          "RuleType": "FullUrlIdMatch",
-          "ErrorCode": "ID_FULLURL_MISMATCH",
-          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.id",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Observation id is mandatory."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Observation.id",
-          "ExpectedType": "guid",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Observation.id must be GUID."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.code.coding.system",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Observation.code.coding.system is mandatory."
-        },
-        {
-          "RuleType": "FixedValue",
-          "PathType": "CPS1",
-          "Path": "Observation.code.coding.system",
-          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/screening-type",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Observation.code.coding.system must be screening-type CodeSystem."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.code.coding.code",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Observation screening-type code is mandatory."
-        },
-        {
-          "RuleType": "FixedValue",
-          "PathType": "CPS1",
-          "Path": "Observation.code.coding.code",
-          "ExpectedValue": "OS",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Observation screening-type code must be OS."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.component[*]",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "At least one Observation.component is required."
-        },
-        {
-          "RuleType": "CodesMaster",
-          "PathType": "CPS1",
-          "Path": "Observation.component[*]",
-          "ErrorCode": "INVALID_ANSWER_VALUE",
-          "Message": "Observation components must use valid question codes, displays, and allowed answers."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.subject.reference",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Observation.subject.reference is mandatory."
-        },
-        {
-          "RuleType": "Reference",
-          "PathType": "CPS1",
-          "Path": "Observation.subject.reference",
-          "TargetTypes": [
-            "Patient"
-          ],
-          "ErrorCode": "REFERENCE_INVALID",
-          "Message": "Observation.subject.reference must reference a Patient."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.encounter.reference",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Observation.encounter.reference is mandatory."
-        },
-        {
-          "RuleType": "Reference",
-          "PathType": "CPS1",
-          "Path": "Observation.encounter.reference",
-          "TargetTypes": [
-            "Encounter"
-          ],
-          "ErrorCode": "REFERENCE_INVALID",
-          "Message": "Observation.encounter.reference must reference an Encounter."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.performer[*].reference",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Observation.performer.reference is mandatory."
-        },
-        {
-          "RuleType": "Reference",
-          "PathType": "CPS1",
-          "Path": "Observation.performer[*].reference",
-          "TargetTypes": [
-            "Organization"
-          ],
-          "ErrorCode": "REFERENCE_INVALID",
-          "Message": "Observation.performer.reference must reference an Organization."
-        }
-      ],
-      "ScopeDefinition": {
-        "ResourceType": "Observation",
-        "Match": [
-          {
-            "Path": "code.coding[system:https://fhir.synapxe.sg/CodeSystem/screening-type].code",
-            "Expected": "OS"
-          }
-        ]
-      }
-    },
-    {
-      "Scope": "Observation.VisionScreening",
-      "Rules": [
-        {
-          "RuleType": "FullUrlIdMatch",
-          "ErrorCode": "ID_FULLURL_MISMATCH",
-          "Message": "Resource.id must match GUID portion of entry.fullUrl (urn:uuid:<GUID>)."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.id",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Observation id is mandatory."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Observation.id",
-          "ExpectedType": "guid",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Observation.id must be GUID."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.code.coding.system",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Observation.code.coding.system is mandatory."
-        },
-        {
-          "RuleType": "FixedValue",
-          "PathType": "CPS1",
-          "Path": "Observation.code.coding.system",
-          "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/screening-type",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Observation.code.coding.system must be screening-type CodeSystem."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.code.coding.code",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Observation screening-type code is mandatory."
-        },
-        {
-          "RuleType": "FixedValue",
-          "PathType": "CPS1",
-          "Path": "Observation.code.coding.code",
-          "ExpectedValue": "VS",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Observation screening-type code must be VS."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.component[*]",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "At least one Observation.component is required."
-        },
-        {
-          "RuleType": "CodesMaster",
-          "PathType": "CPS1",
-          "Path": "Observation.component[*]",
-          "ErrorCode": "INVALID_ANSWER_VALUE",
-          "Message": "Observation components must use valid question codes, displays, and allowed answers."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.subject.reference",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Observation.subject.reference is mandatory."
-        },
-        {
-          "RuleType": "Reference",
-          "PathType": "CPS1",
-          "Path": "Observation.subject.reference",
-          "TargetTypes": [
-            "Patient"
-          ],
-          "ErrorCode": "REFERENCE_INVALID",
-          "Message": "Observation.subject.reference must reference a Patient."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.encounter.reference",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Observation.encounter.reference is mandatory."
-        },
-        {
-          "RuleType": "Reference",
-          "PathType": "CPS1",
-          "Path": "Observation.encounter.reference",
-          "TargetTypes": [
-            "Encounter"
-          ],
-          "ErrorCode": "REFERENCE_INVALID",
-          "Message": "Observation.encounter.reference must reference an Encounter."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.performer[*].reference",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Observation.performer.reference is mandatory."
-        },
-        {
-          "RuleType": "Reference",
-          "PathType": "CPS1",
-          "Path": "Observation.performer[*].reference",
-          "TargetTypes": [
-            "Organization"
-          ],
-          "ErrorCode": "REFERENCE_INVALID",
-          "Message": "Observation.performer.reference must reference an Organization."
-        }
-      ],
-      "ScopeDefinition": {
-        "ResourceType": "Observation",
-        "Match": [
-          {
-            "Path": "code.coding[system:https://fhir.synapxe.sg/CodeSystem/screening-type].code",
-            "Expected": "VS"
-          }
-        ]
+        "ResourceType": "Observation"
       }
     }
   ],
