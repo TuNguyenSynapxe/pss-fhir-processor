@@ -8,9 +8,11 @@ import {
   ShrinkOutlined
 } from '@ant-design/icons';
 import type { DataNode } from 'antd/es/tree';
+import happySampleData from '../seed/happy-sample-full.json';
 
 interface TreeViewPanelProps {
   fhirJson: string;
+  setFhirJson: (json: string) => void;
   scrollTargetRef: React.MutableRefObject<{ entryIndex: number; fieldPath?: string } | null>;
   scrollTrigger: number; // Added to force re-render
   onOpenEditor: () => void;
@@ -19,11 +21,23 @@ interface TreeViewPanelProps {
 // Virtualization threshold
 const VIRTUALIZATION_THRESHOLD = 500;
 
-export default function TreeViewPanel({ fhirJson, scrollTargetRef, scrollTrigger, onOpenEditor }: TreeViewPanelProps) {
+export default function TreeViewPanel({ fhirJson, setFhirJson, scrollTargetRef, scrollTrigger, onOpenEditor }: TreeViewPanelProps) {
   const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
   const treeRef = useRef<any>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Handle loading sample data
+  const handleLoadSample = () => {
+    try {
+      const sampleJson = JSON.stringify(happySampleData, null, 2);
+      setFhirJson(sampleJson);
+      message.success('Sample FHIR data loaded successfully');
+    } catch (error) {
+      console.error('Failed to load sample data:', error);
+      message.error('Failed to load sample data');
+    }
+  };
 
   // Convert JSON to tree data structure
   const jsonToTreeData = (obj: any, parentKey = 'root'): DataNode[] => {
@@ -318,9 +332,14 @@ export default function TreeViewPanel({ fhirJson, scrollTargetRef, scrollTrigger
         <div className="text-center text-gray-400">
           <FolderOutlined style={{ fontSize: 48 }} />
           <p className="mt-4">No FHIR data loaded</p>
-          <Button type="link" onClick={onOpenEditor}>
-            Open Editor to Add JSON
-          </Button>
+          <div className="flex gap-2 justify-center mt-2">
+            <Button type="link" onClick={onOpenEditor}>
+              Open Editor to Add JSON
+            </Button>
+            <Button type="primary" onClick={handleLoadSample}>
+              Load Sample
+            </Button>
+          </div>
         </div>
       </div>
     );

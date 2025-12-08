@@ -212,6 +212,7 @@ export default function PlaygroundLayout() {
         >
           <TreeViewPanel
             fhirJson={fhirJson}
+            setFhirJson={setFhirJson}
             scrollTargetRef={treeScrollTargetRef}
             scrollTrigger={scrollTrigger}
             onOpenEditor={handleOpenEditor}

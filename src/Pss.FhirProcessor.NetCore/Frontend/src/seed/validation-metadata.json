@@ -193,6 +193,13 @@
         {
           "RuleType": "Required",
           "PathType": "CPS1",
+          "Path": "Patient.communication[0].language.coding[0].display",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Preferred language display is mandatory."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
           "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-ethnicity].valueCodeableConcept.coding[0].system",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Ethnicity coding system is mandatory."
@@ -294,11 +301,12 @@
           "Message": "Display code is mandatory."
         },
         {
-          "RuleType": "Required",
+          "RuleType": "CodeSystem",
           "PathType": "CPS1",
-          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-subsidy].valueCodeableConcept.coding[0].code",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Subsidy code is mandatory."
+          "Path": "Patient.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-subsidy].valueCodeableConcept.coding[0]",
+          "System": "https://fhir.synapxe.sg/CodeSystem/subsidy",
+          "ErrorCode": "FIXED_VALUE_MISMATCH",
+          "Message": "Subsidy code must be a valid value from the subsidy CodeSystem."
         },
         {
           "RuleType": "Required",
@@ -740,14 +748,14 @@
         {
           "RuleType": "Required",
           "PathType": "CPS1",
-          "Path": "Organization.identifier[system:https://fhir.synapxe.sg/NamingSystem/hci-code].value",
+          "Path": "Organization.identifier[*].value",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Organization HCI code is mandatory."
         },
         {
           "RuleType": "FixedValue",
           "PathType": "CPS1",
-          "Path": "Organization.identifier[system:https://fhir.synapxe.sg/NamingSystem/hci-code].system",
+          "Path": "Organization.identifier[*].system",
           "ExpectedValue": "https://fhir.synapxe.sg/NamingSystem/hci-code",
           "ErrorCode": "FIXED_VALUE_MISMATCH",
           "Message": "Organization identifier.system must be hci-code NamingSystem."
@@ -1692,10 +1700,6 @@
           {
             "Code": "CLUSTER",
             "Display": "cluster"
-          },
-          {
-            "Code": "PROVIDER",
-            "Display": "primary care provider"
           },
           {
             "Code": "GP",

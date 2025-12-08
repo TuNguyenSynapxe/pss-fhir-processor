@@ -247,7 +247,7 @@
             "coding": [
               {
                 "system": "https://fhir.synapxe.sg/CodeSystem/organization-type",
-                "code": "PROVIDER"
+                "code": "CLUSTER"
               }
             ]
           }

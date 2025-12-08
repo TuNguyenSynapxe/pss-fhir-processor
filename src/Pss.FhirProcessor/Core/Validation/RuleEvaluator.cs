@@ -931,43 +931,89 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             // Validate each coding
             foreach (var codingToken in codingValues)
             {
+                // Handle arrays (path points to array of codings)
+                if (codingToken.Type == JTokenType.Array)
+                {
+                    var codingArray = (JArray)codingToken;
+                    foreach (var item in codingArray)
+                    {
+                        if (item.Type == JTokenType.Object)
+                        {
+                            ValidateCoding((JObject)item, rule, scope, codeSystem, result, logger);
+                        }
+                    }
+                    continue;
+                }
+                
                 if (codingToken.Type != JTokenType.Object)
                 {
                     logger?.Verbose($"      ✗ Value is not a Coding object");
                     continue;
                 }
 
-                var coding = (JObject)codingToken;
-                var system = coding["system"]?.ToString();
-                var code = coding["code"]?.ToString();
+                ValidateCoding((JObject)codingToken, rule, scope, codeSystem, result, logger);
+            }
+        }
+        
+        /// <summary>
+        /// Helper method to validate a single Coding object
+        /// </summary>
+        private static void ValidateCoding(JObject coding, RuleDefinition rule, string scope,
+            CodesMasterCodeSystem codeSystem, ValidationResult result, Logger logger)
+        {
+            var system = coding["system"]?.ToString();
+            var code = coding["code"]?.ToString();
+            var display = coding["display"]?.ToString();
 
-                logger?.Verbose($"      → Checking coding: system='{system}', code='{code}'");
+            logger?.Verbose($"      → Checking coding: system='{system}', code='{code}', display='{display}'");
 
-                // Skip if system doesn't match
-                if (system != rule.System)
+            // Skip if system doesn't match
+            if (system != rule.System)
+            {
+                logger?.Verbose($"      ⊘ System doesn't match, skipping");
+                return;
+            }
+
+            // Find the matching concept
+            var matchingConcept = codeSystem.Concepts.FirstOrDefault(c => 
+                c.Code != null && c.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
+
+            if (matchingConcept == null)
+            {
+                logger?.Verbose($"      ✗ Code '{code}' not found in CodeSystem '{rule.System}'");
+                var availableCodes = string.Join(", ", codeSystem.Concepts.Select(c => $"'{c.Code}'").Take(10));
+                if (codeSystem.Concepts.Count > 10)
                 {
-                    logger?.Verbose($"      ⊘ System doesn't match, skipping");
-                    continue;
+                    availableCodes += $" (and {codeSystem.Concepts.Count - 10} more)";
                 }
-
-                // Check if code exists in CodeSystem concepts
-                var conceptExists = codeSystem.Concepts.Any(c => 
-                    c.Code != null && c.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
-
-                if (!conceptExists)
+                result.AddError(rule.ErrorCode ?? "INVALID_CODE", rule.Path,
+                    $"{rule.Message ?? $"Invalid code in CodeSystem '{rule.System}'"} | Code: '{code}' | Available codes: [{availableCodes}]", scope, rule);
+            }
+            else
+            {
+                logger?.Verbose($"      ✓ Code '{code}' is valid");
+                
+                // Validate display if present in both the coding and the concept
+                if (!string.IsNullOrEmpty(display) && !string.IsNullOrEmpty(matchingConcept.Display))
                 {
-                    logger?.Verbose($"      ✗ Code '{code}' not found in CodeSystem '{rule.System}'");
-                    var availableCodes = string.Join(", ", codeSystem.Concepts.Select(c => $"'{c.Code}'").Take(10));
-                    if (codeSystem.Concepts.Count > 10)
+                    if (!display.Equals(matchingConcept.Display, StringComparison.Ordinal))
                     {
-                        availableCodes += $" (and {codeSystem.Concepts.Count - 10} more)";
+                        logger?.Verbose($"      ✗ Display mismatch: expected '{matchingConcept.Display}', got '{display}'");
+                        result.AddError(rule.ErrorCode ?? "INVALID_DISPLAY", rule.Path,
+                            $"{rule.Message ?? $"Invalid display for code '{code}' in CodeSystem '{rule.System}'"} | Expected: '{matchingConcept.Display}' | Actual: '{display}'", scope, rule);
                     }
-                    result.AddError(rule.ErrorCode ?? "INVALID_CODE", rule.Path,
-                        $"{rule.Message ?? $"Invalid code in CodeSystem '{rule.System}'"} | Code: '{code}' | Available codes: [{availableCodes}]", scope, rule);
+                    else
+                    {
+                        logger?.Verbose($"      ✓ Display '{display}' is valid");
+                    }
                 }
-                else
+                else if (!string.IsNullOrEmpty(display) && string.IsNullOrEmpty(matchingConcept.Display))
                 {
-                    logger?.Verbose($"      ✓ Code '{code}' is valid");
+                    logger?.Verbose($"      ⊘ Display validation skipped - no expected display in metadata");
+                }
+                else if (string.IsNullOrEmpty(display) && !string.IsNullOrEmpty(matchingConcept.Display))
+                {
+                    logger?.Verbose($"      ⊘ Display validation skipped - no display provided in coding");
                 }
             }
         }
