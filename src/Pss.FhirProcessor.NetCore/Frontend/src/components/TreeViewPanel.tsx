@@ -611,7 +611,7 @@ export default function TreeViewPanel({ fhirJson, setFhirJson, scrollTargetRef, 
         `}</style>
         <Tree
           ref={treeRef}
-          showIcon
+          showIcon={false}
           showLine
           expandedKeys={expandedKeys}
           selectedKeys={selectedKeys}
