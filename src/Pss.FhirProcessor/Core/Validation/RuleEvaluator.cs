@@ -63,6 +63,10 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     EvaluateCodeSystem(resource, rule, scope, codesMaster, result, logger);
                     break;
 
+                case "ArrayLength":
+                    EvaluateArrayLength(resource, rule, scope, result, logger);
+                    break;
+
                 default:
                     logger?.Warn($"    Unknown rule type: {rule.RuleType}");
                     break;
@@ -1014,6 +1018,113 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 else if (string.IsNullOrEmpty(display) && !string.IsNullOrEmpty(matchingConcept.Display))
                 {
                     logger?.Verbose($"      ⊘ Display validation skipped - no display provided in coding");
+                }
+            }
+        }
+
+        /// <summary>
+        /// ArrayLength rule: Validates array length and optionally element constraints
+        /// Supports Min/Max length constraints and NonEmptyForStrings validation
+        /// </summary>
+        private static void EvaluateArrayLength(JObject resource, RuleDefinition rule, string scope,
+            ValidationResult result, Logger logger)
+        {
+            logger?.Verbose($"      → Evaluating ArrayLength rule: path='{rule.Path}', Min={rule.Min}, Max={rule.Max}, ElementType='{rule.ElementType}', NonEmptyForStrings={rule.NonEmptyForStrings}");
+
+            if (string.IsNullOrEmpty(rule.Path))
+            {
+                logger?.Verbose($"      ✗ Path is null or empty");
+                return;
+            }
+
+            // Resolve the path to get matching tokens
+            var tokens = CpsPathResolver.Resolve(resource, rule.Path);
+            
+            if (tokens == null || tokens.Count == 0)
+            {
+                logger?.Verbose($"      ⊘ Path not found or no values");
+                return;
+            }
+
+            // Evaluate each resolved token (could be multiple matches with wildcards)
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                var token = tokens[i];
+                var pathSuffix = tokens.Count > 1 ? $" [index {i}]" : "";
+
+                if (token == null || token.Type == JTokenType.Null)
+                {
+                    logger?.Verbose($"      ⊘ Token{pathSuffix} is null");
+                    continue;
+                }
+
+                // Check if token is an array
+                if (token.Type != JTokenType.Array)
+                {
+                    logger?.Verbose($"      ✗ Token{pathSuffix} is not an array (type: {token.Type})");
+                    result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", rule.Path,
+                        $"{rule.Message ?? $"Expected array at path '{rule.Path}'"}{pathSuffix} | Type: {token.Type}", scope, rule);
+                    continue;
+                }
+
+                var array = (JArray)token;
+                var arrayLength = array.Count;
+                logger?.Verbose($"      → Array{pathSuffix} length: {arrayLength}");
+
+                // Check Min constraint
+                if (rule.Min.HasValue && arrayLength < rule.Min.Value)
+                {
+                    logger?.Verbose($"      ✗ Array length {arrayLength} is less than minimum {rule.Min.Value}");
+                    result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", rule.Path,
+                        $"{rule.Message ?? $"Array length at '{rule.Path}' must be at least {rule.Min.Value}"}{pathSuffix} | Actual: {arrayLength}", scope, rule);
+                    continue; // Skip further checks for this array
+                }
+
+                // Check Max constraint
+                if (rule.Max.HasValue && arrayLength > rule.Max.Value)
+                {
+                    logger?.Verbose($"      ✗ Array length {arrayLength} exceeds maximum {rule.Max.Value}");
+                    result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", rule.Path,
+                        $"{rule.Message ?? $"Array length at '{rule.Path}' must be at most {rule.Max.Value}"}{pathSuffix} | Actual: {arrayLength}", scope, rule);
+                    continue; // Skip further checks for this array
+                }
+
+                logger?.Verbose($"      ✓ Array length {arrayLength} is within bounds (Min={rule.Min}, Max={rule.Max})");
+
+                // Check NonEmptyForStrings constraint if ElementType is string
+                if (rule.ElementType == "string" && rule.NonEmptyForStrings == true)
+                {
+                    logger?.Verbose($"      → Checking for non-empty strings");
+                    for (int j = 0; j < array.Count; j++)
+                    {
+                        var element = array[j];
+                        if (element == null || element.Type == JTokenType.Null)
+                        {
+                            logger?.Verbose($"      ✗ Element[{j}] is null");
+                            result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", rule.Path,
+                                $"{rule.Message ?? $"Array at '{rule.Path}' must contain non-empty strings"}{pathSuffix} | Element[{j}] is null", scope, rule);
+                        }
+                        else if (element.Type == JTokenType.String)
+                        {
+                            var strValue = element.ToString();
+                            if (string.IsNullOrWhiteSpace(strValue))
+                            {
+                                logger?.Verbose($"      ✗ Element[{j}] is empty or whitespace");
+                                result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", rule.Path,
+                                    $"{rule.Message ?? $"Array at '{rule.Path}' must contain non-empty strings"}{pathSuffix} | Element[{j}] is empty", scope, rule);
+                            }
+                            else
+                            {
+                                logger?.Verbose($"      ✓ Element[{j}] is non-empty string");
+                            }
+                        }
+                        else
+                        {
+                            logger?.Verbose($"      ✗ Element[{j}] is not a string (type: {element.Type})");
+                            result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", rule.Path,
+                                $"{rule.Message ?? $"Array at '{rule.Path}' must contain strings"}{pathSuffix} | Element[{j}] type: {element.Type}", scope, rule);
+                        }
+                    }
                 }
             }
         }

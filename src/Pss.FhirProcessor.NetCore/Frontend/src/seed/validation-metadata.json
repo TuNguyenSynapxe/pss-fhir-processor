@@ -39,27 +39,6 @@
           "Path": "Bundle.entry[Organization]",
           "ErrorCode": "MISSING_ORGANIZATION",
           "Message": "Bundle must contain at least one Organization resource."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Bundle.entry[Observation:HS]",
-          "ErrorCode": "MISSING_SCREENING_TYPE",
-          "Message": "Bundle must contain a Hearing Screening (HS) Observation."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Bundle.entry[Observation:OS]",
-          "ErrorCode": "MISSING_SCREENING_TYPE",
-          "Message": "Bundle must contain an Oral Screening (OS) Observation."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Bundle.entry[Observation:VS]",
-          "ErrorCode": "MISSING_SCREENING_TYPE",
-          "Message": "Bundle must contain a Vision Screening (VS) Observation."
         }
       ]
     },
@@ -147,11 +126,15 @@
           "Message": "Patient.birthDate must be YYYY-MM-DD."
         },
         {
-          "RuleType": "Required",
+          "RuleType": "ArrayLength",
           "PathType": "CPS1",
           "Path": "Patient.address[*].line",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "At least one address line is mandatory."
+          "Min": 4,
+          "Max": 5,
+          "ElementType": "string",
+          "NonEmptyForStrings": false,
+          "ErrorCode": "ARRAY_LENGTH_INVALID",
+          "Message": "Patient.address[*].line must contain 4 to 5 address lines."
         },
         {
           "RuleType": "Required",
@@ -664,26 +647,12 @@
           "Message": "GRC code must be a valid value from the grc CodeSystem."
         },
         {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].system",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Constituency coding system is mandatory."
-        },
-        {
           "RuleType": "FixedValue",
           "PathType": "CPS1",
           "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].system",
           "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/constituency",
           "ErrorCode": "FIXED_VALUE_MISMATCH",
           "Message": "Constituency must use the PSS constituency CodeSystem."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].code",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Constituency code is mandatory."
         },
         {
           "RuleType": "CodeSystem",
@@ -832,50 +801,11 @@
           "Message": "Observation screening-type code is mandatory."
         },
         {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.component[*]",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "At least one Observation.component is required."
-        },
-        {
           "RuleType": "CodesMaster",
           "PathType": "CPS1",
           "Path": "Observation.component[*]",
           "ErrorCode": "INVALID_ANSWER_VALUE",
           "Message": "Observation components must use valid question codes, displays, and allowed answers."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Observation.component[QuestionCode:SQ-F7B7-00000007].valueString",
-          "ExpectedType": "pipestring[]",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Pure Tone 25dBHL (Left) must be a pipe-separated list of values."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Observation.component[QuestionCode:SQ-B7P7-00000008].valueString",
-          "ExpectedType": "pipestring[]",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Pure Tone 25dBHL (Right) must be a pipe-separated list of values."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Observation.component[QuestionCode:SQ-C1M5-00000009].valueString",
-          "ExpectedType": "pipestring[]",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Pure Tone 40dBHL (Left) must be a pipe-separated list of values."
-        },
-        {
-          "RuleType": "Type",
-          "PathType": "CPS1",
-          "Path": "Observation.component[QuestionCode:SQ-C2S1-00000010].valueString",
-          "ExpectedType": "pipestring[]",
-          "ErrorCode": "TYPE_MISMATCH",
-          "Message": "Pure Tone 40dBHL (Right) must be a pipe-separated list of values."
         },
         {
           "RuleType": "Required",

@@ -420,6 +420,10 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 TargetTypes = rule.TargetTypes,         // Reference validation
                 AllowedValues = rule.AllowedValues,     // AllowedValues validation
                 System = rule.System,                   // CodeSystem validation
+                Min = rule.Min,                         // ArrayLength validation
+                Max = rule.Max,                         // ArrayLength validation
+                ElementType = rule.ElementType,         // ArrayLength validation
+                NonEmptyForStrings = rule.NonEmptyForStrings,  // ArrayLength validation
                 ErrorCode = rule.ErrorCode,
                 Message = rule.Message
             };

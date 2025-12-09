@@ -228,6 +228,9 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Generator
                 case "CodesMaster":
                     return GenerateCodesMasterMutation(ruleName, ruleSet, rule);
 
+                case "ArrayLength":
+                    return GenerateArrayLengthMutation(ruleName, ruleSet, rule);
+
                 default:
                     // Unknown rule type - skip but log
                     Console.WriteLine($"WARNING: Unknown RuleType '{rule.RuleType}' in {ruleSet.Scope}");
@@ -730,6 +733,110 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Generator
                 .Replace(":", "_")
                 .Replace(" ", "")
                 .Replace("-", "_");
+        }
+
+        /// <summary>
+        /// Generate mutation for ArrayLength rule: Violate Min/Max or NonEmptyForStrings constraints
+        /// Strategy: If Min is set, remove elements to go below Min. If Max is set and no Min, add elements to exceed Max.
+        /// If NonEmptyForStrings is true, replace first element with empty string.
+        /// </summary>
+        private static MutationTemplate GenerateArrayLengthMutation(
+            string name,
+            RuleSet ruleSet,
+            RuleDefinition rule)
+        {
+            return new MutationTemplate
+            {
+                Name = name,
+                Apply = bundle =>
+                {
+                    var clone = (JObject)bundle.DeepClone();
+                    
+                    // Resolve the resource and array based on scope
+                    List<JToken> arrayTokens;
+                    if (ruleSet.Scope.StartsWith("Bundle."))
+                    {
+                        // Bundle-level operation
+                        arrayTokens = CpsPathNavigator.SelectTokens(clone, rule.Path);
+                    }
+                    else
+                    {
+                        // Resource-level operation - find the resource first
+                        var resourceType = ruleSet.ScopeDefinition?.ResourceType ?? ruleSet.Scope.Split('.')[0];
+                        var entries = clone["entry"] as JArray;
+                        if (entries == null)
+                        {
+                            throw new MutationFailedException($"ArrayLength mutation failed: No entries found in bundle");
+                        }
+                        
+                        var targetEntry = entries.FirstOrDefault(e => 
+                            e["resource"]?["resourceType"]?.ToString() == resourceType);
+                        
+                        if (targetEntry == null)
+                        {
+                            throw new MutationFailedException($"ArrayLength mutation failed: No {resourceType} resource found");
+                        }
+                        
+                        var resource = targetEntry["resource"] as JObject;
+                        arrayTokens = CpsPathNavigator.SelectTokens(resource, rule.Path);
+                    }
+                    
+                    if (arrayTokens == null || arrayTokens.Count == 0)
+                    {
+                        throw new MutationFailedException($"ArrayLength mutation failed: Path '{rule.Path}' does not resolve to any tokens");
+                    }
+                    
+                    // Work with the first matching array token
+                    var arrayToken = arrayTokens[0];
+                    
+                    if (arrayToken.Type != JTokenType.Array)
+                    {
+                        throw new MutationFailedException($"ArrayLength mutation failed: Path '{rule.Path}' does not resolve to an array");
+                    }
+                    
+                    var array = (JArray)arrayToken;
+                    
+                    // Strategy 1: NonEmptyForStrings constraint - replace first element with empty string
+                    if (rule.ElementType == "string" && rule.NonEmptyForStrings == true && array.Count > 0)
+                    {
+                        array[0] = "";
+                        return clone;
+                    }
+                    
+                    // Strategy 2: Min constraint - remove elements to go below Min
+                    if (rule.Min.HasValue && array.Count >= rule.Min.Value)
+                    {
+                        // Remove elements until we're below Min (remove Min elements, leaving Count - Min)
+                        var elementsToRemove = array.Count - rule.Min.Value + 1;
+                        if (elementsToRemove > 0)
+                        {
+                            for (int i = 0; i < elementsToRemove && array.Count > 0; i++)
+                            {
+                                array.RemoveAt(array.Count - 1);
+                            }
+                            return clone;
+                        }
+                    }
+                    
+                    // Strategy 3: Max constraint - add elements to exceed Max
+                    if (rule.Max.HasValue && array.Count <= rule.Max.Value)
+                    {
+                        // Add elements until we exceed Max
+                        var elementsToAdd = rule.Max.Value - array.Count + 1;
+                        var templateElement = array.Count > 0 ? array[0].DeepClone() : JToken.Parse("\"EXTRA_ELEMENT\"");
+                        
+                        for (int i = 0; i < elementsToAdd; i++)
+                        {
+                            array.Add(templateElement.DeepClone());
+                        }
+                        return clone;
+                    }
+                    
+                    // If no constraints can be violated, throw
+                    throw new MutationFailedException($"ArrayLength mutation failed: Cannot violate constraints for rule (Min={rule.Min}, Max={rule.Max}, NonEmptyForStrings={rule.NonEmptyForStrings})");
+                },
+                ExpectedErrorCodes = new List<string> { rule.ErrorCode ?? "ARRAY_LENGTH_INVALID" }
+            };
         }
 
         #endregion
