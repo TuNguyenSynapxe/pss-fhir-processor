@@ -9,14 +9,17 @@ import {
   resolvePathSegments,
   findFirstMissingSegment,
   buildPathString,
+  buildEnhancedPathSegments, // NEW: Phase 1
   PathSegment,
   PathStatus,
   SegmentStatus,
+  EnhancedPathSegment, // NEW: Phase 1
 } from './pathParser';
 import {
   getErrorTemplate,
   generateFixInstructions,
   FixInstructions,
+  FixStep,
   ErrorCodeTemplate,
 } from './helperTemplates';
 import { buildJsonSnippet, buildCompleteExample, formatJsonSnippet } from './snippetBuilder';
@@ -62,8 +65,9 @@ export interface HelperMessage {
   expected: ExpectedInfo;
   howToFix: FixInstructions;
   exampleSnippet: string;
-  pathBreakdown: SegmentStatus[]; // Changed from PathStatus[] to SegmentStatus[] for detailed analysis
+  pathBreakdown: SegmentStatus[]; // LEGACY: Changed from PathStatus[] to SegmentStatus[]
   completeExample?: string;
+  enhancedSegments?: EnhancedPathSegment[]; // NEW: Phase 1 - Rich metadata for SmartPathNavigator
 }
 
 export interface LocationInfo {
@@ -88,15 +92,35 @@ export interface ExpectedInfo {
 export function generateHelper(error: ValidationError, jsonTree: any): HelperMessage {
   // Parse the field path
   const segments = parseFieldPath(error.fieldPath);
-
-  // Resolve path segments with detailed status tracking
+  
+  // Navigate to resource
+  const resource = navigateToResource(error, jsonTree);
+  
+  // CRITICAL FIX: Strip entry[X].resource prefix from segments when navigating from resource context
+  // If we navigated to a resource (not root), we need to skip the Bundle-level segments
+  let resourceSegments = segments;
+  if (error.resourcePointer?.entryIndex !== undefined && jsonTree?.resourceType === 'Bundle') {
+    // Skip 'entry[X]' and 'resource' segments (first 2 segments)
+    resourceSegments = segments.slice(2);
+  }
+  
+  // Resolve path segments with detailed status tracking (LEGACY)
   const { statuses: segmentStatuses, firstNonExistingIndex } = resolvePathSegments(
-    navigateToResource(error, jsonTree),
-    segments
+    resource,
+    resourceSegments
   );
 
+  // NEW: Phase 1 - Build enhanced segments with rich metadata
+  // Safe basePath generation: only use entry[X].resource if jsonTree is actually a Bundle
+  const basePath = 
+    error.resourcePointer?.entryIndex !== undefined && 
+    jsonTree?.resourceType === 'Bundle'
+      ? `entry[${error.resourcePointer.entryIndex}].resource`
+      : '';
+  const enhancedSegments = buildEnhancedPathSegments(resource, resourceSegments, basePath);
+
   // Generate location info
-  const location = generateLocationInfo(error, segments);
+  const location = generateLocationInfo(error, resourceSegments);
 
   // Generate expected info
   const expected = generateExpectedInfo(error);
@@ -109,8 +133,22 @@ export function generateHelper(error: ValidationError, jsonTree: any): HelperMes
     error.rule?.allowedValues
   );
 
+  // NEW: Map targetPath to segmentKey for hover synchronization
+  // Build jumpKey lookup map from enhancedSegments
+  const jumpKeyMap = new Map<string, string>();
+  enhancedSegments.forEach(seg => {
+    jumpKeyMap.set(seg.raw, seg.jumpKey);
+  });
+
+  // Enrich fix steps with segmentKey where targetPath is available
+  howToFix.steps.forEach((step: FixStep) => {
+    if (step.targetPath && jumpKeyMap.has(step.targetPath)) {
+      step.segmentKey = jumpKeyMap.get(step.targetPath);
+    }
+  });
+
   // Build example snippet
-  const snippet = buildJsonSnippet(segments, firstNonExistingIndex, {
+  const snippet = buildJsonSnippet(resourceSegments, firstNonExistingIndex, {
     expectedValue: error.rule?.expectedValue,
     allowedValues: error.rule?.allowedValues,
     expectedType: error.rule?.expectedType,
@@ -130,8 +168,9 @@ export function generateHelper(error: ValidationError, jsonTree: any): HelperMes
     expected,
     howToFix,
     exampleSnippet: formatJsonSnippet(snippet || {}),
-    pathBreakdown: segmentStatuses,
+    pathBreakdown: segmentStatuses, // LEGACY: Keep for backward compatibility
     completeExample: completeExample ? formatJsonSnippet(completeExample) : undefined,
+    enhancedSegments, // NEW: Phase 1 - Rich metadata for future use
   };
 }
 

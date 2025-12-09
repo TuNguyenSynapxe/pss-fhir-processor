@@ -3,8 +3,8 @@
  * Displays comprehensive, contextual help for validation errors
  */
 
-import React, { useMemo } from 'react';
-import { Collapse, Typography, Button, Space, Table, Tag, message } from 'antd';
+import React, { useMemo, useState } from 'react';
+import { Collapse, Typography, Button, Space, Table, Tag, message, Alert } from 'antd';
 import {
   InfoCircleOutlined,
   EnvironmentOutlined,
@@ -15,6 +15,7 @@ import {
 } from '@ant-design/icons';
 import { generateHelper, ValidationError, HelperMessage } from '../utils/helperGenerator';
 import { SegmentStatus } from '../utils/pathParser';
+import { SmartPathNavigator } from './SmartPathNavigator'; // NEW: Phase 2 Integration
 
 const { Panel } = Collapse;
 const { Title, Text, Paragraph } = Typography;
@@ -35,16 +36,51 @@ export const ErrorHelperPanel: React.FC<ErrorHelperPanelProps> = ({
     return generateHelper(error, json);
   }, [error, json]);
 
+  // NEW: Highlight state for synchronized hover between SmartPathNavigator and fix instructions
+  const [highlightSegment, setHighlightSegment] = useState<string | null>(null);
+
   // Copy to clipboard handler
   const handleCopySnippet = (text: string) => {
     navigator.clipboard.writeText(text);
     message.success('Copied to clipboard!');
   };
 
-  // Jump to location handler
+  // Jump to location handler (original - for legacy button)
   const handleJumpToLocation = () => {
     if (onJumpToLocation) {
+      console.log('Jumping to location:', helper.location);
       onJumpToLocation(helper.location.entryIndex, helper.location.fullPath);
+    }
+  };
+
+  // Handle navigation to entry node (Bundle.entry[X])
+  const handleJumpToEntry = () => {
+    if (onJumpToLocation && helper.location.entryIndex !== undefined) {
+      const entryPath = `entry[${helper.location.entryIndex}]`;
+      console.log('Jumping to entry:', entryPath);
+      onJumpToLocation(helper.location.entryIndex, entryPath);
+    }
+  };
+
+  // Handle navigation to resource node (Bundle.entry[X].resource)
+  const handleJumpToResource = () => {
+    if (onJumpToLocation && helper.location.entryIndex !== undefined) {
+      const resourcePath = `entry[${helper.location.entryIndex}].resource`;
+      console.log('Jumping to resource:', resourcePath);
+      onJumpToLocation(helper.location.entryIndex, resourcePath);
+    }
+  };
+
+  // NEW: Phase 2 - Jump handler for SmartPathNavigator segments
+  const handleNavigateToSegment = (jumpKey: string) => {
+    if (onJumpToLocation) {
+      console.log('Navigating to segment with jumpKey:', jumpKey);
+      // Extract path from jumpKey (remove basePath prefix if present)
+      // jumpKey format: "entry[X].resource.path.to.field" or "path.to.field"
+      const path = jumpKey.includes('.resource.')
+        ? jumpKey.split('.resource.')[1] || jumpKey
+        : jumpKey;
+      onJumpToLocation(helper.location.entryIndex, path);
     }
   };
 
@@ -95,45 +131,71 @@ export const ErrorHelperPanel: React.FC<ErrorHelperPanelProps> = ({
             {helper.location.entryIndex !== undefined && (
               <div>
                 <Text type="secondary">Entry Index: </Text>
-                <Tag color="blue">#{helper.location.entryIndex}</Tag>
+                <Tag 
+                  color="blue" 
+                  style={{ cursor: 'pointer' }}
+                  onClick={handleJumpToEntry}
+                  title="Click to jump to this entry in JSON viewer"
+                >
+                  #{helper.location.entryIndex}
+                </Tag>
               </div>
             )}
             
             {helper.location.resourceType && (
               <div>
                 <Text type="secondary">Resource Type: </Text>
-                <Tag color="green">{helper.location.resourceType}</Tag>
+                <Tag 
+                  color="green"
+                  style={{ cursor: 'pointer' }}
+                  onClick={handleJumpToResource}
+                  title="Click to jump to this resource in JSON viewer"
+                >
+                  {helper.location.resourceType}
+                </Tag>
               </div>
             )}
 
-            <div>
-              <Text type="secondary">Path Breadcrumb:</Text>
-              <div style={{ marginTop: 8 }}>
-                {helper.location.breadcrumb.map((crumb, idx) => (
-                  <React.Fragment key={idx}>
-                    <Tag color="default">{crumb}</Tag>
-                    {idx < helper.location.breadcrumb.length - 1 && (
-                      <Text type="secondary"> → </Text>
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
+            {/* NEW: Phase 2 Integration - SmartPathNavigator replaces breadcrumb + path breakdown */}
+            {helper.enhancedSegments && helper.enhancedSegments.length > 0 ? (
+              <>
+                <SmartPathNavigator
+                  segments={helper.enhancedSegments}
+                  onSegmentClick={handleNavigateToSegment}
+                  defaultExpanded={true}
+                  title="Field Path"
+                  highlightSegment={highlightSegment}
+                  onSegmentHover={setHighlightSegment}
+                />
+                
+                {/* Full path for reference */}
+                <div style={{ marginTop: 8 }}>
+                  <Text type="secondary">Full Path: </Text>
+                  <Text code>{helper.location.fullPath}</Text>
+                </div>
+              </>
+            ) : (
+              /* FALLBACK: Legacy breadcrumb if enhancedSegments not available */
+              <>
+                <div>
+                  <Text type="secondary">Path Breadcrumb:</Text>
+                  <div style={{ marginTop: 8 }}>
+                    {helper.location.breadcrumb.map((crumb, idx) => (
+                      <React.Fragment key={idx}>
+                        <Tag color="default">{crumb}</Tag>
+                        {idx < helper.location.breadcrumb.length - 1 && (
+                          <Text type="secondary"> → </Text>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
 
-            <div>
-              <Text type="secondary">Full Path: </Text>
-              <Text code>{helper.location.fullPath}</Text>
-            </div>
-
-            {onJumpToLocation && (
-              <Button
-                type="primary"
-                size="small"
-                icon={<EnvironmentOutlined />}
-                onClick={handleJumpToLocation}
-              >
-                Jump to Location in JSON Viewer
-              </Button>
+                <div>
+                  <Text type="secondary">Full Path: </Text>
+                  <Text code>{helper.location.fullPath}</Text>
+                </div>
+              </>
             )}
           </Space>
         </Panel>
@@ -230,37 +292,47 @@ export const ErrorHelperPanel: React.FC<ErrorHelperPanelProps> = ({
 
             <ol style={{ marginLeft: 16, marginBottom: 0 }}>
               {helper.howToFix.steps.map((step, idx) => (
-                <li key={idx} style={{ marginBottom: 8 }}>
-                  <Text>{step}</Text>
+                <li 
+                  key={idx} 
+                  style={{ 
+                    marginBottom: 8,
+                    cursor: 'default',
+                    padding: '4px 0',
+                    transition: 'background 0.2s ease',
+                  }}
+                  onMouseEnter={() => {
+                    // Highlight corresponding segment if segmentKey is available
+                    setHighlightSegment(step.segmentKey || null);
+                  }}
+                  onMouseLeave={() => setHighlightSegment(null)}
+                >
+                  <Text>{step.text}</Text>
                 </li>
               ))}
             </ol>
           </Space>
         </Panel>
 
-        {/* 5. Path Breakdown */}
-        <Panel
-          header={
-            <Space>
-              <Text strong>Path Breakdown (✓ = exists, ✗ = missing)</Text>
-            </Space>
-          }
-          key="5"
-        >
-          <PathBreakdownView pathStatuses={helper.pathBreakdown} />
-        </Panel>
-
-        {/* 6. Example JSON Snippet */}
+        {/* 5. Example JSON Snippet - Panel renumbered (Path Breakdown removed) */}
+        {/* TODO: Next Release - Implement accurate example generation based on validation context */}
         <Panel
           header={
             <Space>
               <CopyOutlined style={{ color: '#13c2c2' }} />
               <Text strong>Example JSON Snippet</Text>
+              <Tag color="orange">Placeholder</Tag>
             </Space>
           }
-          key="6"
+          key="5"
         >
           <Space direction="vertical" style={{ width: '100%' }}>
+            <Alert
+              message="Placeholder Data"
+              description="This example snippet is not yet context-aware. Accurate examples based on validation rules will be implemented in the next release."
+              type="warning"
+              showIcon
+              style={{ marginBottom: 12 }}
+            />
             <Text type="secondary">
               Copy this snippet and insert it at the correct location in your JSON:
             </Text>
@@ -321,8 +393,11 @@ export const ErrorHelperPanel: React.FC<ErrorHelperPanelProps> = ({
 };
 
 /**
- * Path Breakdown Visual Component
+ * LEGACY: Path Breakdown Visual Component
+ * Kept for backward compatibility / fallback scenarios
+ * Now replaced by SmartPathNavigator in Phase 2 integration
  */
+/*
 interface PathBreakdownViewProps {
   pathStatuses: SegmentStatus[];
 }
@@ -399,9 +474,10 @@ const PathBreakdownView: React.FC<PathBreakdownViewProps> = ({ pathStatuses }) =
             )}
           </div>
         );
-      })}
+      ))}
     </div>
   );
 };
+*/
 
 export default ErrorHelperPanel;

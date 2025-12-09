@@ -146,8 +146,10 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ Path found but all values are empty or null");
                 var actualValues = string.Join(", ", values.Select(v => $"'{v}'"));
-                var detailedMessage = $"{rule.Message} | Path '{rule.Path}' found but value is empty or null. Actual values: [{actualValues}]";
-                result.AddError(rule.ErrorCode ?? "MANDATORY_MISSING", rule.Path, detailedMessage, scope, rule);
+                // Use first value's path if available, otherwise use rule.Path
+                var errorPath = values.Count > 0 && values[0] != null ? values[0].Path : rule.Path;
+                var detailedMessage = $"{rule.Message} | Path '{errorPath}' found but value is empty or null. Actual values: [{actualValues}]";
+                result.AddError(rule.ErrorCode ?? "MANDATORY_MISSING", errorPath, detailedMessage, scope, rule);
             }
             else
             {
@@ -201,9 +203,11 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             {
                 logger?.Verbose($"      ✗ No matching value found");
                 var actualValues = string.Join(", ", values.Select(v => $"'{v}'"));
-                var detailedMessage = (rule.Message ?? $"Value mismatch at path '{rule.Path}'") + 
+                // Use first value's path if available, otherwise use rule.Path
+                var errorPath = values.Count > 0 && values[0] != null ? values[0].Path : rule.Path;
+                var detailedMessage = (rule.Message ?? $"Value mismatch at path '{errorPath}'") + 
                     $" | Expected: '{rule.ExpectedValue}', Actual: [{actualValues}]";
-                result.AddError(rule.ErrorCode, rule.Path, detailedMessage, scope, rule);
+                result.AddError(rule.ErrorCode, errorPath, detailedMessage, scope, rule);
             }
             else
             {
@@ -319,10 +323,11 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 if (!rule.AllowedValues.Contains(actualValue))
                 {
                     logger?.Verbose($"      ✗ Value not in allowed list");
+                    var actualPath = value?.Path ?? rule.Path;
                     var allowedValuesStr = string.Join(", ", rule.AllowedValues.Select(v => $"'{v}'"));
-                    var detailedMessage = (rule.Message ?? $"Value not in allowed values at path '{rule.Path}'") + 
+                    var detailedMessage = (rule.Message ?? $"Value not in allowed values at path '{actualPath}'") + 
                         $" | Actual: '{actualValue}' | Allowed values: [{allowedValuesStr}]";
-                    result.AddError(rule.ErrorCode ?? "INVALID_VALUE", rule.Path, detailedMessage, scope, rule);
+                    result.AddError(rule.ErrorCode ?? "INVALID_VALUE", actualPath, detailedMessage, scope, rule);
                     return; // Stop at first invalid value
                 }
                 else
@@ -454,6 +459,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 // Extract question code from code.coding array - find the first non-empty code
                 var codingArray = componentObj.SelectToken("code.coding") as JArray;
                 string questionCode = null;
+                string questionSystem = null;
                 int codingIndex = -1;
                 
                 if (codingArray != null)
@@ -462,9 +468,11 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     {
                         var coding = codingArray[i] as JObject;
                         var code = CpsPathResolver.GetValueAsString(coding, "code");
+                        var system = CpsPathResolver.GetValueAsString(coding, "system");
                         if (!string.IsNullOrEmpty(code))
                         {
                             questionCode = code;
+                            questionSystem = system;
                             codingIndex = i;
                             break;
                         }
@@ -479,7 +487,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     continue;
                 }
 
-                logger?.Verbose($"      Component #{componentIndex}: Question '{questionCode}' (coding[{codingIndex}])");
+                logger?.Verbose($"      Component #{componentIndex}: Question '{questionCode}' (coding[{codingIndex}]), System: '{questionSystem ?? "(missing)"}'");
 
                 // Find question in CodesMaster
                 var question = codesMaster.Questions.FirstOrDefault(q => q.QuestionCode == questionCode);
@@ -491,6 +499,24 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     result.AddError(rule.ErrorCode, $"component[{componentIndex - 1}].code.coding[{codingIndex}].code", 
                         $"Unknown question code '{questionCode}'", scope);
                     continue;
+                }
+
+                // CRITICAL: Validate that coding.system matches the expected system from CodesMaster
+                if (string.IsNullOrEmpty(questionSystem))
+                {
+                    logger?.Verbose($"        ✗ System is missing in coding");
+                    result.AddError(rule.ErrorCode ?? "INVALID_SYSTEM", $"component[{componentIndex - 1}].code.coding[{codingIndex}].system",
+                        $"Coding.system is required | Expected system: '{codesMaster.System ?? "(not configured)"}' | Actual: (missing)", scope);
+                }
+                else if (!string.IsNullOrEmpty(codesMaster.System) && questionSystem != codesMaster.System)
+                {
+                    logger?.Verbose($"        ✗ System mismatch - Expected: '{codesMaster.System}', Actual: '{questionSystem}'");
+                    result.AddError(rule.ErrorCode ?? "INVALID_SYSTEM", $"component[{componentIndex - 1}].code.coding[{codingIndex}].system",
+                        $"Coding.system mismatch | Expected system: '{codesMaster.System}' | Actual system: '{questionSystem}'", scope);
+                }
+                else
+                {
+                    logger?.Verbose($"        ✓ System matches: '{questionSystem}'");
                 }
 
                 logger?.Verbose($"        Expected display: '{question.QuestionDisplay}'");
@@ -722,12 +748,16 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
             // Parse reference: "ResourceType/id" or "urn:uuid:guid"
             string referencedResourceType = null;
             string referencedId = null;
+            bool isUrnReference = false;
 
             if (refValue.StartsWith("urn:uuid:"))
             {
                 // Format: urn:uuid:12345678-1234-1234-1234-123456789abc
+                // This should match entry.fullUrl exactly
                 referencedId = refValue;
+                isUrnReference = true;
                 logger?.Verbose($"      → URN UUID format detected: {referencedId}");
+                logger?.Verbose($"      → Will match against entry.fullUrl");
             }
             else if (refValue.Contains("/"))
             {
@@ -738,6 +768,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     referencedResourceType = parts[0];
                     referencedId = parts[1];
                     logger?.Verbose($"      → FHIR reference format: Type={referencedResourceType}, Id={referencedId}");
+                    logger?.Verbose($"      → Will match against entry.resource.resourceType and entry.resource.id");
                 }
                 else
                 {
@@ -786,20 +817,29 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 var resourceId = entryResource["id"]?.ToString();
                 var fullUrl = entry["fullUrl"]?.ToString();
 
-                if (resourceType == null || (resourceId == null && fullUrl == null)) continue;
+                if (resourceType == null) continue;
 
                 // Check if this is the referenced resource
                 bool isMatch = false;
 
-                if (referencedId.StartsWith("urn:uuid:"))
+                if (isUrnReference)
                 {
-                    // Match by fullUrl (urn:uuid format)
-                    isMatch = fullUrl == referencedId || $"urn:uuid:{resourceId}" == referencedId;
+                    // For urn:uuid references, match against entry.fullUrl
+                    // The reference value should match fullUrl exactly
+                    if (fullUrl == referencedId)
+                    {
+                        isMatch = true;
+                        logger?.Verbose($"      → Matched by fullUrl: {fullUrl}");
+                    }
                 }
                 else
                 {
-                    // Match by resourceType/id
-                    isMatch = resourceType == referencedResourceType && resourceId == referencedId;
+                    // For ResourceType/id references, match by resourceType and resource.id
+                    if (resourceType == referencedResourceType && resourceId == referencedId)
+                    {
+                        isMatch = true;
+                        logger?.Verbose($"      → Matched by resourceType/id: {resourceType}/{resourceId}");
+                    }
                 }
 
                 if (isMatch)
@@ -807,7 +847,15 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                     foundResource = true;
                     foundResourceType = resourceType;
                     foundResourceId = resourceId;
-                    logger?.Verbose($"      → Found resource: {resourceType}/{resourceId}");
+                    
+                    if (isUrnReference)
+                    {
+                        logger?.Verbose($"      ✓ Found resource by fullUrl: {fullUrl}");
+                    }
+                    else
+                    {
+                        logger?.Verbose($"      ✓ Found resource by resourceType/id: {resourceType}/{resourceId}");
+                    }
 
                     // Check if resource type is in allowed TargetTypes
                     if (!rule.TargetTypes.Contains(resourceType))
@@ -965,18 +1013,39 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         private static void ValidateCoding(JObject coding, RuleDefinition rule, string scope,
             CodesMasterCodeSystem codeSystem, ValidationResult result, Logger logger)
         {
-            var system = coding["system"]?.ToString();
-            var code = coding["code"]?.ToString();
-            var display = coding["display"]?.ToString();
+            var systemToken = coding["system"];
+            var codeToken = coding["code"];
+            var displayToken = coding["display"];
+            
+            var system = systemToken?.ToString();
+            var code = codeToken?.ToString();
+            var display = displayToken?.ToString();
+            
+            // Use the actual token path from the JObject, falling back to rule.Path
+            var codingPath = (coding as JToken)?.Path ?? rule.Path;
 
             logger?.Verbose($"      → Checking coding: system='{system}', code='{code}', display='{display}'");
 
-            // Skip if system doesn't match
-            if (system != rule.System)
+            // CRITICAL: Enforce correct system - report error if system doesn't match
+            if (string.IsNullOrEmpty(system))
             {
-                logger?.Verbose($"      ⊘ System doesn't match, skipping");
+                logger?.Verbose($"      ✗ System is missing");
+                var errorPath = systemToken?.Path ?? codingPath + ".system";
+                result.AddError(rule.ErrorCode ?? "INVALID_SYSTEM", errorPath,
+                    $"{rule.Message ?? $"Coding.system is required for CodeSystem '{rule.System}'"} | Expected system: '{rule.System}' | Actual: (missing)", scope, rule);
                 return;
             }
+            
+            if (system != rule.System)
+            {
+                logger?.Verbose($"      ✗ System mismatch - Expected: '{rule.System}', Actual: '{system}'");
+                var errorPath = systemToken?.Path ?? codingPath + ".system";
+                result.AddError(rule.ErrorCode ?? "INVALID_SYSTEM", errorPath,
+                    $"{rule.Message ?? $"Coding.system must match the configured CodeSystem"} | Expected system: '{rule.System}' | Actual system: '{system}'", scope, rule);
+                return;
+            }
+
+            logger?.Verbose($"      ✓ System matches: '{system}'");
 
             // Find the matching concept
             var matchingConcept = codeSystem.Concepts.FirstOrDefault(c => 
@@ -990,7 +1059,10 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 {
                     availableCodes += $" (and {codeSystem.Concepts.Count - 10} more)";
                 }
-                result.AddError(rule.ErrorCode ?? "INVALID_CODE", rule.Path,
+                
+                // Report the exact child field that's wrong (.code)
+                var errorPath = codeToken?.Path ?? codingPath + ".code";
+                result.AddError(rule.ErrorCode ?? "INVALID_CODE", errorPath,
                     $"{rule.Message ?? $"Invalid code in CodeSystem '{rule.System}'"} | Code: '{code}' | Available codes: [{availableCodes}]", scope, rule);
             }
             else
@@ -1062,8 +1134,9 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 if (token.Type != JTokenType.Array)
                 {
                     logger?.Verbose($"      ✗ Token{pathSuffix} is not an array (type: {token.Type})");
-                    result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", rule.Path,
-                        $"{rule.Message ?? $"Expected array at path '{rule.Path}'"}{pathSuffix} | Type: {token.Type}", scope, rule);
+                    var actualPath = token?.Path ?? rule.Path;
+                    result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", actualPath,
+                        $"{rule.Message ?? $"Expected array at path '{actualPath}'"}{pathSuffix} | Type: {token.Type}", scope, rule);
                     continue;
                 }
 
@@ -1075,8 +1148,9 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 if (rule.Min.HasValue && arrayLength < rule.Min.Value)
                 {
                     logger?.Verbose($"      ✗ Array length {arrayLength} is less than minimum {rule.Min.Value}");
-                    result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", rule.Path,
-                        $"{rule.Message ?? $"Array length at '{rule.Path}' must be at least {rule.Min.Value}"}{pathSuffix} | Actual: {arrayLength}", scope, rule);
+                    var actualPath = token?.Path ?? rule.Path;
+                    result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", actualPath,
+                        $"{rule.Message ?? $"Array length at '{actualPath}' must be at least {rule.Min.Value}"}{pathSuffix} | Actual: {arrayLength}", scope, rule);
                     continue; // Skip further checks for this array
                 }
 
@@ -1084,8 +1158,9 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 if (rule.Max.HasValue && arrayLength > rule.Max.Value)
                 {
                     logger?.Verbose($"      ✗ Array length {arrayLength} exceeds maximum {rule.Max.Value}");
-                    result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", rule.Path,
-                        $"{rule.Message ?? $"Array length at '{rule.Path}' must be at most {rule.Max.Value}"}{pathSuffix} | Actual: {arrayLength}", scope, rule);
+                    var actualPath = token?.Path ?? rule.Path;
+                    result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", actualPath,
+                        $"{rule.Message ?? $"Array length at '{actualPath}' must be at most {rule.Max.Value}"}{pathSuffix} | Actual: {arrayLength}", scope, rule);
                     continue; // Skip further checks for this array
                 }
 
@@ -1101,8 +1176,9 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                         if (element == null || element.Type == JTokenType.Null)
                         {
                             logger?.Verbose($"      ✗ Element[{j}] is null");
-                            result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", rule.Path,
-                                $"{rule.Message ?? $"Array at '{rule.Path}' must contain non-empty strings"}{pathSuffix} | Element[{j}] is null", scope, rule);
+                            var actualPath = token?.Path ?? rule.Path;
+                            result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", actualPath,
+                                $"{rule.Message ?? $"Array at '{actualPath}' must contain non-empty strings"}{pathSuffix} | Element[{j}] is null", scope, rule);
                         }
                         else if (element.Type == JTokenType.String)
                         {
@@ -1110,8 +1186,9 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                             if (string.IsNullOrWhiteSpace(strValue))
                             {
                                 logger?.Verbose($"      ✗ Element[{j}] is empty or whitespace");
-                                result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", rule.Path,
-                                    $"{rule.Message ?? $"Array at '{rule.Path}' must contain non-empty strings"}{pathSuffix} | Element[{j}] is empty", scope, rule);
+                                var actualPath = token?.Path ?? rule.Path;
+                                result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", actualPath,
+                                    $"{rule.Message ?? $"Array at '{actualPath}' must contain non-empty strings"}{pathSuffix} | Element[{j}] is empty", scope, rule);
                             }
                             else
                             {
@@ -1121,8 +1198,9 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                         else
                         {
                             logger?.Verbose($"      ✗ Element[{j}] is not a string (type: {element.Type})");
-                            result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", rule.Path,
-                                $"{rule.Message ?? $"Array at '{rule.Path}' must contain strings"}{pathSuffix} | Element[{j}] type: {element.Type}", scope, rule);
+                            var actualPath = token?.Path ?? rule.Path;
+                            result.AddError(rule.ErrorCode ?? "ARRAY_LENGTH_INVALID", actualPath,
+                                $"{rule.Message ?? $"Array at '{actualPath}' must contain strings"}{pathSuffix} | Element[{j}] type: {element.Type}", scope, rule);
                         }
                     }
                 }

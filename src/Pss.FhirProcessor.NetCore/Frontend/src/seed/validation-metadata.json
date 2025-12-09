@@ -39,6 +39,13 @@
           "Path": "Bundle.entry[Organization]",
           "ErrorCode": "MISSING_ORGANIZATION",
           "Message": "Bundle must contain at least one Organization resource."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
+          "Path": "Bundle.entry[Observation]",
+          "ErrorCode": "MISSING_OBSERVATION",
+          "Message": "Bundle must contain at least one Observation resource."
         }
       ]
     },
@@ -106,7 +113,7 @@
           "RuleType": "AllowedValues",
           "PathType": "CPS1",
           "Path": "Patient.gender",
-          "AllowedValues": ["male","female","other","unknown"],
+          "AllowedValues": ["male","female","unknown"],
           "ErrorCode": "FIXED_VALUE_MISMATCH",
           "Message": "Patient gender must be male, female, other, or unknown."
         },
@@ -142,6 +149,14 @@
           "Path": "Patient.address[*].postalCode",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Postal code is mandatory."
+        },
+        {
+          "RuleType": "Regex",
+          "PathType": "CPS1",
+          "Path": "Patient.address[*].postalCode",
+          "Pattern": "^\\d{6}$",
+          "ErrorCode": "REGEX_INVALID_POSTAL",
+          "Message": "Location.postalCode must be a 6-digit value."
         },
         {
           "RuleType": "Required",
@@ -532,32 +547,32 @@
         {
           "RuleType": "Required",
           "PathType": "CPS1",
-          "Path": "HealthcareService.category.coding.system",
+          "Path": "HealthcareService.category[*].coding.system",
           "ErrorCode": "MANDATORY_MISSING",
-          "Message": "HealthcareService.category.coding.system is mandatory."
+          "Message": "HealthcareService.category[*].coding.system is mandatory."
         },
         {
           "RuleType": "FixedValue",
           "PathType": "CPS1",
-          "Path": "HealthcareService.category.coding.system",
+          "Path": "HealthcareService.category[*].coding.system",
           "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/campaign-type",
           "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "HealthcareService.category.coding.system must be the campaign-type CodeSystem."
+          "Message": "HealthcareService.category[*].coding.system must be the campaign-type CodeSystem."
         },
         {
           "RuleType": "Required",
           "PathType": "CPS1",
-          "Path": "HealthcareService.category.coding.code",
+          "Path": "HealthcareService.category[*].coding.code",
           "ErrorCode": "MANDATORY_MISSING",
-          "Message": "HealthcareService.category.coding.code is mandatory."
+          "Message": "HealthcareService.category[*].coding.code is mandatory."
         },
         {
           "RuleType": "CodeSystem",
           "PathType": "CPS1",
-          "Path": "HealthcareService.category.coding",
+          "Path": "HealthcareService.category[*].coding",
           "System": "https://fhir.synapxe.sg/CodeSystem/campaign-type",
           "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "HealthcareService.category.coding.code must be a valid value from the campaign-type CodeSystem."
+          "Message": "HealthcareService.category[*].coding.code must be a valid value from the campaign-type CodeSystem."
         }
       ],
       "ScopeDefinition": {
@@ -593,13 +608,6 @@
           "Path": "Location.name",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Location name is mandatory."
-        },
-        {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Location.address.line",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Location address line is mandatory."
         },
         {
           "RuleType": "Required",
@@ -794,6 +802,13 @@
         {
           "RuleType": "Required",
           "PathType": "CPS1",
+          "Path": "Observation.component[*]",
+          "ErrorCode": "MANDATORY_MISSING",
+          "Message": "Observation.component must be present."
+        },
+        {
+          "RuleType": "Required",
+          "PathType": "CPS1",
           "Path": "Observation.subject.reference",
           "ErrorCode": "MANDATORY_MISSING",
           "Message": "Observation.subject.reference is mandatory."
@@ -826,13 +841,6 @@
           "Message": "Observation.encounter.reference must reference an Encounter."
         },
         {
-          "RuleType": "Required",
-          "PathType": "CPS1",
-          "Path": "Observation.performer[*].reference",
-          "ErrorCode": "MANDATORY_MISSING",
-          "Message": "Observation.performer.reference is mandatory."
-        },
-        {
           "RuleType": "Reference",
           "PathType": "CPS1",
           "Path": "Observation.performer[*].reference",
@@ -849,6 +857,7 @@
     }
   ],
   "CodesMaster": {
+    "System": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
     "Questions": [
       {
         "QuestionCode": "SQ-L2H9-00000001",
@@ -1398,11 +1407,11 @@
           },
           {
             "Code": "PR",
-            "Display": "Singapore PR"
+            "Display": "Singapore Permanent Resident"
           },
           {
             "Code": "Other",
-            "Display": "Other Public Assistance Scheme"
+            "Display": "Other Public Assistance Scheme (Public Assistance, ComCare, Medifund, Medical Fee Exemption Card)"
           }
         ]
       }

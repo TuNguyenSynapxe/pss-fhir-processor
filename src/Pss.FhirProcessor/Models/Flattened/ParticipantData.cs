@@ -36,9 +36,5 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Flattened
         
         // Consent
         public bool? ConsentForSharingData { get; set; }
-        
-        // Legacy (deprecated - kept for backward compatibility)
-        [System.Obsolete("Use structured address fields instead")]
-        public string Address { get; set; }
     }
 }

@@ -61,10 +61,21 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
         
         public void AddError(string code, string path, string message, string scope, RuleDefinition rule)
         {
+            // CRITICAL FIX: Prepend Bundle context to path when validating resource within a Bundle
+            // This ensures consistent full paths like "entry[0].resource.identifier[0].value"
+            // instead of relative paths like "identifier[0].value"
+            // BUT: Only prepend if path doesn't already have the entry prefix (avoid double-prefixing)
+            var fullPath = path;
+            if (CurrentEntryIndex.HasValue && CurrentEntryIndex.Value >= 0 && 
+                !string.IsNullOrEmpty(path) && !path.StartsWith("entry["))
+            {
+                fullPath = $"entry[{CurrentEntryIndex.Value}].resource.{path}";
+            }
+            
             var error = new ValidationError
             {
                 Code = code,
-                FieldPath = path,
+                FieldPath = fullPath,
                 Message = message,
                 Scope = scope
             };

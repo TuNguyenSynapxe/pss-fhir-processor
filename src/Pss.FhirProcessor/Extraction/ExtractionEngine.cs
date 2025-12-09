@@ -157,7 +157,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Extraction
                             {
                                 // Try ValueString first, then ValueCodeableConcept
                                 eventData.Grc = grcExt.ValueString ?? 
-                                                grcExt.ValueCodeableConcept?.Coding?.FirstOrDefault()?.Code;
+                                                grcExt.ValueCodeableConcept?.Coding?.FirstOrDefault()?.Display;
                             }
 
                             var constExt = location.Extension.FirstOrDefault(e => e.Url?.Contains("constituency") == true);
@@ -165,7 +165,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Extraction
                             {
                                 // Try ValueString first, then ValueCodeableConcept
                                 eventData.Constituency = constExt.ValueString ?? 
-                                                        constExt.ValueCodeableConcept?.Coding?.FirstOrDefault()?.Code;
+                                                        constExt.ValueCodeableConcept?.Coding?.FirstOrDefault()?.Display;
                             }
                         }
                     }

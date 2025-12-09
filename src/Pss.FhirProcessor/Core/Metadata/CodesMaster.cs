@@ -7,6 +7,11 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata
     /// </summary>
     public class CodesMaster
     {
+        /// <summary>
+        /// Default system URL for screening questionnaires (e.g., https://fhir.synapxe.sg/CodeSystem/screening-questionnaire)
+        /// </summary>
+        public string System { get; set; }
+        
         public List<CodesMasterQuestion> Questions { get; set; }
         public List<CodesMasterCodeSystem> CodeSystems { get; set; }
 

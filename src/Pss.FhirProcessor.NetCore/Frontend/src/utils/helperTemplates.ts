@@ -174,8 +174,15 @@ export function getErrorTemplate(errorCode: string): ErrorCodeTemplate {
  */
 import { SegmentStatus } from './pathParser';
 
+// NEW: FixStep with optional segmentKey for hover synchronization
+export interface FixStep {
+  text: string;           // The instruction text
+  segmentKey?: string;    // Optional jumpKey for highlighting corresponding path segment
+  targetPath?: string;    // Optional raw path segment (for mapping to segmentKey)
+}
+
 export interface FixInstructions {
-  steps: string[];
+  steps: FixStep[];       // Changed from string[] to FixStep[] for hover sync
   needsParentCreation: boolean;
   missingSegments: string[];
   scenario?: 'value-mismatch' | 'filter-no-match' | 'index-out-of-range' | 'parent-missing' | 'leaf-missing';
@@ -193,6 +200,12 @@ export function generateFixInstructions(
     missingSegments: [],
   };
 
+  // Helper function to create FixStep from text
+  const createStep = (text: string, targetPath?: string): FixStep => ({
+    text,
+    targetPath, // Will be mapped to segmentKey later in helperGenerator
+  });
+
   // Find first non-existing segment
   const firstNonExistingIndex = segmentStatuses.findIndex((s) => s.status !== 'EXISTS');
 
@@ -200,26 +213,58 @@ export function generateFixInstructions(
   if (firstNonExistingIndex === -1) {
     instructions.scenario = 'value-mismatch';
     
-    if (errorCode.includes('MISMATCH') || errorCode.includes('INVALID')) {
-      instructions.steps.push('Locate the field in your JSON at the path shown above.');
-      if (expectedValue) {
-        instructions.steps.push(`Change the value to: "${expectedValue}"`);
-      } else if (allowedValues && allowedValues.length > 0) {
-        instructions.steps.push(
-          'Change the value to one of the allowed values listed in the "Expected" section.'
-        );
+    // Get target path (last segment)
+    const targetPath = segmentStatuses.length > 0 
+      ? segmentStatuses[segmentStatuses.length - 1].segment.raw 
+      : undefined;
+    
+    // Special handling for REFERENCE errors
+    if (errorCode.includes('REFERENCE')) {
+      instructions.steps.push(createStep('This is a reference validation error. The reference value exists but is invalid.', targetPath));
+      instructions.steps.push(createStep('Step 1: Locate the reference field in your JSON (e.g., subject.reference, encounter.reference).', targetPath));
+      instructions.steps.push(createStep('Step 2: Check the reference value format (should be "ResourceType/id" or "urn:uuid:guid").'));
+      
+      if (errorCode === 'REFERENCE_NOT_FOUND') {
+        instructions.steps.push(createStep('Step 3: Navigate to Bundle.entry array and verify the referenced resource exists.'));
+        instructions.steps.push(createStep('Step 4: Check that entry.resource.id matches the ID in your reference.'));
+        instructions.steps.push(createStep('Option A: Add the missing resource to Bundle.entry array.'));
+        instructions.steps.push(createStep('Option B: Correct the reference to point to an existing resource.'));
+      } else if (errorCode === 'REFERENCE_TYPE_MISMATCH') {
+        instructions.steps.push(createStep('Step 3: Navigate to the referenced resource in Bundle.entry array.'));
+        instructions.steps.push(createStep('Step 4: Check the resourceType of the referenced resource.'));
+        instructions.steps.push(createStep('Step 5: See "Expected" section for allowed resource types.'));
+        instructions.steps.push(createStep('Option A: Change the reference to point to a resource with the correct type.'));
+        instructions.steps.push(createStep('Option B: Change the resourceType of the target resource (if appropriate).'));
+      } else if (errorCode === 'INVALID_REFERENCE_FORMAT') {
+        instructions.steps.push(createStep('Step 3: Ensure format is either "ResourceType/id" (e.g., "Patient/p123") or "urn:uuid:guid".'));
+        instructions.steps.push(createStep('Step 4: Remove any extra characters, spaces, or incorrect separators.'));
       } else {
-        instructions.steps.push('Correct the value to match the expected format.');
+        instructions.steps.push(createStep('Step 3: Verify the reference points to an existing resource with the correct type.'));
+      }
+      return instructions;
+    }
+    
+    if (errorCode.includes('MISMATCH') || errorCode.includes('INVALID')) {
+      instructions.steps.push(createStep('Locate the field in your JSON at the path shown above.', targetPath));
+      if (expectedValue) {
+        instructions.steps.push(createStep(`Change the value to: "${expectedValue}"`, targetPath));
+      } else if (allowedValues && allowedValues.length > 0) {
+        instructions.steps.push(createStep(
+          'Change the value to one of the allowed values listed in the "Expected" section.',
+          targetPath
+        ));
+      } else {
+        instructions.steps.push(createStep('Correct the value to match the expected format.', targetPath));
       }
     } else if (errorCode === 'ID_FULLURL_MISMATCH') {
-      instructions.steps.push('Locate the resource entry in Bundle.entry array.');
-      instructions.steps.push(
+      instructions.steps.push(createStep('Locate the resource entry in Bundle.entry array.'));
+      instructions.steps.push(createStep(
         'Ensure entry.fullUrl is in format: urn:uuid:XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
-      );
-      instructions.steps.push(
+      ));
+      instructions.steps.push(createStep(
         'Ensure resource.id matches the GUID portion (everything after "urn:uuid:")'
-      );
-      instructions.steps.push('Both values must be identical.');
+      ));
+      instructions.steps.push(createStep('Both values must be identical.'));
     }
     return instructions;
   }
@@ -238,36 +283,42 @@ export function generateFixInstructions(
     const filterKey = failingSegment.segment.filterKey || 'key';
     const filterValue = failingSegment.segment.filterValue || 'value';
     const arrayName = failingSegment.segment.property;
+    const targetFilterPath = failingSegment.segment.raw;
     
-    instructions.steps.push(
-      `The array "${arrayName}" exists, but no element has ${filterKey}="${filterValue}".`
-    );
+    instructions.steps.push(createStep(
+      `The array "${arrayName}" exists, but no element has ${filterKey}="${filterValue}".`,
+      targetFilterPath
+    ));
     
     // Build parent path (everything before the filtered segment)
-    const parentPath = segmentStatuses
-      .slice(0, firstNonExistingIndex)
-      .map((s) => s.segment.raw)
-      .join('.');
+    const parentPathSegments = segmentStatuses.slice(0, firstNonExistingIndex);
+    const parentPathStr = parentPathSegments.map((s) => s.segment.raw).join('.');
+    const parentTargetPath = parentPathSegments.length > 0 
+      ? parentPathSegments[parentPathSegments.length - 1].segment.raw 
+      : undefined;
     
-    if (parentPath) {
-      instructions.steps.push(`Navigate to: ${parentPath}`);
+    if (parentPathStr) {
+      instructions.steps.push(createStep(`Navigate to: ${parentPathStr}`, parentTargetPath));
     }
-    instructions.steps.push(`Locate the "${arrayName}" array.`);
-    instructions.steps.push(
-      `Find or create an array element where "${filterKey}" = "${filterValue}".`
-    );
+    instructions.steps.push(createStep(`Locate the "${arrayName}" array.`, targetFilterPath));
+    instructions.steps.push(createStep(
+      `Find or create an array element where "${filterKey}" = "${filterValue}".`,
+      targetFilterPath
+    ));
     
     if (firstNonExistingIndex < segmentStatuses.length - 1) {
-      const remainingPath = segmentStatuses
-        .slice(firstNonExistingIndex + 1)
-        .map((s) => s.segment.raw)
-        .join('.');
-      instructions.steps.push(
-        `Once the filter matches, add the remaining path: ${remainingPath}`
-      );
+      const remainingPathSegments = segmentStatuses.slice(firstNonExistingIndex + 1);
+      const remainingPath = remainingPathSegments.map((s) => s.segment.raw).join('.');
+      const remainingTargetPath = remainingPathSegments.length > 0
+        ? remainingPathSegments[remainingPathSegments.length - 1].segment.raw
+        : undefined;
+      instructions.steps.push(createStep(
+        `Once the filter matches, add the remaining path: ${remainingPath}`,
+        remainingTargetPath
+      ));
     }
     
-    instructions.steps.push('See the "Expected" section for the correct filter value.');
+    instructions.steps.push(createStep('See the "Expected" section for the correct filter value.'));
     return instructions;
   }
 
@@ -278,39 +329,49 @@ export function generateFixInstructions(
     
     const arrayName = failingSegment.segment.property;
     const requestedIndex = failingSegment.segment.index;
+    const targetPath = failingSegment.segment.raw;
     
-    instructions.steps.push(
-      `The array "${arrayName}" exists, but index [${requestedIndex}] is out of range.`
-    );
-    instructions.steps.push(`Option 1: Add a new element to the "${arrayName}" array.`);
-    instructions.steps.push(
-      `Option 2: Use an existing index (the array currently has fewer than ${(requestedIndex || 0) + 1} elements).`
-    );
-    instructions.steps.push('See the "Example JSON Snippet" for the structure to add.');
+    instructions.steps.push(createStep(
+      `The array "${arrayName}" exists, but index [${requestedIndex}] is out of range.`,
+      targetPath
+    ));
+    instructions.steps.push(createStep(`Option 1: Add a new element to the "${arrayName}" array.`, targetPath));
+    instructions.steps.push(createStep(
+      `Option 2: Use an existing index (the array currently has fewer than ${(requestedIndex || 0) + 1} elements).`,
+      targetPath
+    ));
+    instructions.steps.push(createStep('See the "Example JSON Snippet" for the structure to add.'));
     return instructions;
   }
 
   // Case 4 & 5: Structural missing (MISSING_ARRAY or MISSING_PROPERTY)
   const isLeafOnly = firstNonExistingIndex === segmentStatuses.length - 1;
+  const targetPath = failingSegment.segment.raw;
   
   if (isLeafOnly) {
     // Only the final field is missing
     instructions.scenario = 'leaf-missing';
     instructions.needsParentCreation = false;
     
-    instructions.steps.push('The parent structure exists, but the final field is missing.');
-    instructions.steps.push('Locate the parent object in your JSON (see path breakdown).');
+    const parentPath = firstNonExistingIndex > 0
+      ? segmentStatuses[firstNonExistingIndex - 1].segment.raw
+      : undefined;
+    
+    instructions.steps.push(createStep('The parent structure exists, but the final field is missing.'));
+    instructions.steps.push(createStep('Locate the parent object in your JSON (see path breakdown).', parentPath));
     
     if (expectedValue) {
-      instructions.steps.push(`Add the field "${failingSegment.segment.property}" with value: "${expectedValue}"`);
+      instructions.steps.push(createStep(`Add the field "${failingSegment.segment.property}" with value: "${expectedValue}"`, targetPath));
     } else if (allowedValues && allowedValues.length > 0) {
-      instructions.steps.push(
-        `Add the field "${failingSegment.segment.property}" with one of the allowed values from the "Expected" section.`
-      );
+      instructions.steps.push(createStep(
+        `Add the field "${failingSegment.segment.property}" with one of the allowed values from the "Expected" section.`,
+        targetPath
+      ));
     } else {
-      instructions.steps.push(
-        `Add the field "${failingSegment.segment.property}" with the appropriate value (see "Example JSON Snippet").`
-      );
+      instructions.steps.push(createStep(
+        `Add the field "${failingSegment.segment.property}" with the appropriate value (see "Example JSON Snippet").`,
+        targetPath
+      ));
     }
   } else {
     // One or more parent levels are missing
@@ -318,14 +379,21 @@ export function generateFixInstructions(
     instructions.needsParentCreation = true;
     
     const missingCount = instructions.missingSegments.length;
-    instructions.steps.push(
-      `The parent structure is missing. You need to create ${missingCount} missing level(s).`
-    );
-    instructions.steps.push('Locate the last existing parent in your JSON (see path breakdown).');
-    instructions.steps.push(
-      'Add the missing parent structure as shown in the "Example JSON Snippet" section.'
-    );
-    instructions.steps.push('Copy the example and paste it into the correct location.');
+    const firstMissingPath = targetPath;
+    const lastExistingPath = firstNonExistingIndex > 0
+      ? segmentStatuses[firstNonExistingIndex - 1].segment.raw
+      : undefined;
+    
+    instructions.steps.push(createStep(
+      `The parent structure is missing. You need to create ${missingCount} missing level(s).`,
+      firstMissingPath
+    ));
+    instructions.steps.push(createStep('Locate the last existing parent in your JSON (see path breakdown).', lastExistingPath));
+    instructions.steps.push(createStep(
+      'Add the missing parent structure as shown in the "Example JSON Snippet" section.',
+      firstMissingPath
+    ));
+    instructions.steps.push(createStep('Copy the example and paste it into the correct location.'));
   }
 
   return instructions;
