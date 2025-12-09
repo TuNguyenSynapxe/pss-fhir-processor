@@ -639,28 +639,12 @@
           "Message": "GRC code is mandatory."
         },
         {
-          "RuleType": "CodeSystem",
-          "PathType": "CPS1",
-          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-grc].valueCodeableConcept.coding[0]",
-          "System": "https://fhir.synapxe.sg/CodeSystem/grc",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "GRC code must be a valid value from the grc CodeSystem."
-        },
-        {
           "RuleType": "FixedValue",
           "PathType": "CPS1",
           "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0].system",
           "ExpectedValue": "https://fhir.synapxe.sg/CodeSystem/constituency",
           "ErrorCode": "FIXED_VALUE_MISMATCH",
           "Message": "Constituency must use the PSS constituency CodeSystem."
-        },
-        {
-          "RuleType": "CodeSystem",
-          "PathType": "CPS1",
-          "Path": "Location.extension[url:https://fhir.synapxe.sg/StructureDefinition/ext-constituency].valueCodeableConcept.coding[0]",
-          "System": "https://fhir.synapxe.sg/CodeSystem/constituency",
-          "ErrorCode": "FIXED_VALUE_MISMATCH",
-          "Message": "Constituency code must be a valid value from the constituency CodeSystem."
         }
       ],
       "ScopeDefinition": {
@@ -1420,62 +1404,6 @@
             "Code": "Other",
             "Display": "Other Public Assistance Scheme"
           }
-        ]
-      },
-      {
-        "Id": "grc",
-        "System": "https://fhir.synapxe.sg/CodeSystem/grc",
-        "Description": "GRC Codes",
-        "Concepts": [
-          { "Code": "AMK", "Display": "Ang Mo Kio GRC" },
-          { "Code": "ALJ", "Display": "Aljunied GRC" },
-          { "Code": "BTP", "Display": "Bishan–Toa Payoh GRC" },
-          { "Code": "CCK", "Display": "Chua Chu Kang GRC" },
-          { "Code": "ECS", "Display": "East Coast GRC" },
-          { "Code": "HG", "Display": "Hougang SMC" },
-          { "Code": "JWK", "Display": "Jalan Besar GRC" },
-          { "Code": "JRT", "Display": "Jurong GRC" },
-          { "Code": "MBT", "Display": "Marine Parade GRC" },
-          { "Code": "NEE", "Display": "Nee Soon GRC" },
-          { "Code": "PRW", "Display": "Pasir Ris–Punggol GRC" },
-          { "Code": "PGB", "Display": "Punggol West SMC" },
-          { "Code": "SKG", "Display": "Sengkang GRC" },
-          { "Code": "TGW", "Display": "Tanjong Pagar GRC" },
-          { "Code": "WPB", "Display": "West Coast GRC" }
-        ]
-      },
-      {
-        "Id": "constituency",
-        "System": "https://fhir.synapxe.sg/CodeSystem/constituency",
-        "Description": "Constituency Codes",
-        "Concepts": [
-          { "Code": "AMK-HL", "Display": "Ang Mo Kio – Heng Long" },
-          { "Code": "AMK-KM", "Display": "Ang Mo Kio – Kebun Baru" },
-          { "Code": "AMK-TP", "Display": "Ang Mo Kio – Teck Ghee" },
-          { "Code": "ALJ-AL", "Display": "Aljunied – Aljunied" },
-          { "Code": "ALJ-BD", "Display": "Aljunied – Bedok Reservoir" },
-          { "Code": "ALJ-HG", "Display": "Aljunied – Hougang" },
-          { "Code": "BTP-BS", "Display": "Bishan–Toa Payoh – Bishan" },
-          { "Code": "BTP-TP", "Display": "Bishan–Toa Payoh – Toa Payoh" },
-          { "Code": "CCK-CCK", "Display": "Chua Chu Kang – CCK" },
-          { "Code": "CCK-KT", "Display": "Chua Chu Kang – Keat Hong" },
-          { "Code": "ECS-KN", "Display": "East Coast – Kembangan" },
-          { "Code": "ECS-SG", "Display": "East Coast – Siglap" },
-          { "Code": "HG-HG", "Display": "Hougang SMC" },
-          { "Code": "JWK-KL", "Display": "Jalan Besar – Kolam Ayer" },
-          { "Code": "JWK-WD", "Display": "Jalan Besar – Whampoa" },
-          { "Code": "JRT-JT", "Display": "Jurong – Jurong" },
-          { "Code": "JRT-YT", "Display": "Jurong – Yuhua" },
-          { "Code": "MBT-GM", "Display": "Marine Parade – Geylang Marine" },
-          { "Code": "MBT-MP", "Display": "Marine Parade – Marine Parade" },
-          { "Code": "NEE-KT", "Display": "Nee Soon – Khatib" },
-          { "Code": "NEE-YS", "Display": "Nee Soon – Yishun" },
-          { "Code": "PRW-PE", "Display": "Pasir Ris–Punggol – Punggol East" },
-          { "Code": "PRW-PR", "Display": "Pasir Ris–Punggol – Pasir Ris" },
-          { "Code": "SKG-SK", "Display": "Sengkang – Sengkang" },
-          { "Code": "TGW-TA", "Display": "Tanjong Pagar – Tanjong Pagar" },
-          { "Code": "WPB-AW", "Display": "West Coast – Ayer Rajah" },
-          { "Code": "WPB-WC", "Display": "West Coast – West Coast" }
         ]
       }
     ]
