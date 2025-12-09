@@ -4,6 +4,7 @@ import {
   FolderOutlined, 
   FileOutlined, 
   EditOutlined,
+  DeleteOutlined,
   ExpandOutlined,
   ShrinkOutlined
 } from '@ant-design/icons';
@@ -45,10 +46,15 @@ export default function TreeViewPanel({ fhirJson, setFhirJson, scrollTargetRef, 
   const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingNode, setEditingNode] = useState<{
     path: string;
     value: any;
     type: 'string' | 'number' | 'boolean';
+  } | null>(null);
+  const [deletingNode, setDeletingNode] = useState<{
+    path: string;
+    label: string;
   } | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   const [editType, setEditType] = useState<'string' | 'number' | 'boolean'>('string');
@@ -68,8 +74,8 @@ export default function TreeViewPanel({ fhirJson, setFhirJson, scrollTargetRef, 
   };
 
   // Handle edit icon click
-  const handleEditClick = (nodePath: string, currentValue: any, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleEditClick = (nodePath: string, currentValue: any) => {
+    console.log('Edit clicked:', nodePath, currentValue);
     const detectedType = detectValueType(currentValue);
     setEditingNode({
       path: nodePath,
@@ -130,6 +136,75 @@ export default function TreeViewPanel({ fhirJson, setFhirJson, scrollTargetRef, 
     setEditingNode(null);
   };
 
+  // Handle delete icon click
+  const handleDeleteClick = (nodePath: string, nodeLabel: string) => {
+    console.log('Delete clicked:', nodePath, nodeLabel);
+    setDeletingNode({
+      path: nodePath,
+      label: nodeLabel
+    });
+    setIsDeleteModalOpen(true);
+  };
+
+  // Handle delete confirmation
+  const handleConfirmDelete = () => {
+    if (!deletingNode) return;
+
+    console.log('Delete confirmed');
+    try {
+      const parsedJson = JSON.parse(fhirJson);
+      const pathParts = deletingNode.path.split('.').filter(p => p !== 'root');
+      
+      if (pathParts.length === 0) {
+        message.error('Cannot delete root node');
+        return;
+      }
+      
+      // Navigate to the parent
+      let current = parsedJson;
+      for (let i = 0; i < pathParts.length - 1; i++) {
+        const part = pathParts[i];
+        const match = part.match(/^\[(\d+)\]$/);
+        if (match) {
+          current = current[parseInt(match[1])];
+        } else {
+          current = current[part];
+        }
+      }
+      
+      // Delete the node
+      const lastPart = pathParts[pathParts.length - 1];
+      const lastMatch = lastPart.match(/^\[(\d+)\]$/);
+      
+      if (lastMatch) {
+        // Array element - use splice to maintain array structure
+        const index = parseInt(lastMatch[1]);
+        if (Array.isArray(current)) {
+          current.splice(index, 1);
+        }
+      } else {
+        // Object property - use delete
+        delete current[lastPart];
+      }
+      
+      // Update the JSON
+      const updatedJson = JSON.stringify(parsedJson, null, 2);
+      setFhirJson(updatedJson);
+      setIsDeleteModalOpen(false);
+      setDeletingNode(null);
+      message.success('Node deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete node:', error);
+      message.error('Failed to delete node');
+    }
+  };
+
+  // Handle delete modal cancel
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setDeletingNode(null);
+  };
+
   // Convert JSON to tree data structure
   const jsonToTreeData = (obj: any, parentKey = 'root'): DataNode[] => {
     if (obj === null || obj === undefined) {
@@ -142,9 +217,23 @@ export default function TreeViewPanel({ fhirJson, setFhirJson, scrollTargetRef, 
       if (Array.isArray(value)) {
         return {
           title: (
-            <span>
-              <strong>{key}</strong>: <span className="text-blue-600">[{value.length}]</span>
-            </span>
+            <div className="flex items-center justify-between w-full group">
+              <span className="flex-1 min-w-0">
+                <strong>{key}</strong>: <span className="text-blue-600">[{value.length}]</span>
+              </span>
+              <DeleteOutlined 
+                className="ml-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex-shrink-0"
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  handleDeleteClick(nodeKey, key);
+                }}
+                title="Delete node"
+              />
+            </div>
           ),
           key: nodeKey,
           icon: <FolderOutlined />,
@@ -154,9 +243,23 @@ export default function TreeViewPanel({ fhirJson, setFhirJson, scrollTargetRef, 
         const keys = Object.keys(value);
         return {
           title: (
-            <span>
-              <strong>{key}</strong>: <span className="text-purple-600">{'{...}'}</span>
-            </span>
+            <div className="flex items-center justify-between w-full group">
+              <span className="flex-1 min-w-0">
+                <strong>{key}</strong>: <span className="text-purple-600">{'{...}'}</span>
+              </span>
+              <DeleteOutlined 
+                className="ml-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex-shrink-0"
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  handleDeleteClick(nodeKey, key);
+                }}
+                title="Delete node"
+              />
+            </div>
           ),
           key: nodeKey,
           icon: <FolderOutlined />,
@@ -172,16 +275,37 @@ export default function TreeViewPanel({ fhirJson, setFhirJson, scrollTargetRef, 
         
         return {
           title: (
-            <span className="flex items-center justify-between group">
-              <span>
+            <div className="flex items-center justify-between w-full group">
+              <span className="flex-1 min-w-0">
                 <strong>{key}</strong>: <span className={valueColor}>"{displayValue}"</span>
               </span>
-              <EditOutlined 
-                className="ml-2 text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                onClick={(e) => handleEditClick(nodeKey, value, e)}
-                title="Edit value"
-              />
-            </span>
+              <span className="flex gap-1 flex-shrink-0 ml-2">
+                <EditOutlined 
+                  className="text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    handleEditClick(nodeKey, value);
+                  }}
+                  title="Edit value"
+                />
+                <DeleteOutlined 
+                  className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    handleDeleteClick(nodeKey, key);
+                  }}
+                  title="Delete node"
+                />
+              </span>
+            </div>
           ),
           key: nodeKey,
           icon: <FileOutlined />,
@@ -474,6 +598,17 @@ export default function TreeViewPanel({ fhirJson, setFhirJson, scrollTargetRef, 
         ref={scrollContainerRef}
         className="flex-1 overflow-auto p-4 bg-gray-50"
       >
+        <style>{`
+          .ant-tree .ant-tree-title {
+            width: 100%;
+          }
+          .ant-tree .ant-tree-node-content-wrapper {
+            width: 100%;
+          }
+          .ant-tree-treenode {
+            width: 100%;
+          }
+        `}</style>
         <Tree
           ref={treeRef}
           showIcon
@@ -560,6 +695,62 @@ export default function TreeViewPanel({ fhirJson, setFhirJson, scrollTargetRef, 
                 Current type: <span className="font-mono text-gray-900">{editingNode.type}</span>
               </div>
             </div>
+          )}
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        title="Delete Node"
+        open={isDeleteModalOpen}
+        onOk={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        okText="Delete"
+        okButtonProps={{ danger: true }}
+        width={600}
+      >
+        <div className="space-y-4">
+          {/* Warning Message */}
+          <div className="p-4 bg-red-50 border border-red-200 rounded">
+            <p className="text-red-800 font-medium">
+              ⚠️ Warning: This action cannot be undone!
+            </p>
+            <p className="text-red-600 text-sm mt-1">
+              Deleting this node will permanently remove it and all its children from the JSON structure.
+            </p>
+          </div>
+
+          {/* Path Display */}
+          {deletingNode && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Node to Delete
+                </label>
+                <Input 
+                  value={deletingNode.label} 
+                  disabled 
+                  className="bg-gray-50 font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Path
+                </label>
+                <Input 
+                  value={deletingNode.path} 
+                  disabled 
+                  className="bg-gray-50"
+                />
+              </div>
+
+              <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                <p className="text-sm text-gray-600">
+                  Are you sure you want to delete <span className="font-mono font-semibold text-gray-900">"{deletingNode.label}"</span>?
+                </p>
+              </div>
+            </>
           )}
         </div>
       </Modal>
