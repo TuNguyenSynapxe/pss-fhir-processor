@@ -47,7 +47,7 @@
             "language": {
               "coding": [
                 {
-                  "system": "urn:ietf:bcp:47",
+                  "system": "https://fhir.synapxe.sg/CodeSystem/language",
                   "code": "en",
                   "display": "English"
                 }
