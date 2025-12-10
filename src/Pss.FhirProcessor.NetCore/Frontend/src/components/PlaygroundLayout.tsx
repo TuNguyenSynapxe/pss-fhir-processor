@@ -48,6 +48,7 @@ export default function PlaygroundLayout() {
   const [strictDisplay, setStrictDisplay] = useState(true);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ProcessResult | null>(null);
+  const [activeTab, setActiveTab] = useState('validation');
   const [isEditorModalOpen, setIsEditorModalOpen] = useState(false);
   const [scrollTrigger, setScrollTrigger] = useState(0); // Trigger for tree navigation
   const [jsonTree, setJsonTree] = useState<any>(null); // Parsed JSON for error helper
@@ -121,6 +122,7 @@ export default function PlaygroundLayout() {
       console.log('Validation errors:', data.validation?.errors?.length || 0);
       
       setResult(data);
+      setActiveTab('validation');
       
       if (data.validation?.errors && data.validation.errors.length > 0) {
         message.warning(`Validation found ${data.validation.errors.length} error(s)`);
@@ -130,6 +132,89 @@ export default function PlaygroundLayout() {
     } catch (error: any) {
       console.error('=== PROCESSING ERROR ===', error);
       message.error(error.message || 'Processing failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Validate only
+  const handleValidate = async () => {
+    if (!fhirJson.trim()) {
+      message.warning('Please enter FHIR JSON');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Parse JSON for error helper
+      let parsedJson = null;
+      try {
+        parsedJson = JSON.parse(fhirJson);
+        setJsonTree(parsedJson);
+      } catch (e) {
+        console.warn('Failed to parse JSON for error helper:', e);
+      }
+      
+      // Build metadata from context
+      const validationMetadata = {
+        Version: version || '5.0',
+        PathSyntax: pathSyntax || 'CPS1',
+        RuleSets: ruleSets,
+        CodesMaster: codesMaster
+      };
+      
+      const data = await fhirApi.validate(
+        fhirJson,
+        JSON.stringify(validationMetadata),
+        logLevel,
+        strictDisplay
+      );
+      
+      setResult(data);
+      setActiveTab('validation');
+      
+      if (data.validation?.errors && data.validation.errors.length > 0) {
+        message.warning(`Validation found ${data.validation.errors.length} error(s)`);
+      } else if (data.success) {
+        message.success('Validation passed!');
+      }
+    } catch (error: any) {
+      console.error('=== VALIDATION ERROR ===', error);
+      message.error(error.message || 'Validation failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Extract only
+  const handleExtract = async () => {
+    if (!fhirJson.trim()) {
+      message.warning('Please enter FHIR JSON');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const data = await fhirApi.extract(
+        fhirJson,
+        '', // No validation metadata needed for extraction only
+        logLevel,
+        false
+      );
+      
+      setResult(data);
+      setActiveTab('extraction');
+      
+      if (data.success) {
+        message.success('Extraction completed!');
+      } else {
+        message.warning('Extraction completed with issues');
+      }
+    } catch (error: any) {
+      console.error('=== EXTRACTION ERROR ===', error);
+      message.error(error.message || 'Extraction failed');
     } finally {
       setLoading(false);
     }
@@ -238,6 +323,8 @@ export default function PlaygroundLayout() {
             logLevel={logLevel}
             strictDisplay={strictDisplay}
             onProcess={handleProcess}
+            onValidate={handleValidate}
+            onExtract={handleExtract}
             onClear={handleClear}
             onLoadSample={handleLoadSample}
             onLogLevelChange={setLogLevel}
@@ -245,6 +332,8 @@ export default function PlaygroundLayout() {
             onGoToResource={handleGoToResource}
             hasJson={!!fhirJson.trim()}
             jsonTree={jsonTree}
+            activeTab={activeTab}
+            onActiveTabChange={setActiveTab}
           />
         </div>
       </div>

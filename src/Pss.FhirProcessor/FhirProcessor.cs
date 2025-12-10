@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Extraction;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Fhir;
+using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Flattened;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Utilities;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation;
@@ -232,6 +233,28 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor
 
             _validationEngine.SetLogger(logger);
             return _validationEngine.Validate(bundle);
+        }
+
+        /// <summary>
+        /// Extract only (no validation)
+        /// </summary>
+        public FlattenResult Extract(string fhirJson)
+        {
+            var logger = new Logger(_loggingOptions.LogLevel);
+
+            Bundle bundle = null;
+            try
+            {
+                bundle = JsonHelper.Deserialize<Bundle>(fhirJson);
+            }
+            catch (System.Exception ex)
+            {
+                logger.Error($"Deserialization failed: {ex.Message}");
+                return null;
+            }
+
+            _extractionEngine.SetLogger(logger);
+            return _extractionEngine.Extract(bundle);
         }
     }
 }

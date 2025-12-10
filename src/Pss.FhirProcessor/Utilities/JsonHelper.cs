@@ -10,7 +10,8 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Utilities
         private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
         {
             NullValueHandling = NullValueHandling.Ignore,
-            Formatting = Formatting.Indented
+            Formatting = Formatting.Indented,
+            TypeNameHandling = TypeNameHandling.None  // Security: Prevent deserialization attacks
         };
 
         public static T Deserialize<T>(string json)

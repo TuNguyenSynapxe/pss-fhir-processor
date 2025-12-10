@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { Button, Select, Switch, Tabs, Spin } from 'antd';
+import { Button, Select, Switch, Tabs, Spin, Dropdown, Space, MenuProps } from 'antd';
 import { 
-  PlayCircleOutlined
+  PlayCircleOutlined,
+  CheckCircleOutlined,
+  ExperimentOutlined,
+  DownOutlined
 } from '@ant-design/icons';
 import ValidationTab from './ValidationTab';
 import ExtractionTab from './ExtractionTab';
@@ -16,6 +19,8 @@ interface RightPanelProps {
   logLevel: string;
   strictDisplay: boolean;
   onProcess: () => void;
+  onValidate: () => void;
+  onExtract: () => void;
   onClear: () => void;
   onLoadSample: (sampleName: string) => void;
   onLogLevelChange: (level: string) => void;
@@ -23,6 +28,8 @@ interface RightPanelProps {
   onGoToResource: (resourcePointer: any) => void;
   hasJson: boolean;
   jsonTree?: any;
+  activeTab?: string;
+  onActiveTabChange?: (tab: string) => void;
 }
 
 export default function RightPanel({
@@ -31,15 +38,43 @@ export default function RightPanel({
   logLevel,
   strictDisplay,
   onProcess,
+  onValidate,
+  onExtract,
   onClear,
   onLoadSample,
   onLogLevelChange,
   onStrictDisplayChange,
   onGoToResource,
   hasJson,
-  jsonTree
+  jsonTree,
+  activeTab: controlledActiveTab,
+  onActiveTabChange
 }: RightPanelProps) {
-  const [activeTab, setActiveTab] = useState('validation');
+  const [internalActiveTab, setInternalActiveTab] = useState('validation');
+  const activeTab = controlledActiveTab !== undefined ? controlledActiveTab : internalActiveTab;
+  const setActiveTab = onActiveTabChange || setInternalActiveTab;
+
+  // Action menu items
+  const actionMenuItems: MenuProps['items'] = [
+    {
+      key: 'validate',
+      label: 'Validate Only',
+      icon: <CheckCircleOutlined />,
+      onClick: onValidate
+    },
+    {
+      key: 'extract',
+      label: 'Extract Only',
+      icon: <ExperimentOutlined />,
+      onClick: onExtract
+    },
+    {
+      key: 'process',
+      label: 'Process (Validate + Extract)',
+      icon: <PlayCircleOutlined />,
+      onClick: onProcess
+    }
+  ];
 
   // Debug logging
   console.log('RightPanel render:', {
@@ -83,15 +118,38 @@ export default function RightPanel({
       {/* Controls Bar */}
       <div className="bg-white border-b border-gray-200 p-3">
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Process Button */}
+          {/* Action Buttons */}
+          <Space.Compact>
+            <Button
+              type="primary"
+              icon={<PlayCircleOutlined />}
+              onClick={onProcess}
+              loading={loading}
+              disabled={!hasJson}
+            >
+              Process
+            </Button>
+            <Dropdown menu={{ items: actionMenuItems }} disabled={!hasJson || loading}>
+              <Button type="primary" icon={<DownOutlined />} disabled={!hasJson || loading} />
+            </Dropdown>
+          </Space.Compact>
+          
           <Button
-            type="primary"
-            icon={<PlayCircleOutlined />}
-            onClick={onProcess}
+            icon={<CheckCircleOutlined />}
+            onClick={onValidate}
             loading={loading}
             disabled={!hasJson}
           >
-            Process
+            Validate Only
+          </Button>
+          
+          <Button
+            icon={<ExperimentOutlined />}
+            onClick={onExtract}
+            loading={loading}
+            disabled={!hasJson}
+          >
+            Extract Only
           </Button>
 
           {/* Log Level */}
@@ -137,7 +195,10 @@ export default function RightPanel({
           <div className="h-full flex items-center justify-center">
             <div className="text-center text-gray-400">
               <PlayCircleOutlined style={{ fontSize: 48 }} />
-              <p className="mt-4">Click "Process" to validate and extract FHIR data</p>
+              <p className="mt-4">Choose an action:</p>
+              <p className="text-sm"><strong>Process</strong>: Validate + Extract</p>
+              <p className="text-sm"><strong>Validate Only</strong>: Check FHIR compliance</p>
+              <p className="text-sm"><strong>Extract Only</strong>: Get flattened data</p>
             </div>
           </div>
         )}

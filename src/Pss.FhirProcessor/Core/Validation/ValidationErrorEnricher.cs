@@ -271,8 +271,10 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 if (!entryMatch.Success)
                     return null;
 
-                int entryIndex = int.Parse(entryMatch.Groups[1].Value);
-                int componentIndex = int.Parse(componentMatch.Groups[1].Value);
+                if (!int.TryParse(entryMatch.Groups[1].Value, out int entryIndex))
+                    return null;
+                if (!int.TryParse(componentMatch.Groups[1].Value, out int componentIndex))
+                    return null;
 
                 // Navigate to the component
                 var entries = bundleRoot["entry"] as JArray;
@@ -348,7 +350,10 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
                 var entryMatch = Regex.Match(fieldPath ?? "", @"entry\[(\d+)\]");
                 if (entryMatch.Success)
                 {
-                    pointer.EntryIndex = int.Parse(entryMatch.Groups[1].Value);
+                    if (int.TryParse(entryMatch.Groups[1].Value, out int entryIdx))
+                    {
+                        pointer.EntryIndex = entryIdx;
+                    }
                 }
 
                 // Get entries array

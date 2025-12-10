@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
@@ -13,6 +15,11 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
     /// </summary>
     public static class RuleEvaluator
     {
+        /// <summary>
+        /// Regex timeout to prevent ReDoS (Regular Expression Denial of Service) attacks.
+        /// Default: 2 seconds (extremely conservative - legitimate patterns typically execute in < 1ms)
+        /// </summary>
+        public static TimeSpan RegexTimeout { get; set; } = TimeSpan.FromSeconds(2);
         /// <summary>
         /// Apply a single rule to a resource
         /// </summary>
@@ -683,22 +690,39 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
 
             logger?.Verbose($"      → Actual value: '{strValue}'");
 
+            var sw = Stopwatch.StartNew();
             try
             {
-                if (!Regex.IsMatch(strValue, rule.Pattern))
+                // Use timeout to prevent ReDoS (Regular Expression Denial of Service)
+                // RegexTimeout is configurable (default: 2 seconds)
+                if (!Regex.IsMatch(strValue, rule.Pattern, RegexOptions.None, RegexTimeout))
                 {
-                    logger?.Verbose($"      ✗ Regex validation failed");
+                    sw.Stop();
+                    logger?.Verbose($"      ✗ Regex validation failed (took {sw.ElapsedMilliseconds}ms)");
                     var detailedMessage = (rule.Message ?? $"Regex mismatch at path '{rule.Path}'") +
                         $" | Pattern: '{rule.Pattern}' | Actual value: '{strValue}'";
                     result.AddError(rule.ErrorCode ?? "REGEX_MISMATCH", rule.Path, detailedMessage, scope, rule);
                 }
                 else
                 {
-                    logger?.Verbose($"      ✓ Regex validation passed");
+                    sw.Stop();
+                    logger?.Verbose($"      ✓ Regex validation passed (took {sw.ElapsedMilliseconds}ms)");
                 }
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                sw.Stop();
+                // Timeout indicates a potentially malicious regex pattern (ReDoS attack)
+                logger?.Error($"      ⚠️ Regex TIMEOUT after {sw.ElapsedMilliseconds}ms - Pattern: '{rule.Pattern}' - Possible ReDoS vulnerability");
+                result.AddError("REGEX_TIMEOUT", rule.Path,
+                    $"Regex pattern '{rule.Pattern}' timed out after {RegexTimeout.TotalSeconds} seconds. " +
+                    $"This indicates a potentially unsafe regex pattern that could cause performance issues. " +
+                    $"Please review and optimize the pattern to avoid catastrophic backtracking.", 
+                    scope, rule);
             }
             catch (ArgumentException ex)
             {
+                sw.Stop();
                 logger?.Verbose($"      ✗ Invalid regex pattern: {ex.Message}");
                 result.AddError(rule.ErrorCode ?? "REGEX_PATTERN_ERROR", rule.Path,
                     $"Invalid regex pattern '{rule.Pattern}': {ex.Message}", scope, rule);

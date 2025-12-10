@@ -22,11 +22,11 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Controllers
         {
             try
             {
-                var result = _fhirService.Process(request.FhirJson, request.ValidationMetadata, request.LogLevel, request.StrictDisplayMatch);
+                var result = _fhirService.ValidateOnly(request.FhirJson, request.ValidationMetadata, request.LogLevel, request.StrictDisplayMatch);
 
                 return Ok(new
                 {
-                    success = result.Validation.IsValid,
+                    success = result.Validation?.IsValid ?? false,
                     validation = result.Validation,
                     originalBundle = result.OriginalBundle,
                     logs = result.Logs
@@ -43,12 +43,11 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Controllers
         {
             try
             {
-                var result = _fhirService.Process(request.FhirJson, request.ValidationMetadata, request.LogLevel, request.StrictDisplayMatch);
+                var result = _fhirService.ExtractOnly(request.FhirJson, request.LogLevel);
 
                 return Ok(new
                 {
-                    success = result.Validation.IsValid,
-                    validation = result.Validation,
+                    success = result.Flatten != null,
                     flatten = result.Flatten,
                     originalBundle = result.OriginalBundle,
                     logs = result.Logs

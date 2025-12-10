@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Layout, Menu } from 'antd';
-import { ExperimentOutlined, FileTextOutlined } from '@ant-design/icons';
+import { ExperimentOutlined, FileTextOutlined, CodeOutlined } from '@ant-design/icons';
 import Playground from './components/PlaygroundLayout';
 import ValidationRules from './components/ValidationRules';
+import DeveloperGuide from './components/DeveloperGuide';
 import { MetadataProvider } from './contexts/MetadataContext';
 import './App.css';
 
@@ -22,6 +23,11 @@ function App() {
       icon: <FileTextOutlined />,
       label: 'Validation Rules',
     },
+    {
+      key: 'guide',
+      icon: <CodeOutlined />,
+      label: 'Developer Guide',
+    },
   ];
 
   const renderContent = () => {
@@ -30,6 +36,8 @@ function App() {
         return <Playground />;
       case 'rules':
         return <ValidationRules />;
+      case 'guide':
+        return <DeveloperGuide />;
       default:
         return <Playground />;
     }
