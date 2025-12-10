@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Layout, Menu } from 'antd';
-import { ExperimentOutlined, FileTextOutlined, CodeOutlined } from '@ant-design/icons';
+import { ExperimentOutlined, FileTextOutlined, CodeOutlined, ApiOutlined } from '@ant-design/icons';
 import Playground from './components/PlaygroundLayout';
 import ValidationRules from './components/ValidationRules';
 import DeveloperGuide from './components/DeveloperGuide';
+import SandboxGuide from './components/SandboxGuide';
 import { MetadataProvider } from './contexts/MetadataContext';
 import './App.css';
 
@@ -28,6 +29,11 @@ function App() {
       icon: <CodeOutlined />,
       label: 'Developer Guide',
     },
+    {
+      key: 'sandbox',
+      icon: <ApiOutlined />,
+      label: 'Sandbox API',
+    },
   ];
 
   const renderContent = () => {
@@ -38,6 +44,8 @@ function App() {
         return <ValidationRules />;
       case 'guide':
         return <DeveloperGuide />;
+      case 'sandbox':
+        return <SandboxGuide />;
       default:
         return <Playground />;
     }

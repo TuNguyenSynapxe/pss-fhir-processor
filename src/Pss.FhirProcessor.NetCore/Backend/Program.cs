@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor;
 using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Services;
+using Pss.FhirProcessor.Api.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,9 @@ builder.Services.AddCors(options =>
 
 // Register FhirProcessor as singleton
 builder.Services.AddSingleton<IFhirProcessorService, FhirProcessorService>();
+
+// Register API Key authentication filter
+builder.Services.AddScoped<ApiKeyAuthFilter>();
 
 var app = builder.Build();
 
