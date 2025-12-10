@@ -2,10 +2,10 @@ using Xunit;
 using FluentAssertions;
 using System.IO;
 using Newtonsoft.Json.Linq;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Validation;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Metadata;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.ValidationEngine
 {
     /// <summary>
     /// Integration test for Reference validation using the full ValidationEngine
@@ -43,7 +43,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             var metadataPath = Path.Combine(_metadataPath, "validation-metadata.json");
             
             // Create validation engine
-            var engine = new MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationEngine();
+            var engine = new MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.ValidationEngine();
             engine.LoadMetadata(metadataPath);
 
             // Act - Validate the bundle
@@ -69,7 +69,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
             var metadataPath = Path.Combine(_metadataPath, "validation-metadata.json");
 
             // Create validation engine
-            var engine = new MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationEngine();
+            var engine = new MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.ValidationEngine();
             engine.LoadMetadata(metadataPath);
 
             // Act - Validate the bundle

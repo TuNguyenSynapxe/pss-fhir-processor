@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net472;net6.0</TargetFrameworks>
-    <RootNamespace>MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests</RootNamespace>
+    <RootNamespace>MOH.HealthierSG.PSS.FhirProcessor.Tests</RootNamespace>
     <IsPackable>false</IsPackable>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>

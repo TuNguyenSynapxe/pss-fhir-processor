@@ -3,11 +3,11 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Xunit;
 using Newtonsoft.Json.Linq;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Utilities;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Metadata;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Validation;
+using MOH.HealthierSG.PSS.FhirProcessor.Utilities;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.UnitTests
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.UnitTests
 {
     /// <summary>
     /// Tests to ensure regex timeout protection doesn't break legitimate validation patterns

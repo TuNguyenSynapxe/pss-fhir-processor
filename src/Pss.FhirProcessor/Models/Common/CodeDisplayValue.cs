@@ -1,4 +1,4 @@
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Common
+namespace MOH.HealthierSG.PSS.FhirProcessor.Models.Common
 {
     /// <summary>
     /// Represents a code-display pair used throughout FHIR and flattened models

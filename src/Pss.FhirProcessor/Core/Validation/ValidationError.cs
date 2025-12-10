@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
+namespace MOH.HealthierSG.PSS.FhirProcessor.Core.Validation
 {
     /// <summary>
     /// Individual validation error with rich metadata for helper system

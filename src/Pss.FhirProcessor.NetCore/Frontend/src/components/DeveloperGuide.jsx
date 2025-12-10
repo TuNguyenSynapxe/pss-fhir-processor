@@ -6,8 +6,8 @@ const { Title, Paragraph, Text } = Typography;
 
 export default function DeveloperGuide() {
   const csharpCode = {
-    setup: `using MOH.HealthierSG.Plugins.PSS.FhirProcessor;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation;
+    setup: `using MOH.HealthierSG.PSS.FhirProcessor;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Validation;
 
 // Initialize the validation engine
 var validationEngine = new ValidationEngine();
@@ -200,7 +200,7 @@ else
 // Web API Usage (ASP.NET Core)
 // ============================================
 using Microsoft.AspNetCore.Mvc;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor;
+using MOH.HealthierSG.PSS.FhirProcessor;
 
 [ApiController]
 [Route("api/[controller]")]

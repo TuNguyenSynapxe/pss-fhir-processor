@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Metadata;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Path;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
+namespace MOH.HealthierSG.PSS.FhirProcessor.Core.Validation
 {
     /// <summary>
     /// Enriches validation errors with metadata for frontend helper system

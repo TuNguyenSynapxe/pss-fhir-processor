@@ -1,6 +1,6 @@
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Validation;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Services
+namespace MOH.HealthierSG.PSS.FhirProcessor.Api.Services
 {
     public interface IFhirProcessorService
     {

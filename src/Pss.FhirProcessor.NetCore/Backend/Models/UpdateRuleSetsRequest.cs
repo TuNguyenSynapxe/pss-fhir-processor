@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Models
+namespace MOH.HealthierSG.PSS.FhirProcessor.Api.Models
 {
     public class UpdateRuleSetsRequest
     {

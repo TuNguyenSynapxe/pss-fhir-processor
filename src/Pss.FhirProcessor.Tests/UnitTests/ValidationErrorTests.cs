@@ -1,8 +1,8 @@
 using FluentAssertions;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Validation;
 using Xunit;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.UnitTests
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.UnitTests
 {
     public class ValidationErrorTests
     {

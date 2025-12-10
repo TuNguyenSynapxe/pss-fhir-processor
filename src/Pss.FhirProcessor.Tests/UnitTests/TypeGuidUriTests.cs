@@ -1,8 +1,8 @@
 using FluentAssertions;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Validation;
 using Xunit;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.UnitTests
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.UnitTests
 {
     /// <summary>
     /// Tests for guid-uri type validation in TypeChecker

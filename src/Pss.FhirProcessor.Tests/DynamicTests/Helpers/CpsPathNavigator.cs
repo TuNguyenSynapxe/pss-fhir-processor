@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Helpers
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.DynamicTests.Helpers
 {
     /// <summary>
     /// Navigates and mutates JSON using CPS (Custom Path Syntax) paths.

@@ -1,6 +1,6 @@
 using System.Linq;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Flattened
+namespace MOH.HealthierSG.PSS.FhirProcessor.Models.Flattened
 {
     /// <summary>
     /// Complete flattened result containing event, participant, and all screening data

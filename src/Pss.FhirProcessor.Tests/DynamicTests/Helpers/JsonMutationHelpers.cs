@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Helpers
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.DynamicTests.Helpers
 {
     /// <summary>
     /// Helper methods for mutating FHIR Bundle JSON to create negative test cases

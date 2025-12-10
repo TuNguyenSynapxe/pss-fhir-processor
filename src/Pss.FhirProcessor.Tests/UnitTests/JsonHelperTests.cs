@@ -1,8 +1,8 @@
 using FluentAssertions;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Utilities;
+using MOH.HealthierSG.PSS.FhirProcessor.Utilities;
 using Xunit;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.UnitTests
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.UnitTests
 {
     public class JsonHelperTests
     {

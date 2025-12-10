@@ -5,10 +5,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Generators;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Metadata;
+using MOH.HealthierSG.PSS.FhirProcessor.Tests.DynamicTests.Generators;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.DynamicTests
 {
     /// <summary>
     /// Tests to ensure metadata-driven test generation provides 100% rule coverage

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Common;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Common;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Flattened
+namespace MOH.HealthierSG.PSS.FhirProcessor.Models.Flattened
 {
     /// <summary>
     /// Single observation item (question + answer(s))

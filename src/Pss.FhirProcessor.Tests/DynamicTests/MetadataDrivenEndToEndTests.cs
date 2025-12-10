@@ -2,10 +2,10 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Models;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Validation;
+using MOH.HealthierSG.PSS.FhirProcessor.Tests.DynamicTests.Models;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.DynamicTests
 {
     /// <summary>
     /// Metadata-driven end-to-end validation tests using mutation-based test case generation.

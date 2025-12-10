@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Flattened
+namespace MOH.HealthierSG.PSS.FhirProcessor.Models.Flattened
 {
     /// <summary>
     /// Screening set containing all observations for a screening type (HS/OS/VS)

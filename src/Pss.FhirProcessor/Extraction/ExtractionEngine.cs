@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Common;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Fhir;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Flattened;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Utilities;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Common;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Fhir;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Flattened;
+using MOH.HealthierSG.PSS.FhirProcessor.Utilities;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Extraction
+namespace MOH.HealthierSG.PSS.FhirProcessor.Extraction
 {
     /// <summary>
     /// Core extraction engine that converts validated FHIR Bundle into FlattenResult

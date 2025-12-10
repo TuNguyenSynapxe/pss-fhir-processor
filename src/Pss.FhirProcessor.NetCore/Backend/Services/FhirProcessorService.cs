@@ -2,19 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Fhir;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Flattened;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Extraction;
-using V5ValidationEngine = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationEngine;
-using V5ValidationResult = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationResult;
-using V5ValidationError = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationError;
-using V5RuleMetadata = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationRuleMetadata;
-using V5ErrorContext = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationErrorContext;
-using V5CodeSystemConcept = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.CodeSystemConcept;
-using V5PathAnalysis = MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.PathAnalysis;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Validation;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Fhir;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Flattened;
+using MOH.HealthierSG.PSS.FhirProcessor.Extraction;
+using V5ValidationEngine = MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.ValidationEngine;
+using V5ValidationResult = MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.ValidationResult;
+using V5ValidationError = MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.ValidationError;
+using V5RuleMetadata = MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.ValidationRuleMetadata;
+using V5ErrorContext = MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.ValidationErrorContext;
+using V5CodeSystemConcept = MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.CodeSystemConcept;
+using V5PathAnalysis = MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.PathAnalysis;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Services
+namespace MOH.HealthierSG.PSS.FhirProcessor.Api.Services
 {
     public class FhirProcessorService : IFhirProcessorService
     {

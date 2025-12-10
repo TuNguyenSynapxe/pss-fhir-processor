@@ -1,14 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net472;net6.0</TargetFrameworks>
-    <RootNamespace>MOH.HealthierSG.Plugins.PSS.FhirProcessor</RootNamespace>
-    <AssemblyName>MOH.HealthierSG.Plugins.PSS.FhirProcessor</AssemblyName>
+    <TargetFrameworks>net462;net6.0</TargetFrameworks>
+    <RootNamespace>MOH.HealthierSG.PSS.FhirProcessor</RootNamespace>
+    <AssemblyName>MOH.HealthierSG.PSS.FhirProcessor</AssemblyName>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <!-- ValueTuple support for .NET Framework 4.6.2 -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+    <PackageReference Include="System.ValueTuple" Version="4.6.1" />
   </ItemGroup>
 
 </Project>

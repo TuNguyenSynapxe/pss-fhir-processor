@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Services;
+using MOH.HealthierSG.PSS.FhirProcessor;
+using MOH.HealthierSG.PSS.FhirProcessor.Api.Services;
 using Pss.FhirProcessor.Api.Filters;
 
 var builder = WebApplication.CreateBuilder(args);

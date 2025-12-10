@@ -193,7 +193,7 @@ pss-fhir-processor/
 │   └── pss-fhir-processor-design.md (combined)
 │
 ├── src/
-│   ├── MOH.HealthierSG.Plugins.PSS.FhirProcessor/
+│   ├── MOH.HealthierSG.PSS.FhirProcessor/
 │   ├── PSS.FhirPlayground.Web/
 │   └── PSS.FhirProcessor.Tests/
 │

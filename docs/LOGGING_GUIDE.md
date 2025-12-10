@@ -170,8 +170,8 @@ These symbols help quickly identify the status of operations when scanning logs.
 ```csharp
 using System;
 using System.IO;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation;
+using MOH.HealthierSG.PSS.FhirProcessor;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Validation;
 
 class Program
 {

@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Common
+namespace MOH.HealthierSG.PSS.FhirProcessor.Models.Common
 {
     /// <summary>
     /// FHIR Reference structure

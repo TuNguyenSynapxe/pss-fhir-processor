@@ -53,7 +53,7 @@ This project solves that gap.
 A single reusable assembly:
 
 ```
-MOH.HealthierSG.Plugins.PSS.FhirProcessor.dll
+MOH.HealthierSG.PSS.FhirProcessor.dll
 ```
 
 With responsibilities:

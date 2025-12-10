@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata
+namespace MOH.HealthierSG.PSS.FhirProcessor.Core.Metadata
 {
     /// <summary>
     /// Single validation rule definition

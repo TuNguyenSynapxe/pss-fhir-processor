@@ -1,4 +1,4 @@
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Fhir
+namespace MOH.HealthierSG.PSS.FhirProcessor.Models.Fhir
 {
     /// <summary>
     /// FHIR Bundle Entry

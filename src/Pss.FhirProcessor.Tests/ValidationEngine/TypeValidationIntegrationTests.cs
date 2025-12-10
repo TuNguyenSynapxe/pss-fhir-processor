@@ -1,10 +1,10 @@
 using FluentAssertions;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Metadata;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Validation;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.ValidationEngine
 {
     /// <summary>
     /// Integration tests for Type validation rule in RuleEvaluator

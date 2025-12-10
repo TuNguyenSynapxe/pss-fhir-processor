@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Generators;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Models;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Metadata;
+using MOH.HealthierSG.PSS.FhirProcessor.Tests.DynamicTests.Generators;
+using MOH.HealthierSG.PSS.FhirProcessor.Tests.DynamicTests.Models;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.DynamicTests
 {
     /// <summary>
     /// Generates all dynamic test cases for NUnit TestCaseSource.

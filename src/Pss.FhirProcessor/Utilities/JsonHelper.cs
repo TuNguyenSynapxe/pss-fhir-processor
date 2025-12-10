@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Utilities
+namespace MOH.HealthierSG.PSS.FhirProcessor.Utilities
 {
     /// <summary>
     /// JSON serialization/deserialization helper

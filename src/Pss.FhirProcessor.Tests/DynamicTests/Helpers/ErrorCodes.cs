@@ -1,4 +1,4 @@
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Helpers
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.DynamicTests.Helpers
 {
     /// <summary>
     /// Central registry of all validation error codes used in metadata.

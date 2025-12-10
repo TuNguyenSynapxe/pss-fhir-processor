@@ -1,10 +1,10 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Models;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Services;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Seed;
+using MOH.HealthierSG.PSS.FhirProcessor.Api.Models;
+using MOH.HealthierSG.PSS.FhirProcessor.Api.Services;
+using MOH.HealthierSG.PSS.FhirProcessor.Api.Seed;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Controllers
+namespace MOH.HealthierSG.PSS.FhirProcessor.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

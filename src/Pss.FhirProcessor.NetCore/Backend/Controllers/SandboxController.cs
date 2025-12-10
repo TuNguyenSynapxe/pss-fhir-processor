@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Pss.FhirProcessor.Api.Filters;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Services;
+using MOH.HealthierSG.PSS.FhirProcessor.Api.Services;
 using System;
 
 namespace Pss.FhirProcessor.Api.Controllers

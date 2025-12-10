@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
+namespace MOH.HealthierSG.PSS.FhirProcessor.Core.Validation
 {
     /// <summary>
     /// Validates data types for field values

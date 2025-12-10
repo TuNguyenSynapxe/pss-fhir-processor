@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Utilities
+namespace MOH.HealthierSG.PSS.FhirProcessor.Utilities
 {
     /// <summary>
     /// Resolves paths in FHIR objects supporting dot notation, array indexing, and wildcards

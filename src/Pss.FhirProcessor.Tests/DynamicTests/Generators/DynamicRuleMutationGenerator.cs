@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Helpers;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Models;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Metadata;
+using MOH.HealthierSG.PSS.FhirProcessor.Tests.DynamicTests.Helpers;
+using MOH.HealthierSG.PSS.FhirProcessor.Tests.DynamicTests.Models;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Generators
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.DynamicTests.Generators
 {
     /// <summary>
     /// Exception thrown when a mutation fails to apply

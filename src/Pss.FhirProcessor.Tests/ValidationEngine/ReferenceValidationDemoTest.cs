@@ -1,11 +1,11 @@
 using Xunit;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Metadata;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Validation;
 using System.Collections.Generic;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.ValidationEngine
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.ValidationEngine
 {
     /// <summary>
     /// Demo test showing Reference validation catching invalid patient references

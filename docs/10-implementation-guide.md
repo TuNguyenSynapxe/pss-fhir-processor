@@ -37,7 +37,7 @@ The DLL is standalone:
 # 3. Referencing the DLL
 
 ```csharp
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor;
+using MOH.HealthierSG.PSS.FhirProcessor;
 ```
 
 ```csharp

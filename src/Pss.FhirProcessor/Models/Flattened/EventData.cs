@@ -1,4 +1,4 @@
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Flattened
+namespace MOH.HealthierSG.PSS.FhirProcessor.Models.Flattened
 {
     /// <summary>
     /// Event metadata extracted from Encounter, Location, and Organizations

@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Codes;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Fhir;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Utilities;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Metadata;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Codes;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Fhir;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Validation;
+using MOH.HealthierSG.PSS.FhirProcessor.Utilities;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation
+namespace MOH.HealthierSG.PSS.FhirProcessor.Validation
 {
     /// <summary>
     /// Core validation engine implementing metadata-driven validation logic

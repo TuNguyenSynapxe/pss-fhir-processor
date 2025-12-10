@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation
+namespace MOH.HealthierSG.PSS.FhirProcessor.Models.Validation
 {
     /// <summary>
     /// Result of validation containing success flag and errors

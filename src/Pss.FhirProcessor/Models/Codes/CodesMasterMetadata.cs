@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Codes
+namespace MOH.HealthierSG.PSS.FhirProcessor.Models.Codes
 {
     /// <summary>
     /// Complete Codes Master metadata

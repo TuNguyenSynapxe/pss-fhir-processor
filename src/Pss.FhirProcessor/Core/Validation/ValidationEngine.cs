@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Utilities;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Metadata;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Path;
+using MOH.HealthierSG.PSS.FhirProcessor.Utilities;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation
+namespace MOH.HealthierSG.PSS.FhirProcessor.Core.Validation
 {
     /// <summary>
     /// Main validation engine for FHIR resources using CPS1 path syntax

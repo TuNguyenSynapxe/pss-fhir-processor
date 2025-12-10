@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Models
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.DynamicTests.Models
 {
     /// <summary>
     /// Represents a single dynamic test case with input JSON and expected validation outcome

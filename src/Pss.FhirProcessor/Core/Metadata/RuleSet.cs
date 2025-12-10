@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata
+namespace MOH.HealthierSG.PSS.FhirProcessor.Core.Metadata
 {
     /// <summary>
     /// Collection of validation rules for a specific resource scope

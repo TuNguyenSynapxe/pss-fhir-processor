@@ -20,7 +20,7 @@ All models are CRM-agnostic.
 
 Root namespace:
 ```
-MOH.HealthierSG.Plugins.PSS.FhirProcessor
+MOH.HealthierSG.PSS.FhirProcessor
 ```
 
 Subfolders:

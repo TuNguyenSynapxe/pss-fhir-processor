@@ -1,4 +1,4 @@
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Flattened
+namespace MOH.HealthierSG.PSS.FhirProcessor.Models.Flattened
 {
     /// <summary>
     /// Participant demographics extracted from Patient resource - mapped to CRM fields

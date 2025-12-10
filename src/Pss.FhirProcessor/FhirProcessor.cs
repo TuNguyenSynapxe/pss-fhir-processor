@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Extraction;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Fhir;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Flattened;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Utilities;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Validation;
+using MOH.HealthierSG.PSS.FhirProcessor.Extraction;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Fhir;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Flattened;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Validation;
+using MOH.HealthierSG.PSS.FhirProcessor.Utilities;
+using MOH.HealthierSG.PSS.FhirProcessor.Validation;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor
+namespace MOH.HealthierSG.PSS.FhirProcessor
 {
     /// <summary>
     /// Main facade for PSS FHIR Processor - coordinates validation and extraction

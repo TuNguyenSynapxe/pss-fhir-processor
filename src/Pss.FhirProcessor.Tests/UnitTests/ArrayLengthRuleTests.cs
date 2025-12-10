@@ -1,9 +1,9 @@
 using Xunit;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Metadata;
+using MOH.HealthierSG.PSS.FhirProcessor.Core.Metadata;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.UnitTests
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.UnitTests
 {
     /// <summary>
     /// Unit tests for ArrayLength validation rule
@@ -66,7 +66,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.UnitTests
                 ]
             }";
 
-            var engine = new MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationEngine();
+            var engine = new MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.ValidationEngine();
             var metadataJson = JsonConvert.SerializeObject(metadata);
             engine.LoadMetadataFromJson(metadataJson);
 
@@ -133,7 +133,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.UnitTests
                 ]
             }";
 
-            var engine = new MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationEngine();
+            var engine = new MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.ValidationEngine();
             var metadataJson = JsonConvert.SerializeObject(metadata);
             engine.LoadMetadataFromJson(metadataJson);
 
@@ -202,7 +202,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.UnitTests
                 ]
             }";
 
-            var engine = new MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationEngine();
+            var engine = new MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.ValidationEngine();
             var metadataJson = JsonConvert.SerializeObject(metadata);
             engine.LoadMetadataFromJson(metadataJson);
 
@@ -271,7 +271,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.UnitTests
                 ]
             }";
 
-            var engine = new MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationEngine();
+            var engine = new MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.ValidationEngine();
             var metadataJson = JsonConvert.SerializeObject(metadata);
             engine.LoadMetadataFromJson(metadataJson);
 
@@ -338,7 +338,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.UnitTests
                 ]
             }";
 
-            var engine = new MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationEngine();
+            var engine = new MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.ValidationEngine();
             var metadataJson = JsonConvert.SerializeObject(metadata);
             engine.LoadMetadataFromJson(metadataJson);
 
@@ -407,7 +407,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.UnitTests
                 ]
             }";
 
-            var engine = new MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationEngine();
+            var engine = new MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.ValidationEngine();
             var metadataJson = JsonConvert.SerializeObject(metadata);
             engine.LoadMetadataFromJson(metadataJson);
 
@@ -468,7 +468,7 @@ namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.UnitTests
                 ]
             }";
 
-            var engine = new MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Validation.ValidationEngine();
+            var engine = new MOH.HealthierSG.PSS.FhirProcessor.Core.Validation.ValidationEngine();
             var metadataJson = JsonConvert.SerializeObject(metadata);
             engine.LoadMetadataFromJson(metadataJson);
 

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api</RootNamespace>
+    <RootNamespace>MOH.HealthierSG.PSS.FhirProcessor.Api</RootNamespace>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>

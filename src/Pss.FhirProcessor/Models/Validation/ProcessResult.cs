@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Flattened;
-using MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Fhir;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Flattened;
+using MOH.HealthierSG.PSS.FhirProcessor.Models.Fhir;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Validation
+namespace MOH.HealthierSG.PSS.FhirProcessor.Models.Validation
 {
     /// <summary>
     /// Complete processing result containing validation, extraction, and logs

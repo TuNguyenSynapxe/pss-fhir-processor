@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Utilities
+namespace MOH.HealthierSG.PSS.FhirProcessor.Utilities
 {
     /// <summary>
     /// Simple logger that collects log messages during processing

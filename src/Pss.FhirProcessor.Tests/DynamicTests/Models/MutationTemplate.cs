@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Tests.DynamicTests.Models
+namespace MOH.HealthierSG.PSS.FhirProcessor.Tests.DynamicTests.Models
 {
     /// <summary>
     /// Template for generating a negative test case by mutating a valid baseline bundle

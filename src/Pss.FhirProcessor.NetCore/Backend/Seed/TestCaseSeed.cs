@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Api.Seed
+namespace MOH.HealthierSG.PSS.FhirProcessor.Api.Seed
 {
     public static class TestCaseSeed
     {

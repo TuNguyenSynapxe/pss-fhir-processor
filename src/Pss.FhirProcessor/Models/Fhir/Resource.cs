@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Models.Fhir
+namespace MOH.HealthierSG.PSS.FhirProcessor.Models.Fhir
 {
     /// <summary>
     /// Base FHIR Resource

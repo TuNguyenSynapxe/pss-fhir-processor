@@ -1,4 +1,4 @@
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path
+namespace MOH.HealthierSG.PSS.FhirProcessor.Core.Path
 {
     /// <summary>
     /// Filter types for CPS1 path segments

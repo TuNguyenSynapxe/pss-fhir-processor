@@ -1,4 +1,4 @@
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path
+namespace MOH.HealthierSG.PSS.FhirProcessor.Core.Path
 {
     /// <summary>
     /// Represents a single segment in a CPS1 path

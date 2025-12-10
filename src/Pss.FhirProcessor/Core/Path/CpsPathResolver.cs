@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace MOH.HealthierSG.Plugins.PSS.FhirProcessor.Core.Path
+namespace MOH.HealthierSG.PSS.FhirProcessor.Core.Path
 {
     /// <summary>
     /// Parses and resolves CPS1 (Custom Path Syntax 1) paths in FHIR resources
