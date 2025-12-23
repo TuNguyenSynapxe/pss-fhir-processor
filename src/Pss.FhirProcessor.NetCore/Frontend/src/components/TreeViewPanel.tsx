@@ -9,7 +9,6 @@ import {
   ShrinkOutlined
 } from '@ant-design/icons';
 import type { DataNode } from 'antd/es/tree';
-import happySampleData from '../seed/happy-sample-full.json';
 
 interface TreeViewPanelProps {
   fhirJson: string;
@@ -61,15 +60,23 @@ export default function TreeViewPanel({ fhirJson, setFhirJson, scrollTargetRef, 
   const treeRef = useRef<any>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Handle loading sample data
-  const handleLoadSample = () => {
+  // Handle loading sample data from API
+  const handleLoadSample = async () => {
     try {
-      const sampleJson = JSON.stringify(happySampleData, null, 2);
+      const response = await fetch('/api/seed/public/happy-sample-full.json');
+      
+      if (!response.ok) {
+        throw new Error(`Failed to load sample: ${response.statusText}`);
+      }
+      
+      const content = await response.text();
+      // Format the JSON for better display
+      const sampleJson = JSON.stringify(JSON.parse(content), null, 2);
       setFhirJson(sampleJson);
       message.success('Sample FHIR data loaded successfully');
     } catch (error) {
       console.error('Failed to load sample data:', error);
-      message.error('Failed to load sample data');
+      message.error('Failed to load sample data from server');
     }
   };
 
