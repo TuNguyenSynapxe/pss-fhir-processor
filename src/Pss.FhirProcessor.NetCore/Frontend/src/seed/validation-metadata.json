@@ -893,7 +893,7 @@
     "Questions": [
       {
         "QuestionCode": "SQ-L2H9-00000001",
-        "QuestionDisplay": "Is the participant currently wearing hearing aid(s)?",
+        "QuestionDisplay": "Is the participant wearing hearing aids?",
         "ScreeningType": "HS",
         "AllowedAnswers": [
           "Yes (Proceed to next question)",
@@ -903,17 +903,18 @@
       },
       {
         "QuestionCode": "SQ-Q1P1-00000002",
-        "QuestionDisplay": "Do participant need to change your hearing aid(s)?",
+        "QuestionDisplay": "Does the participant need to change the hearing aids?",
         "ScreeningType": "HS",
         "AllowedAnswers": [
-          "Yes (To skip hearing screening and refer to L2 Hearing)",
+          "Yes (To skip hearing screening and refer for L2 Hearing)",
+	    "Not Applicable",
           "No (To skip hearing screening and advise to continue follow up with audiologist)"
         ],
         "IsMultiValue": false
       },
       {
         "QuestionCode": "SQ-R5W8-00000003",
-        "QuestionDisplay": "Did participant proceed with Hearing Screening?",
+        "QuestionDisplay": "Proceed with Hearing Screening",
         "ScreeningType": "HS",
         "AllowedAnswers": [
           "Yes",
@@ -923,7 +924,7 @@
       },
       {
         "QuestionCode": "SQ-P4Y1-00000004",
-        "QuestionDisplay": "Visual Ear Examination (Left Ear)",
+        "QuestionDisplay": "Visual Examination (Left Ear)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
           "Pass",
@@ -933,7 +934,7 @@
       },
       {
         "QuestionCode": "SQ-S7Q0-00000005",
-        "QuestionDisplay": "Visual Ear Examination (Right Ear)",
+        "QuestionDisplay": "Visual Examination (Right Ear)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
           "Pass",
@@ -943,7 +944,7 @@
       },
       {
         "QuestionCode": "SQ-J3J4-00000006",
-        "QuestionDisplay": "Practice Tone (500Hz at 60dB in better ear)",
+        "QuestionDisplay": "Practice Tone (500Hz at 60dB at Better Ear)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
           "Pass",
@@ -953,7 +954,7 @@
       },
       {
         "QuestionCode": "SQ-F7B7-00000007",
-        "QuestionDisplay": "Pure Tone Screening at 25dBHL (Left)",
+        "QuestionDisplay": "Pure Tone Screening at 25dB (Left)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
           "500Hz - R",
@@ -969,7 +970,7 @@
       },
       {
         "QuestionCode": "SQ-B7P7-00000008",
-        "QuestionDisplay": "Pure Tone Screening at 25dBHL (Right)",
+        "QuestionDisplay": "Pure Tone Screening at 25dB (Right)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
           "500Hz - R",
@@ -985,7 +986,7 @@
       },
       {
         "QuestionCode": "SQ-C1M5-00000009",
-        "QuestionDisplay": "Pure Tone Screening at 40dBHL (Left)",
+        "QuestionDisplay": "Pure Tone Screening at 40dB (Left)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
           "500Hz - R",
@@ -1001,7 +1002,7 @@
       },
       {
         "QuestionCode": "SQ-C2S1-00000010",
-        "QuestionDisplay": "Pure Tone Screening at 40dBHL (Right)",
+        "QuestionDisplay": "Pure Tone Screening at 40dB (Right)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
           "500Hz - R",
@@ -1017,17 +1018,17 @@
       },
       {
         "QuestionCode": "SQ-M8Z2-00000011",
-        "QuestionDisplay": "Does participant have any upcoming appointment with ear specialist?",
+        "QuestionDisplay": "Do you have any upcoming appointment with ear specialist?",
         "ScreeningType": "HS",
         "AllowedAnswers": [
-          "Yes (To continue follow up with ear specialist)",
+          "Yes (To continue follow up with specialist)",
           "No (Refer to L2 Hearing Follow Up if necessary)"
         ],
         "IsMultiValue": false
       },
       {
         "QuestionCode": "SQ-D3S4-00000012",
-        "QuestionDisplay": "Does the participant require to refer to L2 Hearing?",
+        "QuestionDisplay": "Does the participant require to refer for L2 Hearing?",
         "ScreeningType": "HS",
         "AllowedAnswers": [
           "Yes",
@@ -1037,7 +1038,7 @@
       },
       {
         "QuestionCode": "SQ-L6T4-00000013",
-        "QuestionDisplay": "Does the participant agree to proceed with L2 Hearing?",
+        "QuestionDisplay": "Does the participant agree for L2 Hearing?",
         "ScreeningType": "HS",
         "AllowedAnswers": [
           "Yes",
@@ -1077,7 +1078,7 @@
       },
       {
         "QuestionCode": "SQ-D7V0-00000017",
-        "QuestionDisplay": "Did participant proceed with Oral Screening?",
+        "QuestionDisplay": "Proceed with Oral Screening",
         "ScreeningType": "OS",
         "AllowedAnswers": [
           "Yes",
@@ -1090,8 +1091,8 @@
         "QuestionDisplay": "Do you have any dental pain on a scale of 1 to 10? (On a scale of 1-10, 1 being not painful at all and 10 being extremely painful)",
         "ScreeningType": "OS",
         "AllowedAnswers": [
-          "Yes (Pain Scale: 6 to 10)",
-          "No (Pain Scale: 1 to 5)"
+          "Yes (Pain Scale: 1 to 5)",
+          "No (Pain Scale: 6 to 10)"
         ],
         "IsMultiValue": false
       },
@@ -1128,7 +1129,7 @@
       },
       {
         "QuestionCode": "SQ-X4H3-00000022",
-        "QuestionDisplay": "Does participant have any upcoming appointment with any dentist?",
+        "QuestionDisplay": "Do you have any upcoming appointment with dentist?",
         "ScreeningType": "OS",
         "AllowedAnswers": [
           "Yes (To continue follow up with dentist)",
@@ -1138,7 +1139,7 @@
       },
       {
         "QuestionCode": "SQ-H6B2-00000023",
-        "QuestionDisplay": "Does the participant require to refer to L2 Oral?",
+        "QuestionDisplay": "Does the participant require to refer for L2 Oral?",
         "ScreeningType": "OS",
         "AllowedAnswers": [
           "Yes",
@@ -1148,7 +1149,7 @@
       },
       {
         "QuestionCode": "SQ-Y3R0-00000024",
-        "QuestionDisplay": "Does the participant agree to proceed with L2 Oral?",
+        "QuestionDisplay": "Does the participant agree for L2 Oral?",
         "ScreeningType": "OS",
         "AllowedAnswers": [
           "Yes",
@@ -1158,17 +1159,17 @@
       },
       {
         "QuestionCode": "SQ-X1V3-00000025",
-        "QuestionDisplay": "Is the participant currently wearing spectacles?",
+        "QuestionDisplay": "Is the participant wearing spectacles?",
         "ScreeningType": "VS",
         "AllowedAnswers": [
-          "Yes (To carry out vision test with participant's spectacles)",
+          "Yes (To do vision screening with participant's spectacles)",
           "No"
         ],
         "IsMultiValue": false
       },
       {
         "QuestionCode": "SQ-Z6G5-00000026",
-        "QuestionDisplay": "Did participant proceed with Vision Screening?",
+        "QuestionDisplay": "Proceed with Vision Screening",
         "ScreeningType": "VS",
         "AllowedAnswers": [
           "Yes",
@@ -1242,11 +1243,11 @@
       },
       {
         "QuestionCode": "SQ-K8L7-00000031",
-        "QuestionDisplay": "Does participant have any upcoming appointment with any eye specialist or eye review at polyclinic or CHAS GP clinics?",
+        "QuestionDisplay": "Do you have any upcoming appointment with eye specialist or eye review at polyclinic or CHAS GP clinics?",
         "ScreeningType": "VS",
         "AllowedAnswers": [
-          "Yes (To continue follow up with the upcoming eye review in primary care or specialist clinic)",
-          "No (Refer to L2 Vision Follow Up)"
+          "Yes (To continue with the upcoming eye review in primary care or specialist clinic)",
+          "No (Refer to L2 Hearing Follow Up)"
         ],
         "IsMultiValue": false
       },
@@ -1282,7 +1283,7 @@
       },
       {
         "QuestionCode": "SQ-T6W1-00000035",
-        "QuestionDisplay": "Does the participant require to refer to L2 Vision?",
+        "QuestionDisplay": "Does the participant require to refer for L2 Vision?",
         "ScreeningType": "VS",
         "AllowedAnswers": [
           "Yes",
@@ -1292,7 +1293,7 @@
       },
       {
         "QuestionCode": "SQ-F1T3-00000036",
-        "QuestionDisplay": "Does the participant agree to proceed with L2 Vision?",
+        "QuestionDisplay": "Does the participant agree for L2 Vision?",
         "ScreeningType": "VS",
         "AllowedAnswers": [
           "Yes",

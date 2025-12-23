@@ -301,7 +301,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-L2H9-00000001",
-                  "display": "Is the participant currently wearing hearing aid(s)?"
+                  "display": "Is the participant wearing hearing aids?"
                 }
               ]
             },
@@ -313,7 +313,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-Q1P1-00000002",
-                  "display": "Do participant need to change your hearing aid(s)?"
+                  "display": "Does the participant need to change the hearing aids?"
                 }
               ]
             },
@@ -325,7 +325,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-R5W8-00000003",
-                  "display": "Did participant proceed with Hearing Screening?"
+                  "display": "Proceed with Hearing Screening"
                 }
               ]
             },
@@ -337,7 +337,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-P4Y1-00000004",
-                  "display": "Visual Ear Examination (Left Ear)"
+                  "display": "Visual Examination (Left Ear)"
                 }
               ]
             },
@@ -349,7 +349,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-S7Q0-00000005",
-                  "display": "Visual Ear Examination (Right Ear)"
+                  "display": "Visual Examination (Right Ear)"
                 }
               ]
             },
@@ -361,7 +361,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-J3J4-00000006",
-                  "display": "Practice Tone (500Hz at 60dB in better ear)"
+                  "display": "Practice Tone (500Hz at 60dB at Better Ear)"
                 }
               ]
             },
@@ -373,7 +373,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-F7B7-00000007",
-                  "display": "Pure Tone Screening at 25dBHL (Left)"
+                  "display": "Pure Tone Screening at 25dB (Left)"
                 }
               ]
             },
@@ -385,7 +385,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-B7P7-00000008",
-                  "display": "Pure Tone Screening at 25dBHL (Right)"
+                  "display": "Pure Tone Screening at 25dB (Right)"
                 }
               ]
             },
@@ -397,7 +397,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-C1M5-00000009",
-                  "display": "Pure Tone Screening at 40dBHL (Left)"
+                  "display": "Pure Tone Screening at 40dB (Left)"
                 }
               ]
             },
@@ -409,7 +409,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-C2S1-00000010",
-                  "display": "Pure Tone Screening at 40dBHL (Right)"
+                  "display": "Pure Tone Screening at 40dB (Right)"
                 }
               ]
             },
@@ -421,7 +421,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-M8Z2-00000011",
-                  "display": "Does participant have any upcoming appointment with ear specialist?"
+                  "display": "Do you have any upcoming appointment with ear specialist?"
                 }
               ]
             },
@@ -433,7 +433,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-D3S4-00000012",
-                  "display": "Does the participant require to refer to L2 Hearing?"
+                  "display": "Does the participant require to refer for L2 Hearing?"
                 }
               ]
             },
@@ -445,7 +445,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-L6T4-00000013",
-                  "display": "Does the participant agree to proceed with L2 Hearing?"
+                  "display": "Does the participant agree for L2 Hearing?"
                 }
               ]
             },
@@ -521,7 +521,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-D7V0-00000017",
-                  "display": "Did participant proceed with Oral Screening?"
+                  "display": "Proceed with Oral Screening"
                 }
               ]
             },
@@ -581,7 +581,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-X4H3-00000022",
-                  "display": "Does participant have any upcoming appointment with any dentist?"
+                  "display": "Do you have any upcoming appointment with dentist?"
                 }
               ]
             },
@@ -593,7 +593,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-H6B2-00000023",
-                  "display": "Does the participant require to refer to L2 Oral?"
+                  "display": "Does the participant require to refer for L2 Oral?"
                 }
               ]
             },
@@ -605,7 +605,7 @@
                 {
                   "system": "https://fhir.synapxe.sg/CodeSystem/screening-questionnaire",
                   "code": "SQ-Y3R0-00000024",
-                  "display": "Does the participant agree to proceed with L2 Oral?"
+                  "display": "Does the participant agree for L2 Oral?"
                 }
               ]
             },
