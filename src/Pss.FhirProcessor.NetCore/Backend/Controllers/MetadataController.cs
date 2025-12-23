@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
+using MOH.HealthierSG.PSS.FhirProcessor.Api.Services;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace Pss.FhirProcessor.Api.Controllers
@@ -14,39 +16,30 @@ namespace Pss.FhirProcessor.Api.Controllers
     {
         private readonly IWebHostEnvironment _env;
         private readonly ILogger<MetadataController> _logger;
+        private readonly ISeedFileService _seedFileService;
 
-        public MetadataController(IWebHostEnvironment env, ILogger<MetadataController> logger)
+        public MetadataController(IWebHostEnvironment env, ILogger<MetadataController> logger, ISeedFileService seedFileService)
         {
             _env = env;
             _logger = logger;
+            _seedFileService = seedFileService;
         }
 
         /// <summary>
         /// Get the unified validation metadata (single source of truth)
+        /// NOW READS FROM SEED FILE DYNAMICALLY
         /// </summary>
         [HttpGet("validation")]
-        public IActionResult GetValidationMetadata()
+        public async Task<IActionResult> GetValidationMetadata()
         {
             try
             {
-                // Path to the SINGLE source of truth in Pss.FhirProcessor/Metadata
-                var metadataPath = Path.Combine(
-                    _env.ContentRootPath,
-                    "../../Pss.FhirProcessor/Metadata/validation-metadata.json"
-                );
-
-                _logger.LogInformation($"Loading metadata from: {metadataPath}");
-
-                if (!System.IO.File.Exists(metadataPath))
-                {
-                    _logger.LogError($"Metadata file not found at: {metadataPath}");
-                    return NotFound(new { error = "Validation metadata not found" });
-                }
-
-                var json = System.IO.File.ReadAllText(metadataPath);
+                _logger.LogInformation("Loading validation metadata from seed file");
                 
-                // Return raw JSON (already structured with Version, PathSyntax, RuleSets, CodesMaster)
-                return Content(json, "application/json");
+                var content = await _seedFileService.GetPublicSeedFileContent("validation-metadata.json");
+                
+                // Return the content directly as JSON
+                return Content(content, "application/json");
             }
             catch (Exception ex)
             {

@@ -1,7 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { fhirApi } from '../services/api';
-// Keep as fallback for development
-import validationMetadata from '../seed/validation-metadata.json';
 
 const MetadataContext = createContext();
 
@@ -11,7 +9,8 @@ export const MetadataProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [version, setVersion] = useState('5.0');
   const [pathSyntax, setPathSyntax] = useState('CPS1');
-  const [metadataSource, setMetadataSource] = useState('none'); // 'backend' or 'local'
+  const [metadataSource, setMetadataSource] = useState('none'); // 'backend' or 'error'
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadMetadata();
@@ -20,54 +19,36 @@ export const MetadataProvider = ({ children }) => {
   const loadMetadata = async () => {
     try {
       setLoading(true);
+      setError(null);
       
-      // Try to fetch from backend API first (single source of truth)
-      try {
-        console.log('Fetching metadata from backend API...');
-        const response = await fetch('/api/metadata/validation');
-        
-        if (response.ok) {
-          const metadata = await response.json();
-          
-          setRuleSets(metadata.RuleSets);
-          setCodesMaster(metadata.CodesMaster);
-          setVersion(metadata.Version);
-          setPathSyntax(metadata.PathSyntax);
-          setMetadataSource('backend');
-          
-          console.log('✓ Metadata loaded from BACKEND API (single source of truth)');
-          console.log('  Version:', metadata.Version);
-          console.log('  Path Syntax:', metadata.PathSyntax);
-          console.log('  RuleSets:', metadata.RuleSets.length);
-          console.log('  Questions:', metadata.CodesMaster.Questions.length);
-          
-          setLoading(false);
-          return;
-        }
-      } catch (apiError) {
-        console.warn('Backend API not available, falling back to local metadata:', apiError.message);
+      console.log('Fetching metadata from backend API (reads from seed file)...');
+      const response = await fetch('/api/metadata/validation');
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch metadata: ${response.statusText}`);
       }
       
-      // Fallback: Load from local JSON file
-      console.log('Loading metadata from LOCAL fallback...');
-      setRuleSets(validationMetadata.RuleSets);
-      setCodesMaster(validationMetadata.CodesMaster);
-      setVersion(validationMetadata.Version);
-      setPathSyntax(validationMetadata.PathSyntax);
-      setMetadataSource('local');
+      const metadata = await response.json();
       
-      console.log('⚠ Metadata loaded from LOCAL fallback (development mode)');
-      console.log('  Version:', validationMetadata.Version);
-      console.log('  Path Syntax:', validationMetadata.PathSyntax);
-      console.log('  RuleSets:', validationMetadata.RuleSets.length);
-      console.log('  Questions:', validationMetadata.CodesMaster.Questions.length);
+      setRuleSets(metadata.RuleSets);
+      setCodesMaster(metadata.CodesMaster);
+      setVersion(metadata.Version);
+      setPathSyntax(metadata.PathSyntax);
+      setMetadataSource('backend');
+      
+      console.log('✓ Metadata loaded from BACKEND API (dynamic seed file)');
+      console.log('  Version:', metadata.Version);
+      console.log('  Path Syntax:', metadata.PathSyntax);
+      console.log('  RuleSets:', metadata.RuleSets.length);
+      console.log('  Questions:', metadata.CodesMaster.Questions.length);
       
     } catch (error) {
       console.error('Failed to load metadata:', error);
-      // Ultimate fallback to empty metadata
+      setError(error.message);
+      setMetadataSource('error');
+      // Set empty metadata on error
       setRuleSets([]);
       setCodesMaster({ Questions: [], CodeSystems: [] });
-      setMetadataSource('none');
     } finally {
       setLoading(false);
     }
@@ -117,7 +98,8 @@ export const MetadataProvider = ({ children }) => {
         version,
         pathSyntax,
         loading,
-        metadataSource, // 'backend', 'local', or 'none'
+        error,
+        metadataSource, // 'backend' or 'error'
         updateRuleSets,
         updateCodesMaster,
         updateFullMetadata,

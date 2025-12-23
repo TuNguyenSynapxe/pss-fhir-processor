@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Layout, Menu } from 'antd';
-import { ExperimentOutlined, FileTextOutlined, CodeOutlined, ApiOutlined } from '@ant-design/icons';
+import { Layout, Menu, App as AntdApp } from 'antd';
+import { ExperimentOutlined, FileTextOutlined, CodeOutlined, ApiOutlined, SettingOutlined } from '@ant-design/icons';
 import Playground from './components/PlaygroundLayout';
 import ValidationRules from './components/ValidationRules';
 import DeveloperGuide from './components/DeveloperGuide';
 import SandboxGuide from './components/SandboxGuide';
+import AdminPanel from './components/AdminPanel';
 import { MetadataProvider } from './contexts/MetadataContext';
 import './App.css';
 
@@ -34,6 +35,11 @@ function App() {
       icon: <ApiOutlined />,
       label: 'Sandbox API',
     },
+    {
+      key: 'admin',
+      icon: <SettingOutlined />,
+      label: 'Admin',
+    },
   ];
 
   const renderContent = () => {
@@ -46,41 +52,45 @@ function App() {
         return <DeveloperGuide />;
       case 'sandbox':
         return <SandboxGuide />;
+      case 'admin':
+        return <AdminPanel />;
       default:
         return <Playground />;
     }
   };
 
   return (
-    <MetadataProvider>
-      <Layout className="min-h-screen">
-        <Header className="flex items-center bg-blue-600">
-          <div className="text-white text-xl font-bold mr-8">
-            PSS FHIR Processor
-          </div>
-          <Menu
-            theme="dark"
-            mode="horizontal"
-            selectedKeys={[currentPage]}
-            items={menuItems}
-            onClick={({ key }) => setCurrentPage(key)}
-            className="flex-1 bg-blue-600"
-          />
-        </Header>
-        <Content className={currentPage === 'playground' ? '' : 'p-6 bg-gray-100'}>
-          {currentPage === 'playground' ? (
-            renderContent()
-          ) : (
-            <div className="max-w-7xl mx-auto">
-              {renderContent()}
+    <AntdApp>
+      <MetadataProvider>
+        <Layout className="min-h-screen">
+          <Header className="flex items-center bg-blue-600">
+            <div className="text-white text-xl font-bold mr-8">
+              PSS FHIR Processor
             </div>
-          )}
-        </Content>
-        <Footer className="text-center bg-gray-200">
-          PSS FHIR Processor ©2025 - MOH HealthierSG
-        </Footer>
-      </Layout>
-    </MetadataProvider>
+            <Menu
+              theme="dark"
+              mode="horizontal"
+              selectedKeys={[currentPage]}
+              items={menuItems}
+              onClick={({ key }) => setCurrentPage(key)}
+              className="flex-1 bg-blue-600"
+            />
+          </Header>
+          <Content className={currentPage === 'playground' ? '' : 'p-6 bg-gray-100'}>
+            {currentPage === 'playground' || currentPage === 'admin' ? (
+              renderContent()
+            ) : (
+              <div className="max-w-7xl mx-auto">
+                {renderContent()}
+              </div>
+            )}
+          </Content>
+          <Footer className="text-center bg-gray-200">
+            PSS FHIR Processor ©2025 - MOH HealthierSG
+          </Footer>
+        </Layout>
+      </MetadataProvider>
+    </AntdApp>
   );
 }
 

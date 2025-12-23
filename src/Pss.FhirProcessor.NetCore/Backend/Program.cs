@@ -32,6 +32,9 @@ builder.Services.AddCors(options =>
 // Register FhirProcessor as singleton
 builder.Services.AddSingleton<IFhirProcessorService, FhirProcessorService>();
 
+// Register SeedFileService as singleton
+builder.Services.AddSingleton<ISeedFileService, SeedFileService>();
+
 // Register API Key authentication filter
 builder.Services.AddScoped<ApiKeyAuthFilter>();
 

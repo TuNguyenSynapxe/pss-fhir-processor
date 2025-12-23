@@ -230,21 +230,18 @@ export default function PlaygroundLayout() {
   // Load sample
   const handleLoadSample = async (sampleName: string) => {
     try {
-      // Dynamic import of sample files
-      const modules = import.meta.glob('/src/seed/happy-*.json');
+      // Fetch from backend API (reads dynamically from seed file)
+      const response = await fetch(`/api/seed/public/${sampleName}`);
       
-      for (const path in modules) {
-        const fileName = path.split('/').pop();
-        if (fileName === sampleName) {
-          const module = await modules[path]() as any;
-          const jsonString = JSON.stringify(module.default || module, null, 2);
-          setFhirJson(jsonString);
-          message.success(`Loaded ${sampleName}`);
-          return;
-        }
+      if (!response.ok) {
+        throw new Error(`Failed to load sample: ${response.statusText}`);
       }
       
-      message.error('Sample file not found');
+      const content = await response.text();
+      // Format the JSON for better display
+      const jsonString = JSON.stringify(JSON.parse(content), null, 2);
+      setFhirJson(jsonString);
+      message.success(`Loaded ${sampleName}`);
     } catch (error) {
       console.error('Failed to load sample:', error);
       message.error('Failed to load sample');

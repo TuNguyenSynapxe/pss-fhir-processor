@@ -47,6 +47,14 @@ jobs:
         mkdir -p src/Pss.FhirProcessor.NetCore/Backend/publish/wwwroot
         cp -r src/Pss.FhirProcessor.NetCore/Frontend/dist/* src/Pss.FhirProcessor.NetCore/Backend/publish/wwwroot/
     
+    - name: Copy Seed Files for Azure Initialization
+      run: |
+        mkdir -p src/Pss.FhirProcessor.NetCore/Backend/publish/seed
+        cp src/Pss.FhirProcessor.NetCore/Frontend/src/seed/happy-sample-full.json src/Pss.FhirProcessor.NetCore/Backend/publish/seed/
+        cp src/Pss.FhirProcessor.NetCore/Frontend/src/seed/validation-metadata.json src/Pss.FhirProcessor.NetCore/Backend/publish/seed/
+        cp src/Pss.FhirProcessor.NetCore/Backend/init-azure-seed.sh src/Pss.FhirProcessor.NetCore/Backend/publish/
+        chmod +x src/Pss.FhirProcessor.NetCore/Backend/publish/init-azure-seed.sh
+    
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v2
       with:

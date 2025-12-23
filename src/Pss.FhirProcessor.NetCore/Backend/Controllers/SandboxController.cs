@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Pss.FhirProcessor.Api.Filters;
 using MOH.HealthierSG.PSS.FhirProcessor.Api.Services;
 using System;
+using System.Threading.Tasks;
 
 namespace Pss.FhirProcessor.Api.Controllers
 {
@@ -29,7 +30,7 @@ namespace Pss.FhirProcessor.Api.Controllers
         /// </summary>
         [HttpPost("process")]
         [ServiceFilter(typeof(ApiKeyAuthFilter))]
-        public IActionResult Process([FromBody] SandboxRequest request)
+        public async Task<IActionResult> Process([FromBody] SandboxRequest request)
         {
             try
             {
@@ -37,7 +38,7 @@ namespace Pss.FhirProcessor.Api.Controllers
                 _logger.LogInformation("Sandbox Process request from {Org}", apiKeyConfig?.Organization);
 
                 // Get server-side metadata (single source of truth)
-                var metadataResult = _metadataController.GetValidationMetadata();
+                var metadataResult = await _metadataController.GetValidationMetadata();
                 if (metadataResult is not ContentResult contentResult)
                 {
                     return StatusCode(500, new { error = "Failed to load validation metadata" });
@@ -64,14 +65,14 @@ namespace Pss.FhirProcessor.Api.Controllers
         /// </summary>
         [HttpPost("validate")]
         [ServiceFilter(typeof(ApiKeyAuthFilter))]
-        public IActionResult Validate([FromBody] SandboxRequest request)
+        public async Task<IActionResult> Validate([FromBody] SandboxRequest request)
         {
             try
             {
                 var apiKeyConfig = HttpContext.Items["ApiKeyConfig"] as ApiKeyConfig;
                 _logger.LogInformation("Sandbox Validate request from {Org}", apiKeyConfig?.Organization);
 
-                var metadataResult = _metadataController.GetValidationMetadata();
+                var metadataResult = await _metadataController.GetValidationMetadata();
                 if (metadataResult is not ContentResult contentResult)
                 {
                     return StatusCode(500, new { error = "Failed to load validation metadata" });
