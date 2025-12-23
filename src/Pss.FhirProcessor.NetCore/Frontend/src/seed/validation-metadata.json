@@ -113,7 +113,7 @@
           "RuleType": "AllowedValues",
           "PathType": "CPS1",
           "Path": "Patient.gender",
-          "AllowedValues": ["male","female","unknown"],
+          "AllowedValues": [ "male", "female", "unknown" ],
           "ErrorCode": "FIXED_VALUE_MISMATCH",
           "Message": "Patient gender must be male, female, other, or unknown."
         },
@@ -156,7 +156,23 @@
           "Path": "Patient.address[*].postalCode",
           "Pattern": "^\\d{6}$",
           "ErrorCode": "REGEX_INVALID_POSTAL",
-          "Message": "Location.postalCode must be a 6-digit value."
+          "Message": "PostalCode must be a 6-digit value."
+        },
+        {
+          "RuleType": "Regex",
+          "PathType": "CPS1",
+          "Path": "Patient.telecom[0].value",
+          "Pattern": "^\\d{8}$",
+          "ErrorCode": "REGEX_INVALID_TELECOM",
+          "Message": "Patient Mobile must be a 8-digit value."
+        },
+        {
+          "RuleType": "Regex",
+          "PathType": "CPS1",
+          "Path": "Patient.telecom[1].value",
+          "Pattern": "^\\d{8}$",
+          "ErrorCode": "REGEX_INVALID_TELECOM",
+          "Message": "Patient Home must be a 8-digit value."
         },
         {
           "RuleType": "Required",
@@ -378,6 +394,14 @@
           "ExpectedValue": "https://fhir.synapxe.sg/NamingSystem/event-id",
           "ErrorCode": "FIXED_VALUE_MISMATCH",
           "Message": "Encounter identifier.system must be the event-id NamingSystem."
+        },
+        {
+          "RuleType": "Type",
+          "PathType": "CPS1",
+          "Path": "Encounter.identifier[*].value",
+          "ExpectedType": "guid",
+          "ErrorCode": "TYPE_MISMATCH",
+          "Message": "Encounter identifier.value must be GUID."
         },
         {
           "RuleType": "Required",
@@ -932,14 +956,14 @@
         "QuestionDisplay": "Pure Tone Screening at 25dBHL (Left)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
-          "500Hz – R",
-          "500Hz – NR",
-          "1000Hz – R",
-          "1000Hz – NR",
-          "2000Hz – R",
-          "2000Hz – NR",
-          "4000Hz – R",
-          "4000Hz – NR"
+          "500Hz - R",
+          "500Hz - NR",
+          "1000Hz - R",
+          "1000Hz - NR",
+          "2000Hz - R",
+          "2000Hz - NR",
+          "4000Hz - R",
+          "4000Hz - NR"
         ],
         "IsMultiValue": true
       },
@@ -948,14 +972,14 @@
         "QuestionDisplay": "Pure Tone Screening at 25dBHL (Right)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
-          "500Hz – R",
-          "500Hz – NR",
-          "1000Hz – R",
-          "1000Hz – NR",
-          "2000Hz – R",
-          "2000Hz – NR",
-          "4000Hz – R",
-          "4000Hz – NR"
+          "500Hz - R",
+          "500Hz - NR",
+          "1000Hz - R",
+          "1000Hz - NR",
+          "2000Hz - R",
+          "2000Hz - NR",
+          "4000Hz - R",
+          "4000Hz - NR"
         ],
         "IsMultiValue": true
       },
@@ -964,14 +988,14 @@
         "QuestionDisplay": "Pure Tone Screening at 40dBHL (Left)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
-          "500Hz – R",
-          "500Hz – NR",
-          "1000Hz – R",
-          "1000Hz – NR",
-          "2000Hz – R",
-          "2000Hz – NR",
-          "4000Hz – R",
-          "4000Hz – NR"
+          "500Hz - R",
+          "500Hz - NR",
+          "1000Hz - R",
+          "1000Hz - NR",
+          "2000Hz - R",
+          "2000Hz - NR",
+          "4000Hz - R",
+          "4000Hz - NR"
         ],
         "IsMultiValue": true
       },
@@ -980,14 +1004,14 @@
         "QuestionDisplay": "Pure Tone Screening at 40dBHL (Right)",
         "ScreeningType": "HS",
         "AllowedAnswers": [
-          "500Hz – R",
-          "500Hz – NR",
-          "1000Hz – R",
-          "1000Hz – NR",
-          "2000Hz – R",
-          "2000Hz – NR",
-          "4000Hz – R",
-          "4000Hz – NR"
+          "500Hz - R",
+          "500Hz - NR",
+          "1000Hz - R",
+          "1000Hz - NR",
+          "2000Hz - R",
+          "2000Hz - NR",
+          "4000Hz - R",
+          "4000Hz - NR"
         ],
         "IsMultiValue": true
       },

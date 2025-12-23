@@ -10,16 +10,16 @@
         "identifier": [
           {
             "system": "https://fhir.synapxe.sg/NamingSystem/nric",
-            "value": "S1234567A"
+            "value": "S1111111D"
           }
         ],
         "name": [
           {
-            "family": "Tan",
+            "family": "John",
             "given": [
-              "Ah Kow"
+              "Doe"
             ],
-            "text": "Mr Tan Ah Kow"
+            "text": "John Doe"
           }
         ],
         "gender": "male",
@@ -38,7 +38,13 @@
         ],
         "address": [
           {
-            "line": ["888", "Serangoon Street 81", "7", "#11-98", "The Trilliant"],
+            "line": [
+              "888",
+              "Serangoon Street 81",
+              "7",
+              "#11-98",
+              "The Trilliant"
+            ],
             "postalCode": "120123"
           }
         ],
@@ -140,7 +146,7 @@
         "identifier": [
           {
             "system": "https://fhir.synapxe.sg/NamingSystem/event-id",
-            "value": "EVT123456"
+            "value": "bb7c8a63-0c49-40cf-9b0c-66e8b64d9254"
           }
         ],
         "actualPeriod": {
@@ -155,7 +161,7 @@
         },
         "serviceType": [
           {
-            "reference":{
+            "reference": {
               "reference": "urn:uuid:c4e5a0b2-9d87-4c0a-a3f3-05869125bc11"
             }
           }
@@ -188,9 +194,9 @@
         "category": [
           {
             "coding": {
-                "system": "https://fhir.synapxe.sg/CodeSystem/campaign-type",
-                "code": "silver-screening-assessment",
-                "display": "Silver Screening Assessment"
+              "system": "https://fhir.synapxe.sg/CodeSystem/campaign-type",
+              "code": "silver-screening-assessment",
+              "display": "Silver Screening Assessment"
             }
           }
         ]
@@ -203,7 +209,13 @@
         "id": "d12b174f-6598-4f2f-b4cb-48df5113458c",
         "name": "ABC Polyclinic - Serangoon",
         "address": {
-          "line": ["888", "Serangoon Street 81", "7", "#11-98", "The Trilliant"],
+          "line": [
+            "888",
+            "Serangoon Street 81",
+            "7",
+            "#11-98",
+            "The Trilliant"
+          ],
           "postalCode": "640123"
         },
         "extension": [
@@ -268,11 +280,11 @@
         },
         "encounter": {
           "reference": "urn:uuid:bb7c8a63-0c49-40cf-9b0c-66e8b64d9254",
-          "display":""
+          "display": ""
         },
         "performer": {
-              "reference": "urn:uuid:e0a3f4c1-32a1-4df2-8f36-9b164ea7db04",
-              "display":"ABC Polyclinic"
+          "reference": "urn:uuid:e0a3f4c1-32a1-4df2-8f36-9b164ea7db04",
+          "display": "ABC Polyclinic"
         },
         "code": {
           "coding": [
@@ -365,7 +377,7 @@
                 }
               ]
             },
-            "valueString": "500Hz – R|1000Hz – R|2000Hz – R|4000Hz – R"
+            "valueString": "500Hz - R|1000Hz - R|2000Hz - R|4000Hz - R"
           },
           {
             "code": {
@@ -377,7 +389,7 @@
                 }
               ]
             },
-            "valueString": "500Hz – R|1000Hz – R|2000Hz – R|4000Hz – NR"
+            "valueString": "500Hz - R|1000Hz - R|2000Hz - R|4000Hz - NR"
           },
           {
             "code": {
@@ -389,7 +401,7 @@
                 }
               ]
             },
-            "valueString": "500Hz – NR|1000Hz – NR|2000Hz – NR|4000Hz – NR"
+            "valueString": "500Hz - NR|1000Hz - NR|2000Hz - NR|4000Hz - NR"
           },
           {
             "code": {
@@ -401,7 +413,7 @@
                 }
               ]
             },
-            "valueString": "500Hz – NR|1000Hz – NR|2000Hz – NR|4000Hz – NR"
+            "valueString": "500Hz - NR|1000Hz - NR|2000Hz - NR|4000Hz - NR"
           },
           {
             "code": {
@@ -464,7 +476,7 @@
         },
         "performer": {
           "reference": "urn:uuid:e0a3f4c1-32a1-4df2-8f36-9b164ea7db04",
-          "display":"ABC Polyclinic"
+          "display": "ABC Polyclinic"
         },
         "component": [
           {
@@ -624,7 +636,7 @@
         },
         "performer": {
           "reference": "urn:uuid:e0a3f4c1-32a1-4df2-8f36-9b164ea7db04",
-          "display":"ABC Polyclinic"
+          "display": "ABC Polyclinic"
         },
         "component": [
           {
